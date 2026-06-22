@@ -29,7 +29,6 @@
         <project.reporting.sourceEncoding>UTF-8</project.reporting.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <spring-boot.version>3.2.5</spring-boot.version>
-        <spring-cloud.version>2023.0.1</spring-cloud.version>
         <fastjson.version>2.0.43</fastjson.version>
         <mybatis.version>3.0.4</mybatis.version>
         <mysql-connector.version>8.3.0</mysql-connector.version>

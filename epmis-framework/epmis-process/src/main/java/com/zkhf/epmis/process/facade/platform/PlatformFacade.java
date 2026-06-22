@@ -1,171 +1,139 @@
 package com.zkhf.epmis.process.facade.platform;
 
 import cn.hutool.json.JSONObject;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.TypeReference;
 import com.zkhf.epmis.core.domain.AnnexInfo;
 import com.zkhf.epmis.core.domain.AnnexReq;
 import com.zkhf.epmis.core.domain.PollHead;
 import com.zkhf.epmis.core.domain.ValidPeriodAlarmInfo;
+import com.zkhf.epmis.platform.feign.FeignController;
 import com.zkhf.epmis.process.base.domain.*;
 import com.zkhf.epmis.process.base.entity.DictData;
 import com.zkhf.epmis.process.envManual.domain.EnvManualCheckTask;
-import com.zkhf.epmis.process.facade.platform.fallback.PlatformFacadeFallback;
 import com.zkhf.epmis.process.plc.domain.PlcInfo;
 import com.zkhf.epmis.process.statistics.dto.PollutantInfo;
-import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.*;
+import jakarta.annotation.Resource;
+import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
 
-@FeignClient(name = "epmis-platform", url = "${feign.epmis-platform.url:}", path = "/platform/feign"
-        , fallback = PlatformFacadeFallback.class)
-public interface PlatformFacade {
+@Component
+public class PlatformFacade {
 
-    /**
-     * 修改附件信息
-     */
-    @RequestMapping(value = "/updateAnnex", method = RequestMethod.POST)
-    void updateAnnex(@RequestBody(required = false) JSONObject req);
+    @Resource
+    private FeignController feignController;
 
-    /**
-     * 获取字典数据
-     */
-    @RequestMapping(value = "/dict/data/type/{type}", method = RequestMethod.GET)
-    List<DictData> dictDataByType(@PathVariable String type);
+    public void updateAnnex(JSONObject req) {
+        feignController.updateAnnex(JSON.parseObject(req.toString()));
+    }
 
-    /**
-     * 获取所有企业列表
-     */
-    @RequestMapping(value = "/ent/allList", method = RequestMethod.GET)
-    List<EntInfo> selectAllEntList();
+    public List<DictData> dictDataByType(String type) {
+        return convertList(feignController.dictType(type), DictData.class);
+    }
 
-    /**
-     * 获取企业、排口的对应关系
-     */
-    @RequestMapping(value = "/outPut/allList", method = RequestMethod.GET)
-    List<OutPutInfo> selectAllOutPutList();
+    public List<EntInfo> selectAllEntList() {
+        return convertList(feignController.selectAllEntList(), EntInfo.class);
+    }
 
-    /**
-     * 获取企业、排口、污染物的对应关系
-     */
-    @RequestMapping(value = "/outPutPoll/allList", method = RequestMethod.GET)
-    List<OutPutPollInfo> selectAllOutPutPollList();
+    public List<OutPutInfo> selectAllOutPutList() {
+        return convertList(feignController.selectAllOutPutList(), OutPutInfo.class);
+    }
 
-    /**
-     * 查询用户收藏关注排口信息列表
-     */
-    @RequestMapping(value = "/userAttentionList", method = RequestMethod.GET)
-    List<UserAttentionInfo> selectUserAttentionList(@RequestParam("userId") Long userId);
+    public List<OutPutPollInfo> selectAllOutPutPollList() {
+        return convertList(feignController.selectAllOutPutPollList(), OutPutPollInfo.class);
+    }
 
-    /**
-     * 获取排口动态表头的图表列表
-     */
-    @RequestMapping(value = "/autoHeadChart", method = RequestMethod.GET)
-    List<Map<String, Object>> autoHeadChart(@RequestParam("outPutId") String outPutId);
+    public List<UserAttentionInfo> selectUserAttentionList(Long userId) {
+        return convertList(feignController.selectUserAttentionList(userId), UserAttentionInfo.class);
+    }
 
-    /**
-     * 获取多个排口动态表头
-     */
-    @RequestMapping(value ="/multipleAutoHead", method = RequestMethod.GET)
-    List<Map<String, Object>> multipleAutoHead(@RequestParam("outPutIds") List<String> outPutIds, @RequestParam("dataEnum") String dataEnum);
+    public List<Map<String, Object>> autoHeadChart(String outPutId) {
+        return convertToMapList(feignController.autoHeadChart(outPutId));
+    }
 
-    /**
-     * 各类资质数据有效期列表获取
-     */
-    @RequestMapping(value = "/validPeriodConf/allList", method = RequestMethod.GET)
-    List<ValidPeriodAlarmInfo> validPeriodConfList();
+    public List<Map<String, Object>> multipleAutoHead(List<String> outPutIds, String dataEnum) {
+        return convertToMapList(feignController.multipleAutoHead(outPutIds, dataEnum));
+    }
 
-    /**
-     * 获取排口的污染物列表
-     */
-    @RequestMapping(value = "/selectPollutantCodesByOutPutId", method = RequestMethod.GET)
-    List<PollutantInfo> selectPollutantCodesByOutPutId(@RequestParam("outPutId") String outPutId);
+    public List<ValidPeriodAlarmInfo> validPeriodConfList() {
+        return feignController.validPeriodConfList();
+    }
 
-    /**
-     * 依据排口类型查询企业下的排口
-     */
-    @RequestMapping(value = "/entOutPutListByType", method = RequestMethod.GET)
-    List<Map<String, Object>> entOutPutListByType(@RequestParam("entCode") String entCode,
-                                                  @RequestParam("outPutType") Integer outPutType);
+    public List<PollutantInfo> selectPollutantCodesByOutPutId(String outPutId) {
+        return convertList(feignController.selectPollutantCodesByOutPutId(outPutId), PollutantInfo.class);
+    }
 
-    /**
-     * 查询指定年份的企业排污许可总量
-     */
-    @RequestMapping(value = "/entOutPollutantPermitCount", method = RequestMethod.GET)
-    List<Map<String, Object>> selectAllEntOutPollutantPermitCount(@RequestParam("permitYear") Integer permitYear);
+    public List<Map<String, Object>> entOutPutListByType(String entCode, Integer outPutType) {
+        return convertToMapList(feignController.entOutPutListByType(entCode, outPutType));
+    }
 
-    /**
-     * 查询所有的报文污染源因子编码2017和2005对应关系
-     */
-    @RequestMapping(value = "/selectAllPollCodeList", method = RequestMethod.GET)
-    List<PollutantCode> selectAllPollCodeList();
+    public List<Map<String, Object>> selectAllEntOutPollutantPermitCount(Integer permitYear) {
+        return convertToMapList(feignController.selectAllEntOutPollutantPermitCount(permitYear));
+    }
 
-    /**
-     * 上传附件
-     * 添加文件时便指定文件归属 sourceType
-     */
-    @PostMapping("/uploadAnnex")
-    AnnexInfo uploadAnnex(@RequestParam("file") MultipartFile file, @RequestParam("sourceType") String sourceType);
+    public List<PollutantCode> selectAllPollCodeList() {
+        return convertList(feignController.selectAllPollCodeList(), PollutantCode.class);
+    }
 
-    /**
-     * 依据附件归属获取附件列表
-     */
-    @GetMapping("/annexList")
-    List<AnnexInfo> annexList(@RequestBody AnnexReq req);
+    public AnnexInfo uploadAnnex(MultipartFile file, String sourceType) {
+        return feignController.uploadAnnex(file, sourceType);
+    }
 
-    /**
-     * 查询环境手工检测任务列表
-     */
-    @PostMapping("/selectEnvManualCheckTaskForReport")
-    List<EnvManualCheckTask> selectEnvManualCheckTaskForReport(@RequestBody(required = false) List<String> taskIdList);
+    public List<AnnexInfo> annexList(AnnexReq req) {
+        return feignController.annexList(req);
+    }
 
-    /**
-     * 环境手工检测任务报告导入
-     */
-    @PostMapping("/batchUpdateEnvManualCheckTask")
-    void batchUpdateEnvManualCheckTask(@RequestBody(required = false) List<EnvManualCheckTask> taskList);
+    public List<EnvManualCheckTask> selectEnvManualCheckTaskForReport(List<String> taskIdList) {
+        return convertList(feignController.selectEnvManualCheckTaskForReport(taskIdList), EnvManualCheckTask.class);
+    }
 
-    /**
-     * 获取排口动态表头的列表
-     */
-    @RequestMapping(value ="/getAutoHead", method = RequestMethod.GET)
-    List<Map<String, Object>> getAutoHead(@RequestParam("outPutId") String outPutId, @RequestParam("dataEnum") String dataEnum);
+    public void batchUpdateEnvManualCheckTask(List<EnvManualCheckTask> taskList) {
+        feignController.batchUpdateEnvManualCheckTask(convertList(taskList, com.zkhf.epmis.platform.envManual.domain.EnvManualCheckTask.class));
+    }
 
-    /**
-     * 获取所有排口状态列表
-     */
-    @RequestMapping(value = "/outPutStatusList", method = RequestMethod.POST)
-    List<Map<String, Object>> outPutStatusList(@RequestBody(required = false) List<String> entCodes);
+    public List<Map<String, Object>> getAutoHead(String outPutId, String dataEnum) {
+        return convertToMapList(feignController.getAutoHead(outPutId, dataEnum));
+    }
 
-    /**
-     * 查询所有排口报警参数
-     */
-    @RequestMapping(value = "/selectAllAlarmConf", method = RequestMethod.GET)
-    List<OutPutAlarmConf> selectAllAlarmConf();
+    public List<Map<String, Object>> outPutStatusList(List<String> entCodes) {
+        return convertToMapList(feignController.outPutStatusList(entCodes));
+    }
 
-    /**
-     * 获取多个排口多个动态表头
-     */
-    @RequestMapping(value ="/multipleAutoHeads", method = RequestMethod.GET)
-    Map<String, List<PollHead>> multipleAutoHeads(@RequestParam("outPutIds") List<String> outPutIds, @RequestParam("dataEnum") String dataEnum);
+    public List<OutPutAlarmConf> selectAllAlarmConf() {
+        return convertList(feignController.selectAllAlarmConf(), OutPutAlarmConf.class);
+    }
 
-    /**
-     * 查询点位列表
-     */
-    @RequestMapping(value ="/plcPointList", method = RequestMethod.GET)
-    List<PlcInfo> plcPointList(@RequestParam("entCode") String entCode);
+    public Map<String, List<PollHead>> multipleAutoHeads(List<String> outPutIds, String dataEnum) {
+        return feignController.multipleAutoHeads(outPutIds, dataEnum);
+    }
 
+    public List<PlcInfo> plcPointList(String entCode) {
+        return convertList(feignController.plcPointList(entCode), PlcInfo.class);
+    }
 
-    /**
-     * 查询第三方单位列表
-     */
-    @RequestMapping(value = "/allExtUnitList", method = RequestMethod.GET)
-    List<Map<String, Object>> allExtUnitList();
+    public List<Map<String, Object>> allExtUnitList() {
+        return convertToMapList(feignController.allList());
+    }
 
-    /**
-     * 依据字典类型获取字典值
-     */
-    @PostMapping(value = "/dict/dataByTypes")
-    Map<String, Map<String, String>> selectDataMapByTypes(@RequestBody List<String> dictTypes);
+    public Map<String, Map<String, String>> selectDataMapByTypes(List<String> dictTypes) {
+        return feignController.getDataMapByTypes(dictTypes);
+    }
+
+    private <T> List<T> convertList(Object source, Class<T> targetClass) {
+        if (source == null) {
+            return null;
+        }
+        return JSON.parseArray(JSON.toJSONString(source), targetClass);
+    }
+
+    private List<Map<String, Object>> convertToMapList(Object source) {
+        if (source == null) {
+            return null;
+        }
+        return JSON.parseObject(JSON.toJSONString(source), new TypeReference<List<Map<String, Object>>>() {
+        });
+    }
 }
