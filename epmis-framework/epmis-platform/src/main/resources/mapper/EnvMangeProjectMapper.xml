@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.platform.mapper.envProtect.EnvMangeProjectMapper">
+
+    <resultMap id="envMangeProjectResult" type="com.zkhf.epmis.platform.envProtect.domain.EnvMangeProject">
+        <result property="projectId" column="project_id"/>
+        <result property="entCode" column="ent_code"/>
+        <result property="entName" column="ent_name"/>
+        <result property="projectName" column="project_name"/>
+        <result property="projectCode" column="project_code"/>
+        <result property="projectNature" column="project_nature"/>
+        <result property="mainContent" column="main_content"/>
+        <result property="product" column="product"/>
+        <result property="pCapacity" column="p_capacity"/>
+        <result property="mainMaterial" column="main_material"/>
+        <result property="subMaterial" column="sub_material"/>
+        <result property="productShiftSys" column="product_shift_sys"/>
+        <result property="constructSide" column="construct_side"/>
+        <result property="industryCategory" column="industry_category"/>
+        <result property="grade" column="grade"/>
+        <result property="judgmentReason" column="judgment_reason"/>
+        <result property="landArea" column="land_area"/>
+        <result property="extApprTime" column="ext_appr_time"/>
+        <result property="commenceTime" column="commence_time"/>
+        <result property="productTime" column="product_time"/>
+        <result property="mainEnvFacilities" column="main_env_facilities"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <select id="selectMangeProjectList" parameterType="com.zkhf.epmis.platform.envProtect.domain.EnvMangeReq"
+            resultMap="envMangeProjectResult">
+        select
+            p.project_id, p.ent_code, e.ent_name, p.project_name, p.project_code, p.project_nature, p.main_content,
+            p.product, p.p_capacity, p.product_shift_sys, p.construct_side, p.industry_category, p.grade, p.judgment_reason,
+            p.land_area, p.ext_appr_time, p.commence_time, p.product_time, p.main_env_facilities, p.remark, p.main_material, p.sub_material
+        from
+        t_env_mange_project p
+        left join
+        t_bas_enterprise e on e.ent_code = p.ent_code
+        <where>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and e.ent_code = #{entCode}
+                </when>
+                <otherwise>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        and e.ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="entName != null and entName != ''">
+                and e.ent_name = #{entName}
+            </if>
+            <if test="key != null and key != ''">
+                and p.project_name like concat('%', #{key}, '%')
+            </if>
+        </where>
+    </select>
+
+    <insert id="insertMangeProject" parameterType="com.zkhf.epmis.platform.envProtect.domain.EnvMangeProject">
+        insert into t_env_mange_project
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="projectId != null">project_id,</if>
+            <if test="entCode != null and entCode != ''">ent_code,</if>
+            <if test="projectName != null">project_name,</if>
+            <if test="projectCode != null">project_code,</if>
+            <if test="projectNature != null">project_nature,</if>
+            <if test="mainContent != null">main_content,</if>
+            <if test="product != null">product,</if>
+            <if test="pCapacity != null">p_capacity,</if>
+            <if test="mainMaterial != null">main_material,</if>
+            <if test="subMaterial != null">sub_material,</if>
+            <if test="productShiftSys != null">product_shift_sys,</if>
+            <if test="constructSide != null">construct_side,</if>
+            <if test="industryCategory != null">industry_category,</if>
+            <if test="grade != null">grade,</if>
+            <if test="judgmentReason != null">judgment_reason,</if>
+            <if test="landArea != null">land_area,</if>
+            <if test="extApprTime != null">ext_appr_time,</if>
+            <if test="commenceTime != null">commence_time,</if>
+            <if test="productTime != null">product_time,</if>
+            <if test="mainEnvFacilities != null">main_env_facilities,</if>
+            <if test="remark != null">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="projectId != null">#{projectId},</if>
+            <if test="entCode != null and entCode != ''">#{entCode},</if>
+            <if test="projectName != null">#{projectName},</if>
+            <if test="projectCode != null">#{projectCode},</if>
+            <if test="projectNature != null">#{projectNature},</if>
+            <if test="mainContent != null">#{mainContent},</if>
+            <if test="product != null">#{product},</if>
+            <if test="pCapacity != null">#{pCapacity},</if>
+            <if test="mainMaterial != null">#{mainMaterial},</if>
+            <if test="subMaterial != null">#{subMaterial},</if>
+            <if test="productShiftSys != null">#{productShiftSys},</if>
+            <if test="constructSide != null">#{constructSide},</if>
+            <if test="industryCategory != null">#{industryCategory},</if>
+            <if test="grade != null">#{grade},</if>
+            <if test="judgmentReason != null">#{judgmentReason},</if>
+            <if test="landArea != null">#{landArea},</if>
+            <if test="extApprTime != null">#{extApprTime},</if>
+            <if test="commenceTime != null">#{commenceTime},</if>
+            <if test="productTime != null">#{productTime},</if>
+            <if test="mainEnvFacilities != null">#{mainEnvFacilities},</if>
+            <if test="remark != null">#{remark},</if>
+        </trim>
+    </insert>
+
+    <update id="updateMangeProject" parameterType="com.zkhf.epmis.platform.envProtect.domain.EnvMangeProject">
+        update t_env_mange_project
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="projectName != null">project_name = #{projectName},</if>
+            <if test="projectCode != null">project_code = #{projectCode},</if>
+            <if test="projectNature != null">project_nature = #{projectNature},</if>
+            <if test="mainContent != null">main_content = #{mainContent},</if>
+            <if test="product != null">product = #{product},</if>
+            <if test="pCapacity != null">p_capacity = #{pCapacity},</if>
+            <if test="mainMaterial != null">main_material = #{mainMaterial},</if>
+            <if test="subMaterial != null">sub_material = #{subMaterial},</if>
+            <if test="productShiftSys != null">product_shift_sys = #{productShiftSys},</if>
+            <if test="constructSide != null">construct_side = #{constructSide},</if>
+            <if test="industryCategory != null">industry_category = #{industryCategory},</if>
+            <if test="grade != null">grade = #{grade},</if>
+            <if test="judgmentReason != null">judgment_reason = #{judgmentReason},</if>
+            <if test="landArea != null">land_area = #{landArea},</if>
+            <if test="extApprTime != null">ext_appr_time = #{extApprTime},</if>
+            <if test="commenceTime != null">commence_time = #{commenceTime},</if>
+            <if test="productTime != null">product_time = #{productTime},</if>
+            <if test="mainEnvFacilities != null">main_env_facilities = #{mainEnvFacilities},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where project_id = #{projectId}
+    </update>
+
+    <delete id="deleteMangeProjectById">
+        delete from t_env_mange_project where project_id = #{projectId}
+    </delete>
+</mapper>

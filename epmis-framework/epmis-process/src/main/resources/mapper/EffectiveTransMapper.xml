@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.process.mapper.statistics.EffectiveTransMapper">
+
+    <resultMap id="effectiveTransResult" type="com.zkhf.epmis.process.statistics.domain.EffectiveTransInfo">
+        <result property="effId" column="eff_id"/>
+        <result property="outPutId" column="out_put_id"/>
+        <result property="dataType" column="data_type"/>
+        <result property="realTrans" column="real_trans"/>
+        <result property="mustTrans" column="must_trans"/>
+        <result property="realValid" column="real_valid"/>
+        <result property="mustValid" column="must_valid"/>
+        <result property="monitorTime" column="monitor_time"/>
+    </resultMap>
+
+    <select id="selectEffectiveTransList" parameterType="com.zkhf.epmis.process.statistics.domain.EffectiveTransReq"
+            resultMap="effectiveTransResult">
+        select
+            eff_id, out_put_id, data_type, real_trans, must_trans, real_valid, must_valid, monitor_time
+        from t_data_effective_trans t
+        <where>
+            <if test="outPutIdList != null and outPutIdList.size() > 0">
+                and out_put_id in
+                <foreach item="outPutId" collection="outPutIdList" open="(" separator="," close=")">
+                    #{outPutId}
+                </foreach>
+            </if>
+            <if test="dataType != null">and data_type = #{dataType}</if>
+            <if test="beginTime != null and endTime != null">
+                and monitor_time between #{beginTime} and #{endTime}
+            </if>
+        </where>
+        order by eff_id desc
+    </select>
+</mapper>

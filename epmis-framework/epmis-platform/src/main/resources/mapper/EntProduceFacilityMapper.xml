@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.platform.mapper.ent.EntProduceFacilityMapper">
+
+    <resultMap id="produceFacilityResult" type="com.zkhf.epmis.platform.ent.domain.EntProduceFacility">
+        <result property="facilityId" column="facility_id"/>
+        <result property="entCode" column="ent_code"/>
+        <result property="entName" column="ent_name"/>
+        <result property="facilityName" column="facility_name"/>
+        <result property="facilityCode" column="facility_code"/>
+        <result property="facilityType" column="facility_type"/>
+        <result property="specification" column="specification"/>
+        <result property="facilityModel" column="facility_model"/>
+        <result property="supplier" column="supplier"/>
+        <result property="buyDate" column="buy_date"/>
+        <result property="equipmentStatus" column="equipment_status"/>
+        <result property="facilityNumber" column="facility_number"/>
+        <result property="measureUnit" column="measure_unit"/>
+        <result property="designCapacity" column="design_capacity"/>
+        <result property="remark" column="remark"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <select id="selectEntProduceFacilityList" parameterType="com.zkhf.epmis.platform.ent.domain.EntProduceFacilityReq" resultMap="produceFacilityResult">
+        select
+            f.facility_id, f.ent_code, e.ent_name, f.facility_name, f.facility_code, f.facility_type, f.specification, f.facility_model, f.supplier, f.buy_date, f.equipment_status,
+            f.facility_number, f.measure_unit, f.design_capacity, f.remark, f.create_time, f.update_time
+        from t_ent_produce_facility f
+        left join t_bas_enterprise e on e.ent_code = f.ent_code
+        <where>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and f.ent_code = #{entCode}
+                </when>
+                <otherwise>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        and f.ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="equipmentStatus != null and equipmentStatus != ''">
+                and f.equipment_status = #{equipmentStatus}
+            </if>
+            <if test="facilityName != null and facilityName != ''">
+                and f.facility_name like concat('%', #{facilityName}, '%')
+            </if>
+        </where>
+        order by f.facility_id desc
+    </select>
+
+    <insert id="insertEntProduceFacility" parameterType="com.zkhf.epmis.platform.ent.domain.EntProduceFacility">
+        insert into t_ent_produce_facility
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="facilityId != null">facility_id,</if>
+            <if test="entCode != null">ent_code,</if>
+            <if test="facilityName != null">facility_name,</if>
+            <if test="facilityCode != null">facility_code,</if>
+            <if test="facilityType != null">facility_type,</if>
+            <if test="specification != null">specification,</if>
+            <if test="facilityModel != null">facility_model,</if>
+            <if test="supplier != null">supplier,</if>
+            <if test="buyDate != null">buy_date,</if>
+            <if test="equipmentStatus != null">equipment_status,</if>
+            <if test="facilityNumber != null">facility_number,</if>
+            <if test="measureUnit != null">measure_unit,</if>
+            <if test="designCapacity != null">design_capacity,</if>
+            <if test="remark != null">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="facilityId != null">#{facilityId},</if>
+            <if test="entCode != null">#{entCode},</if>
+            <if test="facilityName != null">#{facilityName},</if>
+            <if test="facilityCode != null">#{facilityCode},</if>
+            <if test="facilityType != null">#{facilityType},</if>
+            <if test="specification != null">#{specification},</if>
+            <if test="facilityModel != null">#{facilityModel},</if>
+            <if test="supplier != null">#{supplier},</if>
+            <if test="buyDate != null">#{buyDate},</if>
+            <if test="equipmentStatus != null">#{equipmentStatus},</if>
+            <if test="facilityNumber != null">#{facilityNumber},</if>
+            <if test="measureUnit != null">#{measureUnit},</if>
+            <if test="designCapacity != null">#{designCapacity},</if>
+            <if test="remark != null">#{remark},</if>
+        </trim>
+    </insert>
+
+    <update id="updateEntProduceFacility" parameterType="com.zkhf.epmis.platform.ent.domain.EntProduceFacility">
+        update t_ent_produce_facility
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="facilityName != null">facility_name = #{facilityName},</if>
+            <if test="facilityCode != null">facility_code = #{facilityCode},</if>
+            <if test="facilityType != null">facility_type = #{facilityType},</if>
+            <if test="specification != null">specification = #{specification},</if>
+            <if test="facilityModel != null">facility_model = #{facilityModel},</if>
+            <if test="supplier != null">supplier = #{supplier},</if>
+            <if test="buyDate != null">buy_date = #{buyDate},</if>
+            <if test="equipmentStatus != null">equipment_status = #{equipmentStatus},</if>
+            <if test="facilityNumber != null">facility_number = #{facilityNumber},</if>
+            <if test="measureUnit != null">measure_unit = #{measureUnit},</if>
+            <if test="designCapacity != null">design_capacity = #{designCapacity},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where facility_id = #{facilityId}
+    </update>
+
+    <delete id="deleteEntProduceFacilityById" parameterType="String">
+        delete from t_ent_produce_facility where facility_id = #{facilityId}
+    </delete>
+
+    <delete id="deleteEntProduceFacilityRelateById" parameterType="String">
+        delete from t_ent_produce_facility_relate where facility_id = #{facilityId}
+    </delete>
+
+</mapper>

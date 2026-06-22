@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.platform.mapper.ent.DeviceInfoMapper">
+
+    <resultMap id="deviceInfoResult" type="com.zkhf.epmis.platform.ent.domain.DeviceInfo">
+        <result property="mnNum" column="mn_num"/>
+        <result property="mnName" column="mn_name"/>
+        <result property="deviceBrand" column="device_brand"/>
+        <result property="deviceModel" column="device_model"/>
+        <result property="deviceQuantity" column="device_quantity"/>
+        <result property="setupTime" column="setup_time"/>
+        <result property="lifespan" column="lifespan"/>
+        <result property="lifeUnit" column="life_unit"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <select id="selectDeviceInfoByMnNum" resultMap="deviceInfoResult">
+        select mn_num, mn_name, device_brand, device_model, device_quantity, setup_time, lifespan, life_unit, create_time, update_time
+        from t_device_info
+        where mn_num = #{mnNum}
+    </select>
+
+    <select id="selectDeviceInfoList" resultMap="deviceInfoResult">
+        select mn_num, mn_name, device_brand, device_model, device_quantity, setup_time, lifespan, life_unit, create_time, update_time
+        from t_device_info i
+        <where>
+            <if test="entCodes != null and entCodes.size() > 0">
+                and exists (select 1 from t_ent_out_put_info where mn_num = i.mn_num and ent_code in
+                    <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                        #{entCode}
+                    </foreach>
+                )
+            </if>
+        </where>
+        order by update_time desc
+    </select>
+
+    <insert id="insertOrUpdateDeviceInfo" parameterType="com.zkhf.epmis.platform.ent.domain.DeviceInfo">
+        INSERT INTO t_device_info
+            (mn_num, mn_name, device_brand, device_model, device_quantity, setup_time, lifespan, life_unit)
+        VALUES
+            (#{mnNum}, #{mnName}, #{deviceBrand}, #{deviceModel}, #{deviceQuantity}, #{setupTime}, #{lifespan}, #{lifeUnit})
+        ON DUPLICATE KEY UPDATE
+            device_brand = VALUES(device_brand), mn_name = VALUES(mn_name), device_model = VALUES(device_model), device_quantity = VALUES(device_quantity),
+            setup_time = VALUES(setup_time), lifespan = VALUES(lifespan), life_unit = VALUES(life_unit)
+    </insert>
+
+</mapper>

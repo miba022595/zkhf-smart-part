@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.process.mapper.material.MaterialInfoMapper">
+
+    <resultMap id="materialInfoResult" type="com.zkhf.epmis.process.material.domain.MaterialInfo">
+        <result property="materialId" column="material_id"/>
+        <result property="entCode" column="ent_code"/>
+        <result property="materialCode" column="material_code"/>
+        <result property="materialName" column="material_name"/>
+        <result property="brand" column="brand"/>
+        <result property="modelSpec" column="model_spec"/>
+        <result property="categoryCode" column="category_code"/>
+        <result property="categoryName" column="category_name"/>
+        <result property="unit" column="unit"/>
+        <result property="unitPrice" column="unit_price"/>
+        <result property="minStock" column="min_stock"/>
+        <result property="currentQty" column="current_qty"/>
+        <result property="status" column="status"/>
+        <result property="remark" column="remark"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <select id="selectMaterialInfoList" parameterType="com.zkhf.epmis.process.material.domain.MaterialInfoReq" resultMap="materialInfoResult">
+        select m.material_id, m.ent_code, m.material_code, m.material_name, m.brand, m.model_spec, m.category_code, m.category_name,
+               m.unit, m.unit_price, m.min_stock, 0 as current_qty, m.status, m.remark, m.create_time, m.update_time
+        from t_material_info m
+        <where>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and m.ent_code = #{entCode}
+                </when>
+                <otherwise>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        and m.ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="materialCode != null and materialCode != ''">
+                and m.material_code like concat('%', #{materialCode}, '%')
+            </if>
+            <if test="materialName != null and materialName != ''">
+                and m.material_name like concat('%', #{materialName}, '%')
+            </if>
+            <if test="brand != null and brand != ''">
+                and m.brand like concat('%', #{brand}, '%')
+            </if>
+            <if test="modelSpec != null and modelSpec != ''">
+                and m.model_spec like concat('%', #{modelSpec}, '%')
+            </if>
+            <if test="categoryCode != null and categoryCode != ''">
+                and m.category_code = #{categoryCode}
+            </if>
+            <if test="status != null">
+                and m.status = #{status}
+            </if>
+        </where>
+        order by m.update_time desc, m.material_id desc
+    </select>
+
+    <select id="selectMaterialInfoById" parameterType="String" resultMap="materialInfoResult">
+        select m.material_id, m.ent_code, m.material_code, m.material_name, m.brand, m.model_spec, m.category_code, m.category_name,
+               m.unit, m.unit_price, m.min_stock, ifnull(s.current_qty, 0) as current_qty, m.status, m.remark, m.create_time, m.update_time
+        from t_material_info m
+        left join (
+            select material_id, sum(ifnull(current_qty, 0)) as current_qty
+            from t_material_stock
+            group by material_id
+        ) s on s.material_id = m.material_id
+        where m.material_id = #{materialId}
+    </select>
+
+    <insert id="insertMaterialInfo" parameterType="com.zkhf.epmis.process.material.domain.MaterialInfo">
+        insert into t_material_info
+        (material_id, ent_code, material_code, material_name, brand, model_spec, category_code, category_name,
+         unit, unit_price, min_stock, status, remark)
+        values
+        (#{materialId}, #{entCode}, #{materialCode}, #{materialName}, #{brand}, #{modelSpec}, #{categoryCode}, #{categoryName},
+         #{unit}, #{unitPrice}, #{minStock}, #{status}, #{remark})
+    </insert>
+
+    <insert id="batchInsertMaterialInfo">
+        insert into t_material_info
+        (material_id, ent_code, material_code, material_name, brand, model_spec, category_code, category_name,
+         unit, unit_price, min_stock, status, remark)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.materialId}, #{item.entCode}, #{item.materialCode}, #{item.materialName}, #{item.brand}, #{item.modelSpec}, #{item.categoryCode}, #{item.categoryName},
+             #{item.unit}, #{item.unitPrice}, #{item.minStock}, #{item.status}, #{item.remark})
+        </foreach>
+    </insert>
+
+    <select id="selectExistingMaterialCodes" resultType="String">
+        select material_code
+        from t_material_info
+        <where>
+            ent_code = #{entCode}
+            <if test="materialCodes != null and materialCodes.size() > 0">
+                and material_code in
+                <foreach collection="materialCodes" item="c" open="(" separator="," close=")">
+                    #{c}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <update id="updateMaterialInfo" parameterType="com.zkhf.epmis.process.material.domain.MaterialInfo">
+        update t_material_info
+        <trim prefix="set" suffixOverrides=",">
+            <if test="materialCode != null and materialCode != ''">material_code = #{materialCode},</if>
+            <if test="materialName != null and materialName != ''">material_name = #{materialName},</if>
+            <if test="brand != null">brand = #{brand},</if>
+            <if test="modelSpec != null">model_spec = #{modelSpec},</if>
+            <if test="categoryCode != null">category_code = #{categoryCode},</if>
+            <if test="categoryName != null">category_name = #{categoryName},</if>
+            <if test="unit != null and unit != ''">unit = #{unit},</if>
+            <if test="unitPrice != null">unit_price = #{unitPrice},</if>
+            <if test="minStock != null">min_stock = #{minStock},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where material_id = #{materialId}
+    </update>
+
+    <update id="deleteMaterialInfoById" parameterType="String">
+        delete from t_material_info where material_id = #{materialId}
+    </update>
+
+    <select id="countMaterialInfoRef" parameterType="String" resultType="int">
+        select
+            coalesce((select count(*) from t_material_stock where material_id = #{materialId}), 0) +
+            coalesce((select count(*) from t_material_in_order_item where material_id = #{materialId}), 0) +
+            coalesce((select count(*) from t_material_apply_order_item where material_id = #{materialId}), 0) +
+            coalesce((select count(*) from t_material_out_order_item where material_id = #{materialId}), 0) +
+            coalesce((select count(*) from t_material_return_order_item where material_id = #{materialId}), 0)
+    </select>
+</mapper>

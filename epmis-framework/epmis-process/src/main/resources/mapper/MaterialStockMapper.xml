@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.process.mapper.material.MaterialStockMapper">
+
+    <resultMap id="materialStockResult" type="com.zkhf.epmis.process.material.domain.MaterialStock">
+        <result property="stockId" column="stock_id"/>
+        <result property="entCode" column="ent_code"/>
+        <result property="warehouseId" column="warehouse_id"/>
+        <result property="warehouseCode" column="warehouse_code"/>
+        <result property="warehouseName" column="warehouse_name"/>
+        <result property="materialId" column="material_id"/>
+        <result property="materialCode" column="material_code"/>
+        <result property="materialName" column="material_name"/>
+        <result property="brand" column="brand"/>
+        <result property="modelSpec" column="model_spec"/>
+        <result property="categoryCode" column="category_code"/>
+        <result property="categoryName" column="category_name"/>
+        <result property="unit" column="unit"/>
+        <result property="currentQty" column="current_qty"/>
+        <result property="availableQty" column="available_qty"/>
+        <result property="frozenQty" column="frozen_qty"/>
+        <result property="minStock" column="min_stock"/>
+        <result property="stockStatus" column="stock_status"/>
+        <result property="lastChangeTime" column="last_change_time"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <select id="selectMaterialStockList" parameterType="com.zkhf.epmis.process.material.domain.MaterialStockReq" resultMap="materialStockResult">
+        select s.stock_id, s.ent_code, s.warehouse_id, s.material_id, s.current_qty, s.available_qty, s.frozen_qty,
+               s.min_stock, s.stock_status, s.last_change_time, s.create_time, s.update_time,
+               w.warehouse_code, w.warehouse_name,
+               m.material_code, m.material_name, m.brand, m.model_spec, m.category_code, m.category_name, m.unit
+        from t_material_stock s
+        left join t_material_warehouse w on w.warehouse_id = s.warehouse_id
+        left join t_material_info m on m.material_id = s.material_id
+        <where>
+            1 = 1
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and s.ent_code = #{entCode}
+                </when>
+                <otherwise>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        and s.ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="warehouseId != null and warehouseId != ''">
+                and s.warehouse_id = #{warehouseId}
+            </if>
+            <if test="materialId != null and materialId != ''">
+                and s.material_id = #{materialId}
+            </if>
+            <if test="materialName != null and materialName != ''">
+                and m.material_name like concat('%', #{materialName}, '%')
+            </if>
+            <if test="brand != null and brand != ''">
+                and m.brand like concat('%', #{brand}, '%')
+            </if>
+            <if test="modelSpec != null and modelSpec != ''">
+                and m.model_spec like concat('%', #{modelSpec}, '%')
+            </if>
+            <if test="categoryCode != null and categoryCode != ''">
+                and m.category_code = #{categoryCode}
+            </if>
+            <if test="stockStatus != null">
+                and s.stock_status = #{stockStatus}
+            </if>
+        </where>
+        order by s.last_change_time desc, s.stock_id desc
+    </select>
+
+    <select id="selectMaterialCurrentQtyByMaterialIds" resultType="com.zkhf.epmis.process.material.domain.MaterialStock">
+        select material_id as materialId, sum(ifnull(current_qty, 0)) as currentQty
+        from t_material_stock
+        <where>
+            <choose>
+                <when test="materialIds != null and materialIds.size() > 0">
+                    material_id in
+                    <foreach collection="materialIds" item="materialId" open="(" separator="," close=")">
+                        #{materialId}
+                    </foreach>
+                </when>
+                <otherwise>
+                    1 = 2
+                </otherwise>
+            </choose>
+        </where>
+        group by material_id
+    </select>
+</mapper>

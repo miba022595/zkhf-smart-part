@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.process.mapper.solidWaste.WasteStockMapper">
+
+    <resultMap id="wasteGenerateResult" type="com.zkhf.epmis.process.solidWaste.domain.WasteGenerate">
+        <result property="id" column="id"/>
+        <result property="categoryId" column="category_id"/>
+        <result property="wasteName" column="waste_name"/>
+        <result property="wasteDictId" column="waste_dict_id"/>
+        <result property="roomId" column="room_id"/>
+        <result property="roomName" column="room_name"/>
+        <result property="genTime" column="gen_time"/>
+        <result property="genQty" column="gen_qty"/>
+        <result property="remainQty" column="remain_qty"/>
+        <result property="tempOperator" column="temp_operator"/>
+        <result property="tempOperatorOutName" column="temp_operator_out_name"/>
+        <result property="tempOperatorOutPhone" column="temp_operator_out_phone"/>
+        <result property="tranOperator" column="tran_operator"/>
+        <result property="tranOperatorOutName" column="tran_operator_out_name"/>
+        <result property="tranOperatorOutPhone" column="tran_operator_out_phone"/>
+        <result property="daySeq" column="day_seq"/>
+        <result property="batchNo" column="batch_no"/>
+        <result property="manualBatchNo" column="manual_batch_no"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <resultMap id="wasteReductionResult" type="com.zkhf.epmis.process.solidWaste.domain.WasteReduction">
+        <result property="id" column="id"/>
+        <result property="categoryId" column="category_id"/>
+        <result property="wasteName" column="waste_name"/>
+        <result property="wasteDictId" column="waste_dict_id"/>
+        <result property="roomId" column="room_id"/>
+        <result property="roomName" column="room_name"/>
+        <result property="reductionTime" column="reduction_time"/>
+        <result property="reductionQty" column="reduction_qty"/>
+        <result property="duration" column="duration"/>
+        <result property="method" column="method"/>
+        <result property="operator" column="operator"/>
+        <result property="operatorOutName" column="operator_out_name"/>
+        <result property="operatorOutPhone" column="operator_out_phone"/>
+        <result property="daySeq" column="day_seq"/>
+        <result property="batchNo" column="batch_no"/>
+        <result property="manualBatchNo" column="manual_batch_no"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <resultMap id="wasteStorageResult" type="com.zkhf.epmis.process.solidWaste.domain.WasteStorage">
+        <result property="id" column="id"/>
+        <result property="categoryId" column="category_id"/>
+        <result property="wasteName" column="waste_name"/>
+        <result property="wasteDictId" column="waste_dict_id"/>
+        <result property="roomId" column="room_id"/>
+        <result property="roomName" column="room_name"/>
+        <result property="storageTime" column="storage_time"/>
+        <result property="storageQty" column="storage_qty"/>
+        <result property="remainQty" column="remain_qty"/>
+        <result property="storageOperator" column="storage_operator"/>
+        <result property="storageOperatorOutName" column="storage_operator_out_name"/>
+        <result property="storageOperatorOutPhone" column="storage_operator_out_phone"/>
+        <result property="tranOperator" column="tran_operator"/>
+        <result property="tranOperatorOutName" column="tran_operator_out_name"/>
+        <result property="tranOperatorOutPhone" column="tran_operator_out_phone"/>
+        <result property="daySeq" column="day_seq"/>
+        <result property="batchNo" column="batch_no"/>
+        <result property="manualBatchNo" column="manual_batch_no"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <resultMap id="wasteOutboundResult" type="com.zkhf.epmis.process.solidWaste.domain.WasteOutbound">
+        <result property="id" column="id"/>
+        <result property="outType" column="out_type"/>
+        <result property="categoryId" column="category_id"/>
+        <result property="wasteName" column="waste_name"/>
+        <result property="wasteDictId" column="waste_dict_id"/>
+        <result property="outTime" column="out_time"/>
+        <result property="outQty" column="out_qty"/>
+        <result property="outOperator" column="out_operator"/>
+        <result property="outOperatorOutName" column="out_operator_out_name"/>
+        <result property="outOperatorOutPhone" column="out_operator_out_phone"/>
+        <result property="tranOperator" column="tran_operator"/>
+        <result property="tranOperatorOutName" column="tran_operator_out_name"/>
+        <result property="tranOperatorOutPhone" column="tran_operator_out_phone"/>
+        <result property="tranUnit" column="tran_unit"/>
+        <result property="vehicleNo" column="vehicle_no"/>
+        <result property="disposalUnit" column="disposal_unit"/>
+        <result property="daySeq" column="day_seq"/>
+        <result property="batchNo" column="batch_no"/>
+        <result property="manualBatchNo" column="manual_batch_no"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <select id="selectWasteGenerateList" parameterType="com.zkhf.epmis.process.solidWaste.domain.WasteLibReq"
+            resultMap="wasteGenerateResult">
+        select
+            wg.id, wg.category_id, wg.room_id, wg.gen_time, wg.gen_qty, wg.remain_qty, wg.temp_operator, wg.temp_operator_out_name,
+            wg.temp_operator_out_phone, wg.tran_operator, wg.tran_operator_out_name, wg.tran_operator_out_phone, wg.day_seq, wg.batch_no,
+            wg.manual_batch_no, wg.remark, c.waste_name, c.waste_dict_id, r.room_name
+        from t_waste_generate wg
+        left join t_waste_category c on c.category_id = wg.category_id
+        left join t_waste_room r on r.room_id = wg.room_id
+        <where>
+            <if test="entCodes != null and entCodes.size() > 0">
+                and c.ent_code in
+                <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                    #{entCode}
+                </foreach>
+            </if>
+            <if test="categoryId != null and categoryId != ''">
+                and wg.category_id = #{categoryId}
+            </if>
+            <if test="startTime != null and endTime != null">
+                and wg.gen_time between #{startTime} and #{endTime}
+            </if>
+            <if test="left != null and left == 1">
+                and wg.remain_qty &gt; 0
+            </if>
+        </where>
+        order by wg.id desc
+    </select>
+
+    <select id="selectWasteGenerateMaxDaySeq" resultType="java.lang.Integer">
+        select max(day_seq) from t_waste_generate where gen_time between #{startTime} and #{endTime}
+    </select>
+
+    <insert id="insertWasteGenerate" parameterType="com.zkhf.epmis.process.solidWaste.domain.WasteGenerate">
+        insert into t_waste_generate
+            (id, category_id, room_id, gen_time, gen_qty, remain_qty, temp_operator, temp_operator_out_name, temp_operator_out_phone, tran_operator,
+             tran_operator_out_name, tran_operator_out_phone, day_seq, batch_no, manual_batch_no, remark)
+        values
+            (#{id}, #{categoryId}, #{roomId}, #{genTime}, #{genQty}, #{genQty}, #{tempOperator}, #{tempOperatorOutName}, #{tempOperatorOutPhone},
+             #{tranOperator}, #{tranOperatorOutName}, #{tranOperatorOutPhone}, #{daySeq}, #{batchNo}, #{manualBatchNo}, #{remark})
+    </insert>
+
+    <delete id="deleteWasteGenerateById" parameterType="String">
+        delete from t_waste_generate where id = #{id}
+    </delete>
+
+    <select id="selectWasteReductionList" parameterType="com.zkhf.epmis.process.solidWaste.domain.WasteLibReq"
+            resultMap="wasteReductionResult">
+        select
+            wr.id, wr.category_id, wr.room_id, wr.reduction_time, wr.reduction_qty, wr.duration,
+            wr.method, wr.operator, wr.operator_out_name, wr.operator_out_phone, wr.day_seq, wr.batch_no, wr.manual_batch_no,
+            wr.remark, c.waste_name, c.waste_dict_id, r.room_name
+        from t_waste_reduction wr
+        left join t_waste_category c on c.category_id = wr.category_id
+        left join t_waste_room r on r.room_id = wr.room_id
+        <where>
+            <if test="entCodes != null and entCodes.size() > 0">
+                and c.ent_code in
+                <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                    #{entCode}
+                </foreach>
+            </if>
+            <if test="categoryId != null and categoryId != ''">
+                and wr.category_id = #{categoryId}
+            </if>
+            <if test="startTime != null and endTime != null">
+                and wr.reduction_time between #{startTime} and #{endTime}
+            </if>
+        </where>
+        order by wr.id desc
+    </select>
+
+    <select id="selectWasteReductionMaxDaySeq" resultType="java.lang.Integer">
+        select max(day_seq) from t_waste_reduction where reduction_time between #{startTime} and #{endTime}
+    </select>
+
+    <insert id="insertWasteReduction" parameterType="com.zkhf.epmis.process.solidWaste.domain.WasteReduction">
+        insert into t_waste_reduction
+            (id, category_id, room_id, reduction_time, reduction_qty, duration, method,
+             operator, operator_out_name, operator_out_phone, day_seq, batch_no, manual_batch_no, remark)
+        values
+            (#{id}, #{categoryId}, #{roomId}, #{reductionTime}, #{reductionQty}, #{duration}, #{method},
+             #{operator}, #{operatorOutName}, #{operatorOutPhone}, #{daySeq}, #{batchNo}, #{manualBatchNo}, #{remark})
+    </insert>
+
+    <delete id="deleteWasteReductionById" parameterType="String">
+        delete from t_waste_reduction where id = #{id}
+    </delete>
+
+    <select id="selectWasteStorageList" parameterType="com.zkhf.epmis.process.solidWaste.domain.WasteLibReq"
+            resultMap="wasteStorageResult">
+        select
+            ws.id, ws.category_id, ws.room_id, ws.storage_time, ws.storage_qty, ws.remain_qty, ws.storage_operator, ws.storage_operator_out_name,
+            ws.storage_operator_out_phone, ws.tran_operator, ws.tran_operator_out_name, ws.tran_operator_out_phone, ws.day_seq,
+            ws.batch_no, ws.manual_batch_no, ws.remark, c.waste_name, c.waste_dict_id, r.room_name
+        from t_waste_storage ws
+        left join t_waste_category c on c.category_id = ws.category_id
+        left join t_waste_room r on r.room_id = ws.room_id
+        <where>
+            <if test="entCodes != null and entCodes.size() > 0">
+                and c.ent_code in
+                <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                    #{entCode}
+                </foreach>
+            </if>
+            <if test="categoryId != null and categoryId != ''">
+                and ws.category_id = #{categoryId}
+            </if>
+            <if test="startTime != null and endTime != null">
+                and ws.storage_time between #{startTime} and #{endTime}
+            </if>
+            <if test="left != null and left == 1">
+                and ws.remain_qty &gt; 0
+            </if>
+        </where>
+        order by ws.id desc
+    </select>
+
+    <select id="selectWasteStorageMaxDaySeq" resultType="java.lang.Integer">
+        select max(day_seq) from t_waste_storage where storage_time between #{startTime} and #{endTime}
+    </select>
+
+    <insert id="insertWasteStorage" parameterType="com.zkhf.epmis.process.solidWaste.domain.WasteStorage">
+        insert into t_waste_storage
+            (id, category_id, room_id, storage_time, storage_qty, remain_qty, storage_operator, storage_operator_out_name, storage_operator_out_phone,
+             tran_operator, tran_operator_out_name, tran_operator_out_phone, day_seq, batch_no, manual_batch_no, remark)
+        values
+            (#{id}, #{categoryId}, #{roomId}, #{storageTime}, #{storageQty}, #{storageQty}, #{storageOperator}, #{storageOperatorOutName}, #{storageOperatorOutPhone},
+             #{tranOperator}, #{tranOperatorOutName}, #{tranOperatorOutPhone}, #{daySeq}, #{batchNo}, #{manualBatchNo}, #{remark})
+    </insert>
+
+    <delete id="deleteWasteStorageById" parameterType="String">
+        delete from t_waste_storage where id = #{id}
+    </delete>
+
+    <select id="selectWasteOutboundList" parameterType="com.zkhf.epmis.process.solidWaste.domain.WasteLibReq"
+            resultMap="wasteOutboundResult">
+        select
+            wo.id, wo.out_type, wo.category_id, wo.out_time, wo.out_qty, wo.out_operator, wo.out_operator_out_name,
+            wo.out_operator_out_phone, wo.tran_operator, wo.tran_operator_out_name, wo.tran_operator_out_phone, wo.tran_unit,
+            wo.vehicle_no, wo.disposal_unit, wo.day_seq, wo.batch_no, wo.manual_batch_no, wo.remark, c.waste_name, c.waste_dict_id
+        from t_waste_outbound wo
+        left join t_waste_category c on c.category_id = wo.category_id
+        <where>
+            <if test="entCodes != null and entCodes.size() > 0">
+                and c.ent_code in
+                <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                    #{entCode}
+                </foreach>
+            </if>
+            <if test="categoryId != null and categoryId != ''">
+                and wo.category_id = #{categoryId}
+            </if>
+            <if test="startTime != null and endTime != null">
+                and wo.out_time between #{startTime} and #{endTime}
+            </if>
+        </where>
+        order by wo.id desc
+    </select>
+
+    <select id="selectWasteOutboundMaxDaySeq" resultType="java.lang.Integer">
+        select max(day_seq) from t_waste_outbound where out_time between #{startTime} and #{endTime}
+    </select>
+
+    <insert id="insertWasteOutbound" parameterType="com.zkhf.epmis.process.solidWaste.domain.WasteOutbound">
+        insert into t_waste_outbound
+            (id, out_type, category_id, out_time, out_qty, out_operator, out_operator_out_name, out_operator_out_phone,
+             tran_operator, tran_operator_out_name, tran_operator_out_phone, tran_unit, vehicle_no, disposal_unit, day_seq,
+             batch_no, manual_batch_no, remark)
+        values
+            (#{id}, #{outType}, #{categoryId}, #{outTime}, #{outQty}, #{outOperator}, #{outOperatorOutName}, #{outOperatorOutPhone},
+             #{tranOperator}, #{tranOperatorOutName}, #{tranOperatorOutPhone}, #{tranUnit}, #{vehicleNo}, #{disposalUnit}, #{daySeq},
+             #{batchNo}, #{manualBatchNo}, #{remark})
+    </insert>
+
+    <delete id="deleteWasteOutboundById" parameterType="String">
+        delete from t_waste_outbound where id = #{id}
+    </delete>
+
+    <select id="selectWasteFlowRelSize">
+        select count(*)
+        from t_waste_flow_rel
+        where
+            flow_type in
+                <foreach collection="flowTypes" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            and source_id = #{sourceId}
+    </select>
+
+    <insert id="insertWasteFlowRel" parameterType="com.zkhf.epmis.process.solidWaste.domain.WasteFlowRel">
+        insert into t_waste_flow_rel
+            (flow_type, source_id, target_id, qty)
+        values
+        <foreach collection="relList" item="item" separator=",">
+            (#{item.flowType}, #{item.sourceId}, #{item.targetId}, #{item.qty})
+        </foreach>
+    </insert>
+
+    <delete id="deleteWasteFlowRel" parameterType="String">
+        delete from t_waste_flow_rel
+        where
+            flow_type in
+                <foreach collection="flowTypes" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            and target_id = #{targetId}
+    </delete>
+
+    <update id="updateWasteGenerateByTargetId">
+        update
+            t_waste_generate g
+            inner join t_waste_flow_rel f on
+                f.flow_type in
+                    <foreach collection="flowTypes" item="item" open="(" separator="," close=")">
+                        #{item}
+                    </foreach>
+                and f.source_id = g.id
+                and f.target_id = #{targetId}
+        set g.remain_qty = g.gen_qty - (
+            select COALESCE(sum(qty), 0)
+            from t_waste_flow_rel
+            where
+                flow_type in
+                    <foreach collection="flowTypes" item="item" open="(" separator="," close=")">
+                        #{item}
+                    </foreach>
+                and source_id = g.id
+        )
+    </update>
+
+    <update id="updateWasteStorageByTargetId">
+        update
+            t_waste_storage s
+            inner join t_waste_flow_rel f on
+                f.flow_type = #{flowType}
+                and f.source_id = s.id
+                and f.target_id = #{targetId}
+        set s.remain_qty = s.storage_qty - (
+            select COALESCE(sum(qty), 0)
+            from t_waste_flow_rel
+            where
+                flow_type = #{flowType}
+                and source_id = s.id
+        )
+    </update>
+
+</mapper>

@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.platform.mapper.approval.ApprovalInstanceMapper">
+
+    <resultMap id="approvalInstanceResult" type="com.zkhf.epmis.platform.approval.domain.ApprovalInstance">
+        <result property="businessType" column="business_type"/>
+        <result property="businessKey" column="business_key"/>
+        <result property="formDataStr" column="form_data_str"/>
+        <result property="flowId" column="flow_id"/>
+        <result property="flowName" column="flow_name"/>
+        <result property="entCode" column="ent_code"/>
+        <result property="entName" column="ent_name"/>
+        <result property="status" column="status"/>
+        <result property="currentNodeId" column="current_node_id"/>
+        <result property="currentNodeName" column="current_node_name"/>
+        <result property="currentAssignee" column="current_assignee"/>
+        <result property="currentAssigneeName" column="current_assignee_name"/>
+        <result property="initiator" column="initiator"/>
+        <result property="initiatorName" column="initiator_name"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <resultMap id="approvalHistoryResult" type="com.zkhf.epmis.platform.approval.domain.ApprovalHistory">
+        <result property="id" column="id"/>
+        <result property="actionType" column="action_type"/>
+        <result property="actionUser" column="action_user"/>
+        <result property="actionUserName" column="action_user_name"/>
+        <result property="actionTime" column="action_time"/>
+        <result property="comment" column="comment"/>
+        <result property="nodeId" column="node_id"/>
+        <result property="nodeName" column="node_name"/>
+        <result property="ipAddress" column="ip_address"/>
+        <result property="actionLocation" column="action_location"/>
+        <result property="browser" column="browser"/>
+        <result property="os" column="os"/>
+    </resultMap>
+
+    <resultMap id="approvalMessageResult" type="com.zkhf.epmis.platform.approval.domain.ApprovalMessage">
+        <result property="id" column="id"/>
+        <result property="historyId" column="history_id"/>
+        <result property="pushUser" column="push_user"/>
+        <result property="pushUserName" column="push_user_name"/>
+        <result property="messageContent" column="message_content"/>
+        <result property="pushStatus" column="push_status"/>
+        <result property="pushTime" column="push_time"/>
+        <result property="readTime" column="read_time"/>
+        <result property="maxRetries" column="max_retries"/>
+        <result property="retryInterval" column="retry_interval"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <select id="selectApprovalInstanceByBusiness" resultMap="approvalInstanceResult">
+        select
+            i.business_type, i.business_key, i.form_data as form_data_str, i.flow_id, f.flow_name, i.status,
+            f.ent_code, e.ent_name,
+            i.current_node_id, n.node_name as current_node_name,
+            i.current_assignee, u1.user_name as current_assignee_name,
+            i.initiator, u2.user_name as initiator_name,
+            i.create_time, i.update_time
+        from t_bas_approval_instance i
+        left join t_bas_approval_flow f on f.flow_id = i.flow_id
+        left join t_bas_enterprise e on e.ent_code = f.ent_code
+        left join t_bas_approval_node n on n.node_id = i.current_node_id
+        left join sys_user u1 on u1.user_id = i.current_assignee
+        left join sys_user u2 on u2.user_id = i.initiator
+        where i.business_type = #{businessType} and i.business_key = #{businessKey}
+    </select>
+
+    <select id="countProcessingStatus" resultType="java.util.Map">
+        select business_type as type, count(business_key) as num
+        from t_bas_approval_instance
+        where status = #{status} and current_assignee = #{userId}
+        group by business_type
+    </select>
+
+    <select id="selectApprovalInstanceList" parameterType="com.zkhf.epmis.platform.approval.domain.ApprovalInstanceReq"
+            resultMap="approvalInstanceResult">
+        select
+            i.business_type, i.business_key, i.form_data as form_data_str, i.flow_id, f.flow_name, i.status,
+            f.ent_code, e.ent_name,
+            i.current_node_id, n.node_name as current_node_name,
+            i.current_assignee, u1.user_name as current_assignee_name,
+            i.initiator, u2.user_name as initiator_name,
+            i.create_time, i.update_time
+        from t_bas_approval_instance i
+        left join t_bas_approval_flow f on f.flow_id = i.flow_id
+        left join t_bas_enterprise e on e.ent_code = f.ent_code
+        left join t_bas_approval_node n on n.node_id = i.current_node_id
+        left join sys_user u1 on u1.user_id = i.current_assignee
+        left join sys_user u2 on u2.user_id = i.initiator
+        <where>
+            <if test="businessType != null and businessType != ''">
+                and i.business_type = #{businessType}
+            </if>
+            <if test="status != null and status != ''">
+                and i.status = #{status}
+            </if>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    <if test="entCode != null and entCode != ''">
+                        and f.ent_code = #{entCode}
+                    </if>
+                </when>
+                <otherwise>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        and f.ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                </otherwise>
+            </choose>
+        </where>
+        order by i.update_time desc, i.create_time desc
+    </select>
+
+    <select id="selectApprovalHistoryList" resultMap="approvalHistoryResult">
+        select
+            h.id, h.action_type, h.action_user, u.user_name as action_user_name, h.action_time, h.comment, h.node_id, n.node_name,
+            h.ip_address, h.action_location, h.browser, h.os
+        from t_bas_approval_history h
+        left join t_bas_approval_node n on n.node_id = h.node_id
+        left join sys_user u on u.user_id = h.action_user
+        <where>
+            <if test="businessType != null and businessType != ''">
+                and h.business_type = #{businessType}
+            </if>
+            <if test="businessKey != null and businessKey != ''">
+                and h.business_key = #{businessKey}
+            </if>
+        </where>
+        order by h.action_time asc
+    </select>
+
+    <select id="checkExistsForInsert" parameterType="com.zkhf.epmis.platform.approval.domain.ApprovalInstance">
+        select count(1)
+        from t_bas_approval_instance
+        where business_type = #{businessType} and business_key = #{businessKey}
+    </select>
+
+    <insert id="insertApprovalInstance" parameterType="com.zkhf.epmis.platform.approval.domain.ApprovalInstance">
+        insert into t_bas_approval_instance
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="businessType != null">business_type,</if>
+            <if test="businessKey != null">business_key,</if>
+            <if test="formDataStr != null">form_data,</if>
+            <if test="flowId != null and flowId != ''">flow_id,</if>
+            <if test="status != null and status != ''">status,</if>
+            <if test="currentNodeId != null">current_node_id,</if>
+            <if test="currentAssignee != null">current_assignee,</if>
+            <if test="initiator != null">initiator,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="businessType != null">#{businessType},</if>
+            <if test="businessKey != null">#{businessKey},</if>
+            <if test="formDataStr != null">#{formDataStr},</if>
+            <if test="flowId != null and flowId != ''">#{flowId},</if>
+            <if test="status != null and status != ''">#{status},</if>
+            <if test="currentNodeId != null">#{currentNodeId},</if>
+            <if test="currentAssignee != null">#{currentAssignee},</if>
+            <if test="initiator != null">#{initiator},</if>
+        </trim>
+    </insert>
+
+    <insert id="insertApprovalHistory" parameterType="com.zkhf.epmis.platform.approval.domain.ApprovalHistory"
+            useGeneratedKeys="true" keyProperty="id">
+        insert into t_bas_approval_history
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="businessType != null and businessType != ''">business_type,</if>
+            <if test="businessKey != null and businessKey != ''">business_key,</if>
+            <if test="actionType != null and actionType != ''">action_type,</if>
+            <if test="actionUser != null">action_user,</if>
+            <if test="actionTime != null">action_time,</if>
+            <if test="comment != null">comment,</if>
+            <if test="nodeId != null">node_id,</if>
+            <if test="ipAddress != null">ip_address,</if>
+            <if test="actionLocation != null">action_location,</if>
+            <if test="browser != null">browser,</if>
+            <if test="os != null">os,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="businessType != null and businessType != ''">#{businessType},</if>
+            <if test="businessKey != null and businessKey != ''">#{businessKey},</if>
+            <if test="actionType != null and actionType != ''">#{actionType},</if>
+            <if test="actionUser != null">#{actionUser},</if>
+            <if test="actionTime != null">#{actionTime},</if>
+            <if test="comment != null">#{comment},</if>
+            <if test="nodeId != null">#{nodeId},</if>
+            <if test="ipAddress != null">#{ipAddress},</if>
+            <if test="actionLocation != null">#{actionLocation},</if>
+            <if test="browser != null">#{browser},</if>
+            <if test="os != null">#{os},</if>
+        </trim>
+    </insert>
+
+    <select id="selectBusinessApprovalFlowNode">
+        select i.status, i.current_assignee as currentAssignee, n1.node_id as nodeId, n2.node_id as nextNodeId, n2.assignee_user as nextAssignee
+        from t_bas_approval_instance i
+        inner join t_bas_approval_node n1 on n1.node_id = i.current_node_id
+        left join t_bas_approval_node n2 on n2.node_id = n1.next_node_id
+        where i.business_type = #{businessType} and i.business_key = #{businessKey}
+        limit 1
+    </select>
+
+    <update id="updateApprovalInstance" parameterType="com.zkhf.epmis.platform.approval.domain.ApprovalInstance">
+        update t_bas_approval_instance
+        set status = #{status}, current_node_id = #{currentNodeId}, current_assignee = #{currentAssignee}
+        where business_type = #{businessType} and business_key = #{businessKey}
+    </update>
+
+    <insert id="insertApprovalMessage">
+        insert into t_bas_approval_message
+            (history_id, push_user, message_content, push_status, push_time, max_retries, retry_interval)
+        values
+        <foreach item="item" collection="messageList" separator=",">
+            (#{historyId}, #{item.pushUser}, #{item.messageContent}, #{item.pushStatus}, #{item.pushTime}, #{item.maxRetries}, #{item.retryInterval})
+        </foreach>
+    </insert>
+
+    <select id="selectApprovalMessage" resultMap="approvalMessageResult">
+        select
+            m.id, m.history_id, m.push_user, u.user_name as push_user_name, m.message_content, m.push_status, m.push_time, m.read_time,
+            m.max_retries, m.retry_interval, m.create_time, m.update_time
+        from t_bas_approval_message m
+        left join sys_user u on u.user_id = m.push_user
+        <where>
+            <if test="userId != null ">
+                and m.push_user = #{userId}
+            </if>
+            <if test="pushStatus != null ">
+                and m.push_status = #{pushStatus}
+            </if>
+        </where>
+        order by m.push_time desc
+    </select>
+
+    <update id="updateApprovalMessagePushStatus" parameterType="com.zkhf.epmis.platform.approval.domain.ApprovalMessage">
+        update t_bas_approval_message
+        set push_status = 1, read_time = #{readTime}
+        where id = #{messageId}
+    </update>
+</mapper>

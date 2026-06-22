@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.platform.mapper.emergency.EmergencyContactMapper">
+
+    <resultMap type="com.zkhf.epmis.platform.emergency.domain.EmergencyContact" id="emergencyContactResult">
+        <id property="contactId" column="contact_id"/>
+        <result property="entCode" column="ent_code"/>
+        <result property="entName" column="ent_name"/>
+        <result property="weComMsg" column="we_com_msg"/>
+        <result property="contactName" column="contact_name"/>
+        <result property="position" column="position"/>
+        <result property="deptGroup" column="dept_group"/>
+        <result property="phone" column="phone"/>
+        <result property="specialty" column="specialty"/>
+        <result property="remark" column="remark"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="emergencyContactResult">
+        select c.*, e.ent_name, e.we_com_msg from t_emergency_contact c
+        left join t_bas_enterprise e on c.ent_code = e.ent_code
+        where c.contact_id = #{contactId}
+    </select>
+
+    <select id="selectList" resultMap="emergencyContactResult">
+        select c.*, e.ent_name, e.we_com_msg from t_emergency_contact c
+        left join t_bas_enterprise e on c.ent_code = e.ent_code
+        <where>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and c.ent_code = #{entCode}
+                </when>
+                <otherwise>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        and c.ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="contactName != null and contactName != ''">
+                and c.contact_name like concat('%', #{contactName}, '%')
+            </if>
+            <if test="deptGroup != null and deptGroup != ''">
+                and c.dept_group like concat('%', #{deptGroup}, '%')
+            </if>
+        </where>
+        order by c.create_time desc
+    </select>
+
+    <select id="selectAll" resultMap="emergencyContactResult">
+        select c.*, e.ent_name, e.we_com_msg from t_emergency_contact c
+        left join t_bas_enterprise e on c.ent_code = e.ent_code
+        order by c.create_time desc
+    </select>
+
+    <insert id="insert" parameterType="com.zkhf.epmis.platform.emergency.domain.EmergencyContact">
+        insert into t_emergency_contact
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="contactId != null and contactId != ''">contact_id,</if>
+            <if test="entCode != null and entCode != ''">ent_code,</if>
+            <if test="contactName != null and contactName != ''">contact_name,</if>
+            <if test="position != null and position != ''">position,</if>
+            <if test="deptGroup != null and deptGroup != ''">dept_group,</if>
+            <if test="phone != null and phone != ''">phone,</if>
+            <if test="specialty != null and specialty != ''">specialty,</if>
+            <if test="remark != null and remark != ''">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="contactId != null and contactId != ''">#{contactId},</if>
+            <if test="entCode != null and entCode != ''">#{entCode},</if>
+            <if test="contactName != null and contactName != ''">#{contactName},</if>
+            <if test="position != null and position != ''">#{position},</if>
+            <if test="deptGroup != null and deptGroup != ''">#{deptGroup},</if>
+            <if test="phone != null and phone != ''">#{phone},</if>
+            <if test="specialty != null and specialty != ''">#{specialty},</if>
+            <if test="remark != null and remark != ''">#{remark},</if>
+        </trim>
+    </insert>
+
+    <insert id="batchInsert">
+        insert into t_emergency_contact
+            (contact_id, ent_code, contact_name, position, dept_group, phone, specialty, remark)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.contactId}, #{item.entCode}, #{item.contactName}, #{item.position}, #{item.deptGroup}, #{item.phone}, #{item.specialty}, #{item.remark})
+        </foreach>
+    </insert>
+
+    <update id="update" parameterType="com.zkhf.epmis.platform.emergency.domain.EmergencyContact">
+        update t_emergency_contact
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="contactName != null and contactName != ''">contact_name = #{contactName},</if>
+            <if test="position != null and position != ''">position = #{position},</if>
+            <if test="deptGroup != null and deptGroup != ''">dept_group = #{deptGroup},</if>
+            <if test="phone != null and phone != ''">phone = #{phone},</if>
+            <if test="specialty != null and specialty != ''">specialty = #{specialty},</if>
+            <if test="remark != null and remark != ''">remark = #{remark},</if>
+        </trim>
+        where contact_id = #{contactId}
+    </update>
+
+    <select id="countByEntCodeAndContactName" resultType="int">
+        select count(1)
+        from t_emergency_contact
+        where ent_code = #{entCode}
+          and contact_name = #{contactName}
+        <if test="excludeContactId != null and excludeContactId != ''">
+            and contact_id != #{excludeContactId}
+        </if>
+    </select>
+
+    <select id="selectByEntCodes" resultType="com.zkhf.epmis.platform.emergency.domain.EmergencyContact">
+        select ent_code as entCode, contact_name as contactName
+        from t_emergency_contact
+        <if test="entCodes != null and entCodes.size() > 0">
+            where ent_code in
+            <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                #{entCode}
+            </foreach>
+        </if>
+    </select>
+
+    <delete id="deleteById">
+        delete from t_emergency_contact where contact_id = #{contactId}
+    </delete>
+
+</mapper>

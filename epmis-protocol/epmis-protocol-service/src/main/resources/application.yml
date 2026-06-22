@@ -1,0 +1,75 @@
+# 项目相关配置
+epmis:
+  name: 环管控平台（EPMIS）-协议层    # 名称
+  version: 1.0.0-SNAPSHOT   # 版本
+
+# 开发环境配置
+server:
+  port: 9534    # 服务器的HTTP端口，默认为8080
+  servlet:
+    context-path: /   # 应用的访问路径
+  tomcat:
+    uri-encoding: UTF-8    # tomcat的URI编码
+    accept-count: 1000    # 连接数满后的排队数，默认为100
+    threads:
+      max: 800    # tomcat最大线程数，默认为200
+      min-spare: 100   # Tomcat启动初始化的线程数，默认值10
+# 协议信息配置
+netty:
+  server:
+    enabled: false                # 是否启用
+    port: 9090
+    bossThreads: 1
+    workerThreads: 0
+    timeout:
+      all-idle-time: 15  # 15分钟无数据交互关闭连接
+
+# 平台层地址
+feign:
+  epmis-platform:
+    url: http://127.0.0.1:9533
+
+# 日志配置
+logging:
+  level:
+    com.zkhf.epmis: debug
+    org.springframework: warn
+  file:
+    name: logs/protocol-app.log       # 当前活动日志文件路径
+  logback:
+    rollingpolicy:
+      file-name-pattern: "logs/protocol/app-%d{yyyy-MM-dd}-%i.log.gz"  # 滚动压缩文件名模式
+      max-file-size: 10MB    # 单个日志文件最大大小
+      total-size-cap: 2GB    # 归档日志总大小限制
+      max-history: 30        # 保留日志天数
+  pattern:
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"  # 日志格式
+
+# mqtt配置
+mqtt:
+  broker-url: tcp://172.28.159.22:1883    # 公共测试服务器
+  client-id: spring-boot-mqtt-publisher-1 # 客户端ID加入随机值，确保唯一
+  username: zkhf_emqx                     # 如果需要用户名认证
+  password: zukq3h9Sf#                    # 如果需要密码认证
+  # 可选：设置自定义配置，如超时时间、保持连接等
+  connection-timeout: 30
+  keep-alive-interval: 60
+  clean-session: true
+  topics:
+    out-put-data-real: out_put_data_real
+    out-put-data-minute: out_put_data_minute
+    out-put-data-hour: out_put_data_hour
+    out-put-data-day: out_put_data_day
+    out-put-data-prefix: out_put_data_
+    device-data-plc: device_data_plc
+
+# Modbus TCP配置
+modbus:
+  tcp:
+    enabled: false                # 是否启用
+    port: 502                    # Modbus TCP服务器端口
+    bossThreads: 1              # Boss线程数
+    workerThreads: 8            # Worker线程数
+    soBacklog: 1024             # 连接队列大小
+    keepalive: true              # 启用TCP keepalive
+    nodelay: true                # 启用TCP_NODELAY

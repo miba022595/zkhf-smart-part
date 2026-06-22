@@ -1,0 +1,812 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.process.mapper.material.MaterialOrderMapper">
+
+    <resultMap id="materialInOrderResult" type="com.zkhf.epmis.process.material.domain.MaterialInOrder">
+        <result property="inId" column="in_id"/>
+        <result property="entCode" column="ent_code"/>
+        <result property="inNo" column="in_no"/>
+        <result property="inTime" column="in_time"/>
+        <result property="warehouseId" column="warehouse_id"/>
+        <result property="warehouseName" column="warehouse_name"/>
+        <result property="arrivalNo" column="arrival_no"/>
+        <result property="purchaser" column="purchaser"/>
+        <result property="inUser" column="in_user"/>
+        <result property="status" column="status"/>
+        <result property="auditBy" column="audit_by"/>
+        <result property="auditTime" column="audit_time"/>
+        <result property="auditRemark" column="audit_remark"/>
+        <result property="totalQty" column="total_qty"/>
+        <result property="totalAmount" column="total_amount"/>
+        <result property="stockEffectStatus" column="stock_effect_status"/>
+        <result property="remark" column="remark"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <resultMap id="materialInOrderItemResult" type="com.zkhf.epmis.process.material.domain.MaterialInOrderItem">
+        <result property="inItemId" column="in_item_id"/>
+        <result property="inId" column="in_id"/>
+        <result property="materialId" column="material_id"/>
+        <result property="materialCode" column="material_code"/>
+        <result property="materialName" column="material_name"/>
+        <result property="brand" column="brand"/>
+        <result property="modelSpec" column="model_spec"/>
+        <result property="categoryName" column="category_name"/>
+        <result property="unit" column="unit"/>
+        <result property="inQty" column="in_qty"/>
+        <result property="unitPrice" column="unit_price"/>
+        <result property="amount" column="amount"/>
+        <result property="sortNum" column="sort_num"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <resultMap id="materialApplyOrderResult" type="com.zkhf.epmis.process.material.domain.MaterialApplyOrder">
+        <result property="applyId" column="apply_id"/>
+        <result property="entCode" column="ent_code"/>
+        <result property="applyNo" column="apply_no"/>
+        <result property="applyTime" column="apply_time"/>
+        <result property="applyReason" column="apply_reason"/>
+        <result property="applyUser" column="apply_user"/>
+        <result property="contactPhone" column="contact_phone"/>
+        <result property="expectedReceiveTime" column="expected_receive_time"/>
+        <result property="auditStatus" column="audit_status"/>
+        <result property="auditBy" column="audit_by"/>
+        <result property="auditTime" column="audit_time"/>
+        <result property="auditRemark" column="audit_remark"/>
+        <result property="outStatus" column="out_status"/>
+        <result property="returnStatus" column="return_status"/>
+        <result property="totalQty" column="total_qty"/>
+        <result property="remark" column="remark"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <resultMap id="materialApplyOrderItemResult" type="com.zkhf.epmis.process.material.domain.MaterialApplyOrderItem">
+        <result property="applyItemId" column="apply_item_id"/>
+        <result property="applyId" column="apply_id"/>
+        <result property="materialId" column="material_id"/>
+        <result property="materialCode" column="material_code"/>
+        <result property="materialName" column="material_name"/>
+        <result property="brand" column="brand"/>
+        <result property="modelSpec" column="model_spec"/>
+        <result property="categoryName" column="category_name"/>
+        <result property="unit" column="unit"/>
+        <result property="applyQty" column="apply_qty"/>
+        <result property="outQty" column="out_qty"/>
+        <result property="returnQty" column="return_qty"/>
+        <result property="purposeDesc" column="purpose_desc"/>
+        <result property="sortNum" column="sort_num"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <resultMap id="materialOutOrderResult" type="com.zkhf.epmis.process.material.domain.MaterialOutOrder">
+        <result property="outId" column="out_id"/>
+        <result property="entCode" column="ent_code"/>
+        <result property="outNo" column="out_no"/>
+        <result property="outTime" column="out_time"/>
+        <result property="warehouseId" column="warehouse_id"/>
+        <result property="warehouseName" column="warehouse_name"/>
+        <result property="applyId" column="apply_id"/>
+        <result property="applyNo" column="apply_no"/>
+        <result property="receiveUser" column="receive_user"/>
+        <result property="outUser" column="out_user"/>
+        <result property="auditBy" column="audit_by"/>
+        <result property="auditTime" column="audit_time"/>
+        <result property="auditRemark" column="audit_remark"/>
+        <result property="status" column="status"/>
+        <result property="stockEffectStatus" column="stock_effect_status"/>
+        <result property="totalQty" column="total_qty"/>
+        <result property="totalAmount" column="total_amount"/>
+        <result property="remark" column="remark"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <resultMap id="materialOutOrderItemResult" type="com.zkhf.epmis.process.material.domain.MaterialOutOrderItem">
+        <result property="outItemId" column="out_item_id"/>
+        <result property="outId" column="out_id"/>
+        <result property="applyItemId" column="apply_item_id"/>
+        <result property="materialId" column="material_id"/>
+        <result property="materialCode" column="material_code"/>
+        <result property="materialName" column="material_name"/>
+        <result property="brand" column="brand"/>
+        <result property="modelSpec" column="model_spec"/>
+        <result property="categoryName" column="category_name"/>
+        <result property="unit" column="unit"/>
+        <result property="applyQty" column="apply_qty"/>
+        <result property="outQty" column="out_qty"/>
+        <result property="returnedQty" column="returned_qty"/>
+        <result property="unitPrice" column="unit_price"/>
+        <result property="amount" column="amount"/>
+        <result property="sortNum" column="sort_num"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <resultMap id="materialReturnOrderResult" type="com.zkhf.epmis.process.material.domain.MaterialReturnOrder">
+        <result property="returnId" column="return_id"/>
+        <result property="entCode" column="ent_code"/>
+        <result property="returnNo" column="return_no"/>
+        <result property="applyId" column="apply_id"/>
+        <result property="outId" column="out_id"/>
+        <result property="warehouseId" column="warehouse_id"/>
+        <result property="warehouseName" column="warehouse_name"/>
+        <result property="applyTime" column="apply_time"/>
+        <result property="returnTime" column="return_time"/>
+        <result property="returnUser" column="return_user"/>
+        <result property="auditBy" column="audit_by"/>
+        <result property="auditTime" column="audit_time"/>
+        <result property="auditRemark" column="audit_remark"/>
+        <result property="handlerUser" column="handler_user"/>
+        <result property="status" column="status"/>
+        <result property="stockEffectStatus" column="stock_effect_status"/>
+        <result property="totalQty" column="total_qty"/>
+        <result property="stockInQty" column="stock_in_qty"/>
+        <result property="remark" column="remark"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <resultMap id="materialReturnOrderItemResult" type="com.zkhf.epmis.process.material.domain.MaterialReturnOrderItem">
+        <result property="returnItemId" column="return_item_id"/>
+        <result property="returnId" column="return_id"/>
+        <result property="outItemId" column="out_item_id"/>
+        <result property="materialId" column="material_id"/>
+        <result property="materialCode" column="material_code"/>
+        <result property="materialName" column="material_name"/>
+        <result property="brand" column="brand"/>
+        <result property="modelSpec" column="model_spec"/>
+        <result property="categoryName" column="category_name"/>
+        <result property="unit" column="unit"/>
+        <result property="outQty" column="out_qty"/>
+        <result property="canReturnQty" column="can_return_qty"/>
+        <result property="returnQty" column="return_qty"/>
+        <result property="stockInQty" column="stock_in_qty"/>
+        <result property="processResult" column="process_result"/>
+        <result property="sortNum" column="sort_num"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <resultMap id="materialStockSimpleResult" type="com.zkhf.epmis.process.material.domain.MaterialStock">
+        <result property="stockId" column="stock_id"/>
+        <result property="entCode" column="ent_code"/>
+        <result property="warehouseId" column="warehouse_id"/>
+        <result property="materialId" column="material_id"/>
+        <result property="currentQty" column="current_qty"/>
+        <result property="availableQty" column="available_qty"/>
+        <result property="frozenQty" column="frozen_qty"/>
+        <result property="minStock" column="min_stock"/>
+        <result property="stockStatus" column="stock_status"/>
+        <result property="lastChangeTime" column="last_change_time"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <resultMap id="materialStockFlowResult" type="com.zkhf.epmis.process.material.domain.MaterialStockFlow">
+        <result property="flowId" column="flow_id"/>
+        <result property="entCode" column="ent_code"/>
+        <result property="warehouseId" column="warehouse_id"/>
+        <result property="warehouseName" column="warehouse_name"/>
+        <result property="materialId" column="material_id"/>
+        <result property="materialCode" column="material_code"/>
+        <result property="materialName" column="material_name"/>
+        <result property="bizType" column="biz_type"/>
+        <result property="bizId" column="biz_id"/>
+        <result property="bizItemId" column="biz_item_id"/>
+        <result property="bizNo" column="biz_no"/>
+        <result property="qtyChange" column="qty_change"/>
+        <result property="beforeQty" column="before_qty"/>
+        <result property="afterQty" column="after_qty"/>
+        <result property="beforeAvailableQty" column="before_available_qty"/>
+        <result property="afterAvailableQty" column="after_available_qty"/>
+        <result property="beforeFrozenQty" column="before_frozen_qty"/>
+        <result property="afterFrozenQty" column="after_frozen_qty"/>
+        <result property="operateBy" column="operate_by"/>
+        <result property="operateTime" column="operate_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <resultMap id="materialInfoSimpleResult" type="com.zkhf.epmis.process.material.domain.MaterialInfo">
+        <result property="materialId" column="material_id"/>
+        <result property="entCode" column="ent_code"/>
+        <result property="materialCode" column="material_code"/>
+        <result property="materialName" column="material_name"/>
+        <result property="brand" column="brand"/>
+        <result property="modelSpec" column="model_spec"/>
+        <result property="categoryCode" column="category_code"/>
+        <result property="categoryName" column="category_name"/>
+        <result property="unit" column="unit"/>
+        <result property="unitPrice" column="unit_price"/>
+        <result property="minStock" column="min_stock"/>
+        <result property="status" column="status"/>
+    </resultMap>
+
+    <select id="selectMaterialInOrderList" parameterType="com.zkhf.epmis.process.material.domain.MaterialBizReq" resultMap="materialInOrderResult">
+        select i.in_id, i.ent_code, i.in_no, i.in_time, i.warehouse_id, w.warehouse_name, i.arrival_no, i.purchaser,
+               i.in_user, i.status, i.audit_by, i.audit_time, i.audit_remark, i.total_qty, i.total_amount,
+               i.stock_effect_status, i.remark, i.create_time, i.update_time
+        from t_material_in_order i
+        left join t_material_warehouse w on w.warehouse_id = i.warehouse_id
+        <where>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and i.ent_code = #{entCode}
+                </when>
+                <otherwise>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        and i.ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="warehouseId != null and warehouseId != ''">
+                and i.warehouse_id = #{warehouseId}
+            </if>
+            <if test="orderNo != null and orderNo != ''">
+                and i.in_no like concat('%', #{orderNo}, '%')
+            </if>
+            <if test="status != null">
+                and i.status = #{status}
+            </if>
+            <if test="startTime != null and endTime != null">
+                and i.in_time between #{startTime} and #{endTime}
+            </if>
+            <if test="materialName != null and materialName != ''">
+                and exists (select 1 from t_material_in_order_item ii where ii.in_id = i.in_id and ii.material_name like concat('%', #{materialName}, '%'))
+            </if>
+        </where>
+        order by i.in_time desc, i.in_id desc
+    </select>
+
+    <select id="selectMaterialInOrderById" parameterType="String" resultMap="materialInOrderResult">
+        select i.in_id, i.ent_code, i.in_no, i.in_time, i.warehouse_id, w.warehouse_name, i.arrival_no, i.purchaser,
+               i.in_user, i.status, i.audit_by, i.audit_time, i.audit_remark, i.total_qty, i.total_amount,
+               i.stock_effect_status, i.remark, i.create_time, i.update_time
+        from t_material_in_order i
+        left join t_material_warehouse w on w.warehouse_id = i.warehouse_id
+        where i.in_id = #{inId}
+    </select>
+
+    <select id="selectMaterialInOrderItems" parameterType="String" resultMap="materialInOrderItemResult">
+        select in_item_id, in_id, material_id, material_code, material_name, brand, model_spec, category_name,
+               unit, in_qty, unit_price, amount, sort_num, remark
+        from t_material_in_order_item
+        where in_id = #{inId}
+        order by sort_num asc, in_item_id asc
+    </select>
+
+    <insert id="insertMaterialInOrder" parameterType="com.zkhf.epmis.process.material.domain.MaterialInOrder">
+        insert into t_material_in_order
+        (in_id, ent_code, in_no, in_time, warehouse_id, arrival_no, purchaser, in_user, status, audit_by, audit_time,
+         audit_remark, total_qty, total_amount, stock_effect_status, remark)
+        values
+        (#{inId}, #{entCode}, #{inNo}, #{inTime}, #{warehouseId}, #{arrivalNo}, #{purchaser}, #{inUser}, #{status},
+         #{auditBy}, #{auditTime}, #{auditRemark}, #{totalQty}, #{totalAmount}, #{stockEffectStatus}, #{remark})
+    </insert>
+
+    <update id="updateMaterialInOrder" parameterType="com.zkhf.epmis.process.material.domain.MaterialInOrder">
+        update t_material_in_order
+        <trim prefix="set" suffixOverrides=",">
+            <if test="inTime != null">in_time = #{inTime},</if>
+            <if test="warehouseId != null and warehouseId != ''">warehouse_id = #{warehouseId},</if>
+            <if test="arrivalNo != null">arrival_no = #{arrivalNo},</if>
+            <if test="purchaser != null">purchaser = #{purchaser},</if>
+            <if test="inUser != null">in_user = #{inUser},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="totalQty != null">total_qty = #{totalQty},</if>
+            <if test="totalAmount != null">total_amount = #{totalAmount},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where in_id = #{inId}
+    </update>
+
+    <update id="updateMaterialInOrderByApproval">
+        update t_material_in_order
+        <trim prefix="set" suffixOverrides=",">
+            <if test="status != null">status = #{status},</if>
+            <if test="auditBy != null">audit_by = #{auditBy},</if>
+            <if test="auditTime != null">audit_time = #{auditTime},</if>
+            <if test="auditRemark != null">audit_remark = #{auditRemark},</if>
+            <if test="stockEffectStatus != null">stock_effect_status = #{stockEffectStatus},</if>
+        </trim>
+        where in_id = #{inId}
+          <if test="expectStatus != null">and status = #{expectStatus}</if>
+          <if test="expectStockEffectStatus != null">and stock_effect_status = #{expectStockEffectStatus}</if>
+    </update>
+
+    <update id="deleteMaterialInOrderById" parameterType="String">
+        delete from t_material_in_order where in_id = #{inId}
+    </update>
+
+    <delete id="deleteMaterialInOrderItems" parameterType="String">
+        delete from t_material_in_order_item where in_id = #{inId}
+    </delete>
+
+    <insert id="batchInsertMaterialInOrderItems">
+        insert into t_material_in_order_item
+        (in_item_id, in_id, material_id, material_code, material_name, brand, model_spec, category_name, unit, in_qty,
+         unit_price, amount, sort_num, remark)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.inItemId}, #{item.inId}, #{item.materialId}, #{item.materialCode}, #{item.materialName}, #{item.brand},
+             #{item.modelSpec}, #{item.categoryName}, #{item.unit}, #{item.inQty}, #{item.unitPrice}, #{item.amount},
+             #{item.sortNum}, #{item.remark})
+        </foreach>
+    </insert>
+
+    <select id="selectMaterialApplyOrderList" parameterType="com.zkhf.epmis.process.material.domain.MaterialBizReq" resultMap="materialApplyOrderResult">
+        select apply_id, ent_code, apply_no, apply_time, apply_reason, apply_user, contact_phone, expected_receive_time,
+               audit_status, audit_by, audit_time, audit_remark, out_status, return_status, total_qty, remark, create_time, update_time
+        from t_material_apply_order a
+        <where>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and a.ent_code = #{entCode}
+                </when>
+                <otherwise>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        and a.ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="orderNo != null and orderNo != ''">
+                and a.apply_no like concat('%', #{orderNo}, '%')
+            </if>
+            <if test="auditStatus != null">
+                and a.audit_status = #{auditStatus}
+            </if>
+            <if test="startTime != null and endTime != null">
+                and a.apply_time between #{startTime} and #{endTime}
+            </if>
+            <if test="materialName != null and materialName != ''">
+                and exists (select 1 from t_material_apply_order_item ai where ai.apply_id = a.apply_id and ai.material_name like concat('%', #{materialName}, '%'))
+            </if>
+        </where>
+        order by a.apply_time desc, a.apply_id desc
+    </select>
+
+    <select id="selectMaterialApplyOrderById" parameterType="String" resultMap="materialApplyOrderResult">
+        select apply_id, ent_code, apply_no, apply_time, apply_reason, apply_user, contact_phone, expected_receive_time,
+               audit_status, audit_by, audit_time, audit_remark, out_status, return_status, total_qty, remark, create_time, update_time
+        from t_material_apply_order
+        where apply_id = #{applyId}
+    </select>
+
+    <select id="selectMaterialApplyOrderItems" parameterType="String" resultMap="materialApplyOrderItemResult">
+        select apply_item_id, apply_id, material_id, material_code, material_name, brand, model_spec, category_name, unit,
+               apply_qty, out_qty, return_qty, purpose_desc, sort_num, remark
+        from t_material_apply_order_item
+        where apply_id = #{applyId}
+        order by sort_num asc, apply_item_id asc
+    </select>
+
+    <select id="selectMaterialApplyOrderItemById" parameterType="String" resultMap="materialApplyOrderItemResult">
+        select apply_item_id, apply_id, material_id, material_code, material_name, brand, model_spec, category_name, unit,
+               apply_qty, out_qty, return_qty, purpose_desc, sort_num, remark
+        from t_material_apply_order_item
+        where apply_item_id = #{applyItemId}
+    </select>
+
+    <insert id="insertMaterialApplyOrder" parameterType="com.zkhf.epmis.process.material.domain.MaterialApplyOrder">
+        insert into t_material_apply_order
+        (apply_id, ent_code, apply_no, apply_time, apply_reason, apply_user, contact_phone, expected_receive_time,
+         audit_status, audit_by, audit_time, audit_remark, out_status, return_status, total_qty, remark)
+        values
+        (#{applyId}, #{entCode}, #{applyNo}, #{applyTime}, #{applyReason}, #{applyUser}, #{contactPhone}, #{expectedReceiveTime},
+         #{auditStatus}, #{auditBy}, #{auditTime}, #{auditRemark}, #{outStatus}, #{returnStatus}, #{totalQty}, #{remark})
+    </insert>
+
+    <update id="updateMaterialApplyOrder" parameterType="com.zkhf.epmis.process.material.domain.MaterialApplyOrder">
+        update t_material_apply_order
+        <trim prefix="set" suffixOverrides=",">
+            <if test="applyTime != null">apply_time = #{applyTime},</if>
+            <if test="applyReason != null">apply_reason = #{applyReason},</if>
+            <if test="applyUser != null">apply_user = #{applyUser},</if>
+            <if test="contactPhone != null">contact_phone = #{contactPhone},</if>
+            <if test="expectedReceiveTime != null">expected_receive_time = #{expectedReceiveTime},</if>
+            <if test="auditStatus != null">audit_status = #{auditStatus},</if>
+            <if test="outStatus != null">out_status = #{outStatus},</if>
+            <if test="returnStatus != null">return_status = #{returnStatus},</if>
+            <if test="totalQty != null">total_qty = #{totalQty},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where apply_id = #{applyId}
+    </update>
+
+    <update id="updateMaterialApplyOrderByAuditResult">
+        update t_material_apply_order
+        set audit_status = #{auditStatus},
+            audit_by = #{auditBy},
+            audit_time = #{auditTime},
+            audit_remark = #{auditRemark}
+        where apply_id = #{applyId}
+          and audit_status = #{expectAuditStatus}
+    </update>
+
+    <update id="deleteMaterialApplyOrderById" parameterType="String">
+        delete from t_material_apply_order where apply_id = #{applyId}
+    </update>
+
+    <delete id="deleteMaterialApplyOrderItems" parameterType="String">
+        delete from t_material_apply_order_item where apply_id = #{applyId}
+    </delete>
+
+    <insert id="batchInsertMaterialApplyOrderItems">
+        insert into t_material_apply_order_item
+        (apply_item_id, apply_id, material_id, material_code, material_name, brand, model_spec, category_name, unit,
+         apply_qty, out_qty, return_qty, purpose_desc, sort_num, remark)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.applyItemId}, #{item.applyId}, #{item.materialId}, #{item.materialCode}, #{item.materialName}, #{item.brand},
+             #{item.modelSpec}, #{item.categoryName}, #{item.unit}, #{item.applyQty}, #{item.outQty}, #{item.returnQty},
+             #{item.purposeDesc}, #{item.sortNum}, #{item.remark})
+        </foreach>
+    </insert>
+
+    <select id="countMaterialApplyOrderRef" parameterType="String" resultType="int">
+        select count(*) from t_material_out_order where apply_id = #{applyId}
+    </select>
+
+    <update id="increaseApplyItemOutQty">
+        update t_material_apply_order_item set out_qty = ifnull(out_qty, 0) + #{qty} where apply_item_id = #{applyItemId}
+    </update>
+
+    <update id="decreaseApplyItemOutQty">
+        update t_material_apply_order_item set out_qty = ifnull(out_qty, 0) - #{qty} where apply_item_id = #{applyItemId}
+    </update>
+
+    <update id="increaseApplyItemReturnQty">
+        update t_material_apply_order_item set return_qty = ifnull(return_qty, 0) + #{qty} where apply_item_id = #{applyItemId}
+    </update>
+
+    <update id="decreaseApplyItemReturnQty">
+        update t_material_apply_order_item set return_qty = ifnull(return_qty, 0) - #{qty} where apply_item_id = #{applyItemId}
+    </update>
+
+    <select id="selectMaterialOutOrderList" parameterType="com.zkhf.epmis.process.material.domain.MaterialBizReq" resultMap="materialOutOrderResult">
+        select o.out_id, o.ent_code, o.out_no, o.out_time, o.warehouse_id, w.warehouse_name, o.apply_id, a.apply_no,
+               o.receive_user, o.out_user, o.audit_by, o.audit_time, o.audit_remark, o.status, o.stock_effect_status,
+               o.total_qty, o.total_amount, o.remark, o.create_time, o.update_time
+        from t_material_out_order o
+        left join t_material_warehouse w on w.warehouse_id = o.warehouse_id
+        left join t_material_apply_order a on a.apply_id = o.apply_id
+        <where>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and o.ent_code = #{entCode}
+                </when>
+                <otherwise>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        and o.ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="warehouseId != null and warehouseId != ''">
+                and o.warehouse_id = #{warehouseId}
+            </if>
+            <if test="orderNo != null and orderNo != ''">
+                and o.out_no like concat('%', #{orderNo}, '%')
+            </if>
+            <if test="status != null">
+                and o.status = #{status}
+            </if>
+            <if test="startTime != null and endTime != null">
+                and o.out_time between #{startTime} and #{endTime}
+            </if>
+            <if test="materialName != null and materialName != ''">
+                and exists (select 1 from t_material_out_order_item oi where oi.out_id = o.out_id and oi.material_name like concat('%', #{materialName}, '%'))
+            </if>
+        </where>
+        order by o.out_time desc, o.out_id desc
+    </select>
+
+    <select id="selectMaterialOutOrderById" parameterType="String" resultMap="materialOutOrderResult">
+        select o.out_id, o.ent_code, o.out_no, o.out_time, o.warehouse_id, w.warehouse_name, o.apply_id, a.apply_no,
+               o.receive_user, o.out_user, o.audit_by, o.audit_time, o.audit_remark, o.status, o.stock_effect_status,
+               o.total_qty, o.total_amount, o.remark, o.create_time, o.update_time
+        from t_material_out_order o
+        left join t_material_warehouse w on w.warehouse_id = o.warehouse_id
+        left join t_material_apply_order a on a.apply_id = o.apply_id
+        where o.out_id = #{outId}
+    </select>
+
+    <select id="selectMaterialOutOrderItems" parameterType="String" resultMap="materialOutOrderItemResult">
+        select out_item_id, out_id, apply_item_id, material_id, material_code, material_name, brand, model_spec,
+               category_name, unit, apply_qty, out_qty, returned_qty, unit_price, amount, sort_num, remark
+        from t_material_out_order_item
+        where out_id = #{outId}
+        order by sort_num asc, out_item_id asc
+    </select>
+
+    <select id="selectMaterialOutOrderItemById" parameterType="String" resultMap="materialOutOrderItemResult">
+        select out_item_id, out_id, apply_item_id, material_id, material_code, material_name, brand, model_spec,
+               category_name, unit, apply_qty, out_qty, returned_qty, unit_price, amount, sort_num, remark
+        from t_material_out_order_item
+        where out_item_id = #{outItemId}
+    </select>
+
+    <insert id="insertMaterialOutOrder" parameterType="com.zkhf.epmis.process.material.domain.MaterialOutOrder">
+        insert into t_material_out_order
+        (out_id, ent_code, out_no, out_time, warehouse_id, apply_id, receive_user, out_user, audit_by, audit_time,
+         audit_remark, status, stock_effect_status, total_qty, total_amount, remark)
+        values
+        (#{outId}, #{entCode}, #{outNo}, #{outTime}, #{warehouseId}, #{applyId}, #{receiveUser}, #{outUser}, #{auditBy},
+         #{auditTime}, #{auditRemark}, #{status}, #{stockEffectStatus}, #{totalQty}, #{totalAmount}, #{remark})
+    </insert>
+
+    <update id="updateMaterialOutOrder" parameterType="com.zkhf.epmis.process.material.domain.MaterialOutOrder">
+        update t_material_out_order
+        <trim prefix="set" suffixOverrides=",">
+            <if test="outTime != null">out_time = #{outTime},</if>
+            <if test="warehouseId != null and warehouseId != ''">warehouse_id = #{warehouseId},</if>
+            <if test="receiveUser != null">receive_user = #{receiveUser},</if>
+            <if test="outUser != null">out_user = #{outUser},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="stockEffectStatus != null">stock_effect_status = #{stockEffectStatus},</if>
+            <if test="totalQty != null">total_qty = #{totalQty},</if>
+            <if test="totalAmount != null">total_amount = #{totalAmount},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where out_id = #{outId}
+    </update>
+
+    <update id="updateMaterialOutOrderByApproval">
+        update t_material_out_order
+        <trim prefix="set" suffixOverrides=",">
+            <if test="status != null">status = #{status},</if>
+            <if test="auditBy != null">audit_by = #{auditBy},</if>
+            <if test="auditTime != null">audit_time = #{auditTime},</if>
+            <if test="auditRemark != null">audit_remark = #{auditRemark},</if>
+            <if test="stockEffectStatus != null">stock_effect_status = #{stockEffectStatus},</if>
+        </trim>
+        where out_id = #{outId}
+          <if test="expectStatus != null">and status = #{expectStatus}</if>
+          <if test="expectStockEffectStatus != null">and stock_effect_status = #{expectStockEffectStatus}</if>
+    </update>
+
+    <update id="deleteMaterialOutOrderById" parameterType="String">
+        delete from t_material_out_order where out_id = #{outId}
+    </update>
+
+    <delete id="deleteMaterialOutOrderItems" parameterType="String">
+        delete from t_material_out_order_item where out_id = #{outId}
+    </delete>
+
+    <insert id="batchInsertMaterialOutOrderItems">
+        insert into t_material_out_order_item
+        (out_item_id, out_id, apply_item_id, material_id, material_code, material_name, brand, model_spec, category_name,
+         unit, apply_qty, out_qty, returned_qty, unit_price, amount, sort_num, remark)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.outItemId}, #{item.outId}, #{item.applyItemId}, #{item.materialId}, #{item.materialCode}, #{item.materialName},
+             #{item.brand}, #{item.modelSpec}, #{item.categoryName}, #{item.unit}, #{item.applyQty}, #{item.outQty},
+             #{item.returnedQty}, #{item.unitPrice}, #{item.amount}, #{item.sortNum}, #{item.remark})
+        </foreach>
+    </insert>
+
+    <select id="countMaterialOutOrderRef" parameterType="String" resultType="int">
+        select count(*) from t_material_return_order where out_id = #{outId}
+    </select>
+
+    <update id="increaseOutItemReturnedQty">
+        update t_material_out_order_item set returned_qty = ifnull(returned_qty, 0) + #{qty} where out_item_id = #{outItemId}
+    </update>
+
+    <update id="decreaseOutItemReturnedQty">
+        update t_material_out_order_item set returned_qty = ifnull(returned_qty, 0) - #{qty} where out_item_id = #{outItemId}
+    </update>
+
+    <select id="selectMaterialReturnOrderList" parameterType="com.zkhf.epmis.process.material.domain.MaterialBizReq" resultMap="materialReturnOrderResult">
+        select r.return_id, r.ent_code, r.return_no, r.apply_id, r.out_id, r.warehouse_id, w.warehouse_name, r.apply_time,
+               r.return_time, r.return_user, r.audit_by, r.audit_time, r.audit_remark, r.handler_user, r.status,
+               r.stock_effect_status, r.total_qty, r.stock_in_qty, r.remark, r.create_time, r.update_time
+        from t_material_return_order r
+        left join t_material_warehouse w on w.warehouse_id = r.warehouse_id
+        <where>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and r.ent_code = #{entCode}
+                </when>
+                <otherwise>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        and r.ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="warehouseId != null and warehouseId != ''">
+                and r.warehouse_id = #{warehouseId}
+            </if>
+            <if test="orderNo != null and orderNo != ''">
+                and r.return_no like concat('%', #{orderNo}, '%')
+            </if>
+            <if test="status != null">
+                and r.status = #{status}
+            </if>
+            <if test="startTime != null and endTime != null">
+                and r.return_time between #{startTime} and #{endTime}
+            </if>
+            <if test="materialName != null and materialName != ''">
+                and exists (select 1 from t_material_return_order_item ri where ri.return_id = r.return_id and ri.material_name like concat('%', #{materialName}, '%'))
+            </if>
+        </where>
+        order by r.return_time desc, r.return_id desc
+    </select>
+
+    <select id="selectMaterialReturnOrderById" parameterType="String" resultMap="materialReturnOrderResult">
+        select r.return_id, r.ent_code, r.return_no, r.apply_id, r.out_id, r.warehouse_id, w.warehouse_name, r.apply_time,
+               r.return_time, r.return_user, r.audit_by, r.audit_time, r.audit_remark, r.handler_user, r.status,
+               r.stock_effect_status, r.total_qty, r.stock_in_qty, r.remark, r.create_time, r.update_time
+        from t_material_return_order r
+        left join t_material_warehouse w on w.warehouse_id = r.warehouse_id
+        where r.return_id = #{returnId}
+    </select>
+
+    <select id="selectMaterialReturnOrderItems" parameterType="String" resultMap="materialReturnOrderItemResult">
+        select return_item_id, return_id, out_item_id, material_id, material_code, material_name, brand, model_spec,
+               category_name, unit, out_qty, can_return_qty, return_qty, stock_in_qty, process_result, sort_num, remark
+        from t_material_return_order_item
+        where return_id = #{returnId}
+        order by sort_num asc, return_item_id asc
+    </select>
+
+    <insert id="insertMaterialReturnOrder" parameterType="com.zkhf.epmis.process.material.domain.MaterialReturnOrder">
+        insert into t_material_return_order
+        (return_id, ent_code, return_no, apply_id, out_id, warehouse_id, apply_time, return_time, return_user, audit_by,
+         audit_time, audit_remark, handler_user, status, stock_effect_status, total_qty, stock_in_qty, remark)
+        values
+        (#{returnId}, #{entCode}, #{returnNo}, #{applyId}, #{outId}, #{warehouseId}, #{applyTime}, #{returnTime}, #{returnUser},
+         #{auditBy}, #{auditTime}, #{auditRemark}, #{handlerUser}, #{status}, #{stockEffectStatus}, #{totalQty},
+         #{stockInQty}, #{remark})
+    </insert>
+
+    <update id="updateMaterialReturnOrder" parameterType="com.zkhf.epmis.process.material.domain.MaterialReturnOrder">
+        update t_material_return_order
+        <trim prefix="set" suffixOverrides=",">
+            <if test="warehouseId != null and warehouseId != ''">warehouse_id = #{warehouseId},</if>
+            <if test="applyTime != null">apply_time = #{applyTime},</if>
+            <if test="returnTime != null">return_time = #{returnTime},</if>
+            <if test="returnUser != null">return_user = #{returnUser},</if>
+            <if test="handlerUser != null">handler_user = #{handlerUser},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="totalQty != null">total_qty = #{totalQty},</if>
+            <if test="stockInQty != null">stock_in_qty = #{stockInQty},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where return_id = #{returnId}
+    </update>
+
+    <update id="updateMaterialReturnOrderByApproval">
+        update t_material_return_order
+        <trim prefix="set" suffixOverrides=",">
+            <if test="status != null">status = #{status},</if>
+            <if test="auditBy != null">audit_by = #{auditBy},</if>
+            <if test="auditTime != null">audit_time = #{auditTime},</if>
+            <if test="auditRemark != null">audit_remark = #{auditRemark},</if>
+            <if test="stockEffectStatus != null">stock_effect_status = #{stockEffectStatus},</if>
+        </trim>
+        where return_id = #{returnId}
+          <if test="expectStatus != null">and status = #{expectStatus}</if>
+          <if test="expectStockEffectStatus != null">and stock_effect_status = #{expectStockEffectStatus}</if>
+    </update>
+
+    <update id="deleteMaterialReturnOrderById" parameterType="String">
+        delete from t_material_return_order where return_id = #{returnId}
+    </update>
+
+    <delete id="deleteMaterialReturnOrderItems" parameterType="String">
+        delete from t_material_return_order_item where return_id = #{returnId}
+    </delete>
+
+    <insert id="batchInsertMaterialReturnOrderItems">
+        insert into t_material_return_order_item
+        (return_item_id, return_id, out_item_id, material_id, material_code, material_name, brand, model_spec, category_name,
+         unit, out_qty, can_return_qty, return_qty, stock_in_qty, process_result, sort_num, remark)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.returnItemId}, #{item.returnId}, #{item.outItemId}, #{item.materialId}, #{item.materialCode}, #{item.materialName},
+             #{item.brand}, #{item.modelSpec}, #{item.categoryName}, #{item.unit}, #{item.outQty}, #{item.canReturnQty},
+             #{item.returnQty}, #{item.stockInQty}, #{item.processResult}, #{item.sortNum}, #{item.remark})
+        </foreach>
+    </insert>
+
+    <select id="selectMaterialInfoByIds" resultMap="materialInfoSimpleResult">
+        select material_id, ent_code, material_code, material_name, brand, model_spec, category_code, category_name,
+               unit, unit_price, min_stock, status
+        from t_material_info
+        where material_id in
+          <foreach collection="materialIds" item="materialId" open="(" separator="," close=")">
+              #{materialId}
+          </foreach>
+    </select>
+
+    <select id="selectMaterialStock" resultMap="materialStockSimpleResult">
+        select stock_id, ent_code, warehouse_id, material_id, current_qty, available_qty, frozen_qty, min_stock,
+               stock_status, last_change_time, create_time, update_time
+        from t_material_stock
+        where ent_code = #{entCode} and warehouse_id = #{warehouseId} and material_id = #{materialId}
+    </select>
+
+    <select id="selectMaterialStockFlowList" parameterType="com.zkhf.epmis.process.material.domain.MaterialStockFlowReq" resultMap="materialStockFlowResult">
+        select f.flow_id, f.ent_code, f.warehouse_id, w.warehouse_name, f.material_id, m.material_code, m.material_name,
+               f.biz_type, f.biz_id, f.biz_item_id, f.biz_no, f.qty_change, f.before_qty, f.after_qty,
+               f.before_available_qty, f.after_available_qty, f.before_frozen_qty, f.after_frozen_qty,
+               f.operate_by, f.operate_time, f.remark
+        from t_material_stock_flow f
+        left join t_material_warehouse w on w.warehouse_id = f.warehouse_id
+        left join t_material_info m on m.material_id = f.material_id
+        <where>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and f.ent_code = #{entCode}
+                </when>
+                <otherwise>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        and f.ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="warehouseId != null and warehouseId != ''">
+                and f.warehouse_id = #{warehouseId}
+            </if>
+            <if test="materialId != null and materialId != ''">
+                and f.material_id = #{materialId}
+            </if>
+            <if test="bizType != null and bizType != ''">
+                and f.biz_type = #{bizType}
+            </if>
+            <if test="startTime != null and endTime != null">
+                and f.operate_time between #{startTime} and #{endTime}
+            </if>
+        </where>
+        order by f.operate_time desc, f.flow_id desc
+    </select>
+
+    <insert id="insertMaterialStock" parameterType="com.zkhf.epmis.process.material.domain.MaterialStock">
+        insert into t_material_stock
+        (stock_id, ent_code, warehouse_id, material_id, current_qty, available_qty, frozen_qty, min_stock, stock_status,
+         last_change_time)
+        values
+        (#{stockId}, #{entCode}, #{warehouseId}, #{materialId}, #{currentQty}, #{availableQty}, #{frozenQty}, #{minStock},
+         #{stockStatus}, #{lastChangeTime})
+    </insert>
+
+    <update id="updateMaterialStock" parameterType="com.zkhf.epmis.process.material.domain.MaterialStock">
+        update t_material_stock
+        <trim prefix="set" suffixOverrides=",">
+            <if test="currentQty != null">current_qty = #{currentQty},</if>
+            <if test="availableQty != null">available_qty = #{availableQty},</if>
+            <if test="frozenQty != null">frozen_qty = #{frozenQty},</if>
+            <if test="minStock != null">min_stock = #{minStock},</if>
+            <if test="stockStatus != null">stock_status = #{stockStatus},</if>
+            <if test="lastChangeTime != null">last_change_time = #{lastChangeTime},</if>
+        </trim>
+        where stock_id = #{stockId}
+    </update>
+
+    <insert id="insertMaterialStockFlow" parameterType="com.zkhf.epmis.process.material.domain.MaterialStockFlow">
+        insert into t_material_stock_flow
+        (flow_id, ent_code, warehouse_id, material_id, biz_type, biz_id, biz_item_id, biz_no, qty_change, before_qty,
+         after_qty, before_available_qty, after_available_qty, before_frozen_qty, after_frozen_qty, operate_by,
+         operate_time, remark)
+        values
+        (#{flowId}, #{entCode}, #{warehouseId}, #{materialId}, #{bizType}, #{bizId}, #{bizItemId}, #{bizNo}, #{qtyChange},
+         #{beforeQty}, #{afterQty}, #{beforeAvailableQty}, #{afterAvailableQty}, #{beforeFrozenQty}, #{afterFrozenQty},
+         #{operateBy}, #{operateTime}, #{remark})
+    </insert>
+</mapper>

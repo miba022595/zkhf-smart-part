@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.platform.mapper.envFee.EnvFeeMapper">
+
+    <resultMap id="envFeeResult" type="com.zkhf.epmis.platform.envFee.domain.EnvFee">
+        <result property="feeId" column="fee_id"/>
+        <result property="entCode" column="ent_code"/>
+        <result property="entName" column="ent_name"/>
+        <result property="projectId" column="project_id"/>
+        <result property="projectCode" column="project_code"/>
+        <result property="projectName" column="project_name"/>
+        <result property="feeCode" column="fee_code"/>
+        <result property="feeType" column="fee_type"/>
+        <result property="feeAmount" column="fee_amount"/>
+        <result property="invoiceAmount" column="invoice_amount"/>
+        <result property="paymentAmount" column="payment_amount"/>
+        <result property="paymentDate" column="payment_date"/>
+        <result property="status" column="status"/>
+        <result property="feeDesc" column="fee_desc"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <select id="selectEnvFeeList" parameterType="com.zkhf.epmis.platform.envFee.domain.EnvFeeReq"
+            resultMap="envFeeResult">
+        select
+            f.fee_id, f.fee_code, f.fee_amount, f.invoice_amount, f.payment_amount, f.payment_date, f.fee_type, f.status,
+            f.fee_desc, f.create_time, f.update_time,
+            f.ent_code, e.ent_name,
+            f.project_id, p.project_code, p.project_name
+        from t_env_fees f
+        left join t_bas_enterprise e on e.ent_code = f.ent_code
+        left join t_env_mange_project p on p.project_id = f.project_id
+        <where>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and f.ent_code = #{entCode}
+                </when>
+                <otherwise>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        and f.ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="projectId != null and projectId != ''">
+                and f.project_id = #{projectId}
+            </if>
+            <if test="feeType != null and feeType != ''">
+                and f.fee_type = #{feeType}
+            </if>
+            <if test="paymentStart != null and paymentEnd != null ">
+                and f.payment_date between #{paymentStart} and #{paymentEnd}
+            </if>
+            <if test="status != null and status != ''">
+                and f.status = #{status}
+            </if>
+        </where>
+        order by f.fee_id desc
+    </select>
+
+    <insert id="insertEnvFee" parameterType="com.zkhf.epmis.platform.envFee.domain.EnvFee">
+        insert into t_env_fees
+            (fee_id, ent_code, project_id, fee_code, fee_type, fee_amount, payment_date, status, fee_desc)
+        values
+            (#{feeId}, #{entCode}, #{projectId}, #{feeCode}, #{feeType}, #{feeAmount}, #{paymentDate}, #{status}, #{feeDesc})
+    </insert>
+
+    <update id="updateEnvFee" parameterType="com.zkhf.epmis.platform.envFee.domain.EnvFee">
+        update t_env_fees
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="feeCode != null">fee_code = #{feeCode},</if>
+            <if test="feeAmount != null">fee_amount = #{feeAmount},</if>
+            <if test="paymentDate != null">payment_date = #{paymentDate},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="feeDesc != null">fee_desc = #{feeDesc},</if>
+        </trim>
+        where fee_id = #{feeId}
+    </update>
+
+    <select id="selectFeePaymentCountByFeeId">
+        select count(*) from t_env_fee_payments where fee_id = #{feeId}
+    </select>
+
+    <select id="selectFeeInvoiceCountByFeeId">
+        select count(*) from t_env_fee_invoices where fee_id = #{feeId}
+    </select>
+
+    <delete id="deleteEnvFeeById" parameterType="String">
+        delete from t_env_fees where fee_id = #{feeId}
+    </delete>
+
+    <update id="updateEnvFeeInvoiceAmount">
+        update t_env_fees
+        set
+            invoice_amount =
+                coalesce((
+                             select
+                                 sum(
+                                         case
+                                             when invoice_status = 1 then coalesce(invoice_amount, 0) + coalesce(tax_amount, 0)
+                                             when invoice_status = 2 then -(coalesce(invoice_amount, 0) + coalesce(tax_amount, 0))
+                                             else 0
+                                             end
+                                 )
+                             from t_env_fee_invoices
+                             where fee_id = #{feeId}
+                         ), 0)
+        where fee_id = #{feeId}
+    </update>
+
+    <update id="updateEnvFeePaymentAmount">
+        update t_env_fees
+        set
+            payment_amount =
+                coalesce((
+                             select
+                                 sum(
+                                         case
+                                             when payment_status = 'PARTIAL_REFUND' then coalesce(payment_amount, 0) - coalesce(refund_amount, 0)
+                                             when payment_status = 'COMPLETED' then coalesce(payment_amount, 0)
+                                             else 0
+                                             end
+                                 )
+                             from t_env_fee_payments
+                             where fee_id = #{feeId} and payment_status in ('COMPLETED', 'PARTIAL_REFUND')
+                         ), 0)
+        where fee_id = #{feeId}
+    </update>
+</mapper>

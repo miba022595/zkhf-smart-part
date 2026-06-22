@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.platform.mapper.ent.EntPollControlFacilityMapper">
+
+    <resultMap id="entPollControlFacilityResult" type="com.zkhf.epmis.platform.ent.domain.EntPollControlFacility">
+        <result property="facilityId" column="facility_id"/>
+        <result property="entCode" column="ent_code"/>
+        <result property="entName" column="ent_name"/>
+        <result property="outPutType" column="out_put_type"/>
+        <result property="facilityCode" column="facility_code"/>
+        <result property="facilityName" column="facility_name"/>
+        <result property="pollutant" column="pollutant"/>
+        <result property="governProcess" column="govern_process"/>
+        <result property="efficiency" column="efficiency"/>
+        <result property="designCapacity" column="design_capacity"/>
+        <result property="actualOperatingRate" column="actual_operating_rate"/>
+        <result property="installDate" column="install_date"/>
+        <result property="remark" column="remark"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <select id="selectEntPollControlFacilityList" parameterType="com.zkhf.epmis.platform.ent.domain.EntPollControlFacilityReq"
+            resultMap="entPollControlFacilityResult">
+        select
+            f.facility_id, f.ent_code, e.ent_name, f.out_put_type, f.facility_code, f.facility_name, f.pollutant, f.govern_process, f.efficiency, 
+            f.design_capacity, f.actual_operating_rate, f.install_date, f.remark, f.create_time, f.update_time
+        from t_ent_poll_control_facility f
+        left join t_bas_enterprise e on e.ent_code = f.ent_code
+        <where>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and f.ent_code = #{entCode}
+                </when>
+                <otherwise>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        and f.ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="outPutType != null">
+                and f.out_put_type = #{outPutType}
+            </if>
+            <if test="entName != null and entName != ''">
+                and e.ent_name like concat('%', #{entName}, '%')
+            </if>
+            <if test="facilityName != null and facilityName != ''">
+                and f.facility_name like concat('%', #{facilityName}, '%')
+            </if>
+        </where>
+        order by f.facility_id desc
+    </select>
+
+    <select id="selectRelateOutPutList" resultType="java.util.Map">
+        select
+            f.facility_id as facilityId, o.out_put_id as outPutId, o.out_put_code as outPutCode, o.out_put_name as outPutName
+        from
+            t_ent_poll_control_facility_relate f, t_ent_out_put_info o
+        where
+            o.out_put_id = f.other_id and f.other_type = #{otherType} and f.facility_id in
+            <foreach item="facilityId" collection="facilityIds" open="(" separator="," close=")">
+                #{facilityId}
+            </foreach>
+    </select>
+
+    <insert id="insertEntPollControlFacility" parameterType="com.zkhf.epmis.platform.ent.domain.EntPollControlFacility">
+        insert into t_ent_poll_control_facility
+            (facility_id, ent_code, out_put_type, facility_code, facility_name, pollutant, govern_process, efficiency, design_capacity,
+             actual_operating_rate, install_date, remark, create_time)
+        values
+            (#{facilityId}, #{entCode}, #{outPutType}, #{facilityCode}, #{facilityName}, #{pollutant}, #{governProcess}, #{efficiency},
+             #{designCapacity}, #{actualOperatingRate}, #{installDate}, #{remark}, now())
+    </insert>
+
+    <update id="updateEntPollControlFacility" parameterType="com.zkhf.epmis.platform.ent.domain.EntPollControlFacility">
+        update t_ent_poll_control_facility
+        set
+            facility_code = #{facilityCode}, facility_name = #{facilityName}, pollutant = #{pollutant}, govern_process = #{governProcess},
+            efficiency = #{efficiency}, design_capacity = #{designCapacity}, actual_operating_rate = #{actualOperatingRate},
+            install_date = #{installDate}, remark = #{remark}, update_time = now()
+        where facility_id = #{facilityId}
+    </update>
+
+    <delete id="deleteEntPollControlFacilityById" parameterType="String">
+        delete from t_ent_poll_control_facility where facility_id = #{facilityId}
+    </delete>
+
+    <delete id="deleteEntPollControlFacilityRelateById" parameterType="String">
+        delete from t_ent_poll_control_facility_relate where facility_id = #{facilityId}
+    </delete>
+
+</mapper>

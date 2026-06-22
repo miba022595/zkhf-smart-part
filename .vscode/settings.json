@@ -1,0 +1,14 @@
+{
+    "files.autoGuessEncoding": true,
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.compile.nullAnalysis.mode": "automatic",
+    "maven.view": "flat",
+    "maven.executable.path": "D:/work-software/maven_AllVersions/apache-maven-3.6.1/bin/mvn.cmd",
+    "maven.settingsFile": "D:/work-software/maven_AllVersions/apache-maven-3.6.1/conf/settings.xml",
+    "maven.terminal.customEnv": [
+        {
+            "environmentVariable": "MAVEN_OPTS",
+            "value": "-Dmaven.repo.local=D:/workspace/repository"
+        }
+    ]
+}

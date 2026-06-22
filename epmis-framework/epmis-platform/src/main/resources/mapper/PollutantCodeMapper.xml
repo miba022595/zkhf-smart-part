@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.platform.mapper.base.PollutantCodeMapper">
+
+    <resultMap id="pollutantCodeResult" type="com.zkhf.epmis.platform.base.domain.PollutantCode">
+        <result property="pollutantCode" column="pollutant_code"/>
+        <result property="code2017" column="2017_code"/>
+        <result property="code2005" column="2005_code"/>
+        <result property="pollutantNameEn" column="pollutant_name_en"/>
+        <result property="pollutantNameCn" column="pollutant_name_cn"/>
+        <result property="pollutantType" column="pollutant_type"/>
+        <result property="pollutantUnitEn" column="pollutant_unit_en"/>
+        <result property="pollutantUnitCn" column="pollutant_unit_cn"/>
+        <result property="unitPfCn" column="unit_pf_cn"/>
+        <result property="unitPfEn" column="unit_pf_en"/>
+        <result property="pollutantStatus" column="pollutant_status"/>
+        <result property="pollutantSort" column="pollutant_sort"/>
+        <result property="monFactor" column="mon_factor"/>
+    </resultMap>
+
+    <select id="selectPollutantCodeList" parameterType="com.zkhf.epmis.platform.base.domain.PollutantCodeReq"
+            resultMap="pollutantCodeResult">
+        select
+            pollutant_code, 2017_code, 2005_code, pollutant_name_en, pollutant_name_cn, pollutant_type,
+            pollutant_unit_en, pollutant_unit_cn, unit_pf_cn, unit_pf_en, pollutant_status, pollutant_sort, mon_factor
+        from t_bas_pollutant_code
+        <where>
+            <if test="pollutantCode != null and pollutantCode != ''">and pollutant_code = #{pollutantCode}</if>
+            <if test="pollutantType != null">and pollutant_type = #{pollutantType}</if>
+            <if test="pollutantStatus != null">and pollutant_status = #{pollutantStatus}</if>
+        </where>
+    </select>
+</mapper>

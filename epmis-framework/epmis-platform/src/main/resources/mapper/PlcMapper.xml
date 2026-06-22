@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.platform.mapper.plc.PlcMapper">
+
+    <resultMap id="plcResult" type="com.zkhf.epmis.platform.plc.domain.PlcInfo">
+        <result property="id" column="id"/>
+        <result property="entCode" column="ent_code"/>
+        <result property="entName" column="ent_name"/>
+        <result property="outPutId" column="out_put_id"/>
+        <result property="outPutCode" column="out_put_code"/>
+        <result property="outPutName" column="out_put_name"/>
+        <result property="entItemCode" column="ent_item_code"/>
+        <result property="entItemName" column="ent_item_name"/>
+        <result property="unitId" column="unit_id"/>
+        <result property="sortOrder" column="sort_order"/>
+        <result property="pointName" column="point_name"/>
+        <result property="pointType" column="point_type"/>
+        <result property="dataType" column="data_type"/>
+        <result property="address" column="address"/>
+        <result property="registerAddress" column="register_address"/>
+        <result property="coefficient" column="coefficient"/>
+        <result property="unit" column="unit"/>
+        <result property="minValue" column="min_value"/>
+        <result property="maxValue" column="max_value"/>
+        <result property="precision" column="precision"/>
+        <result property="status" column="status"/>
+        <result property="description" column="description"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <select id="selectEntPlcRootList" resultMap="plcResult">
+        select
+            p.id, p.ent_code, p.out_put_id, p.unit_id, p.sort_order, p.point_name, p.point_type, p.data_type,
+            p.address, p.register_address, p.coefficient, p.unit, p.min_value, p.max_value, p.precision, p.status,
+            p.description, p.update_time, e.ent_name, i.out_put_code, i.out_put_name, ei.ent_code as ent_item_code, ei.ent_name as ent_item_name
+        from t_ent_plc_info p
+        left join t_bas_enterprise e on e.ent_code = p.ent_code
+        left join t_ent_out_put_info i on i.out_put_id = p.out_put_id
+        left join t_bas_enterprise ei on ei.ent_code = i.ent_code
+        where p.ent_code = #{entCode}
+        order by p.sort_order desc
+    </select>
+
+    <select id="selectEntPlcItemList" resultMap="plcResult">
+        select
+            p.id, p.ent_code, p.out_put_id, p.unit_id, p.sort_order, p.point_name, p.point_type, p.data_type,
+            p.address, p.register_address, p.coefficient, p.unit, p.min_value, p.max_value, p.precision, p.status,
+            p.description, p.update_time, e.ent_name, i.out_put_code, i.out_put_name, e.ent_code as ent_item_code, e.ent_name as ent_item_name
+        from t_ent_plc_info p
+        left join t_ent_out_put_info i on i.out_put_id = p.out_put_id
+        left join t_bas_enterprise e on e.ent_code = i.ent_code
+        where i.ent_code = #{entCode}
+            <if test="status != null">
+                and p.status = #{status}
+            </if>
+        order by p.sort_order desc
+    </select>
+
+    <select id="selectEntCodeByUnitId" resultType="java.lang.String">
+        select ent_code
+        from t_ent_plc_info
+        where unit_id = #{unitId} and ent_code != #{entCode}
+        limit 1
+    </select>
+
+    <select id="selectEntPlcListById" resultMap="plcResult">
+        select p.id, p.address, p.register_address
+        from t_ent_plc_info p
+        where p.ent_code = (select ent_code from t_ent_plc_info where id = #{id})
+    </select>
+
+    <update id="updatePlc" parameterType="com.zkhf.epmis.platform.plc.domain.PlcInfo">
+        update t_ent_plc_info
+        <trim prefix="SET" suffixOverrides=",">
+            update_time = now()
+            <if test="sortOrder != null and sortOrder != ''">, sort_order = #{sortOrder}</if>
+            <if test="pointName != null">, point_name = #{pointName}</if>
+            <if test="pointType != null">, point_type = #{pointType}</if>
+            <if test="dataType != null">, data_type = #{dataType}</if>
+            <if test="address != null">, address = #{address}</if>
+            <if test="registerAddress != null">, register_address = #{registerAddress}</if>
+            <if test="coefficient != null">, coefficient = #{coefficient}</if>
+            <if test="unit != null">, unit = #{unit}</if>
+            <if test="minValue != null">, min_value = #{minValue}</if>
+            <if test="maxValue != null">, max_value = #{maxValue}</if>
+            <if test="precision != null">, `precision` = #{precision}</if>
+            <if test="status != null">, status = #{status}</if>
+            <if test="description != null">, description = #{description}</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteEntPlc">
+        delete from t_ent_plc_info where ent_code = #{entCode}
+    </delete>
+
+    <insert id="batchInsertEntPlc">
+        insert into t_ent_plc_info
+            (ent_code, out_put_id, unit_id, sort_order, point_name, point_type, data_type, address, register_address,
+             coefficient, unit, min_value, max_value, `precision`, status, description, update_time)
+        values
+        <foreach collection="plcList" item="item" separator=",">
+            (#{item.entCode}, #{item.outPutId}, #{item.unitId}, #{item.sortOrder}, #{item.pointName}, #{item.pointType},
+             #{item.dataType}, #{item.address}, #{item.registerAddress}, #{item.coefficient}, #{item.unit}, #{item.minValue},
+             #{item.maxValue}, #{item.precision}, #{item.status}, #{item.description}, now())
+        </foreach>
+    </insert>
+</mapper>

@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.platform.mapper.envProtect.policy.EnvInvestmentMapper">
+
+    <resultMap id="investmentResult" type="com.zkhf.epmis.platform.envProtect.policy.domain.EnvInvestment">
+        <result property="investmentId" column="investment_id"/>
+        <result property="entCode" column="ent_code"/>
+        <result property="entName" column="ent_name"/>
+        <result property="projectName" column="project_name"/>
+        <result property="investmentAmount" column="investment_amount"/>
+        <result property="proPersonId" column="pro_person_id"/>
+        <result property="proName" column="pro_name"/>
+        <result property="investmentDesc" column="investment_desc"/>
+        <result property="reductionEffect" column="reduction_effect"/>
+        <result property="governmentFund" column="government_fund"/>
+        <result property="pipaTime" column="pipa_time"/>
+        <result property="aipaTime" column="aipa_time"/>
+        <result property="pceTime" column="pce_time"/>
+        <result property="aceTime" column="ace_time"/>
+        <result property="pcTime" column="pc_time"/>
+        <result property="afTime" column="af_time"/>
+        <result property="paTime" column="pa_time"/>
+        <result property="acTime" column="ac_time"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <select id="selectEnvInvestmentCount" parameterType="com.zkhf.epmis.platform.envProtect.policy.domain.EnvInvestmentReq">
+        select
+        count(*)
+        from t_env_investment i
+        <where>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and i.ent_code = #{entCode}
+                </when>
+                <otherwise>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        and i.ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="governmentFund != null">and i.government_fund = #{governmentFund}</if>
+            <if test="projectName != null and projectName != ''">
+                and i.project_name like concat('%', #{projectName}, '%')
+            </if>
+            <if test="entName != null and entName != ''">
+                and exists (
+                    select 1 from t_bas_enterprise where ent_code = i.ent_code and ent_name like concat('%', #{entName}, '%')
+                )
+            </if>
+        </where>
+    </select>
+
+    <select id="selectSkipPageSign" parameterType="com.zkhf.epmis.platform.envProtect.policy.domain.EnvInvestmentReq">
+        select
+            l.investment_id
+        from t_env_investment i
+        <where>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and i.ent_code = #{entCode}
+                </when>
+                <otherwise>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        and i.ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="governmentFund != null">and i.government_fund = #{governmentFund}</if>
+            <if test="projectName != null and projectName != ''">
+                and i.project_name like concat('%', #{projectName}, '%')
+            </if>
+            <if test="entName != null and entName != ''">
+                and exists (
+                    select 1 from t_bas_enterprise where ent_code = i.ent_code and ent_name like concat('%', #{entName}, '%')
+                )
+            </if>
+        </where>
+        order by l.investment_id desc
+        limit 1
+        OFFSET #{offset}
+    </select>
+
+    <select id="selectEnvInvestmentList" parameterType="com.zkhf.epmis.platform.envProtect.policy.domain.EnvInvestmentReq"
+            resultMap="investmentResult">
+        select
+            i.investment_id, i.ent_code, e.ent_name, i.project_name, i.investment_amount, i.pro_person_id, p.pro_name,
+            i.investment_desc, i.reduction_effect, i.government_fund, i.pipa_time, i.aipa_time, i.pce_time, i.ace_time,
+            i.pc_time, i.af_time, i.pa_time, i.ac_time, i.create_time, i.update_time
+        from t_env_investment i
+        left join t_bas_enterprise e on e.ent_code = i.ent_code
+        left join t_env_pro_person p on p.pro_person_id = i.pro_person_id
+        <where>
+            <if test="investmentIdF != null and investmentIdF != ''">and m.investment_id &gt; #{investmentIdF}</if>
+            <if test="investmentIdE != null and investmentIdE != ''">and m.investment_id &lt; #{investmentIdE}</if>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and i.ent_code = #{entCode}
+                </when>
+                <otherwise>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        and i.ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="governmentFund != null">and i.government_fund = #{governmentFund}</if>
+            <if test="projectName != null and projectName != ''">and i.project_name like concat('%', #{projectName}, '%')</if>
+            <if test="entName != null and entName != ''">and e.ent_name like concat('%', #{entName}, '%')</if>
+        </where>
+        order by i.investment_id desc
+        <if test="pageSize != null">
+            limit #{pageSize}
+        </if>
+    </select>
+
+    <select id="selectEnvInvestmentListForExport" parameterType="com.zkhf.epmis.platform.envProtect.policy.domain.EnvInvestmentReq"
+            resultMap="investmentResult">
+        select
+            i.investment_id, i.ent_code, e.ent_name, i.project_name, i.investment_amount, i.pro_person_id, p.pro_name,
+            i.investment_desc, i.reduction_effect, i.government_fund, i.pipa_time, i.aipa_time, i.pce_time, i.ace_time,
+            i.pc_time, i.af_time, i.pa_time, i.ac_time, i.create_time, i.update_time
+        from t_env_investment i
+        left join t_bas_enterprise e on e.ent_code = i.ent_code
+        left join t_env_pro_person p on p.pro_person_id = i.pro_person_id
+        <where>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and i.ent_code = #{entCode}
+                </when>
+                <otherwise>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        and i.ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="governmentFund != null">and i.government_fund = #{governmentFund}</if>
+            <if test="projectName != null and projectName != ''">and i.project_name like concat('%', #{projectName}, '%')</if>
+            <if test="entName != null and entName != ''">and e.ent_name like concat('%', #{entName}, '%')</if>
+        </where>
+        order by i.investment_id desc
+    </select>
+
+    <insert id="insertEnvInvestment" parameterType="com.zkhf.epmis.platform.envProtect.policy.domain.EnvInvestment">
+        insert into t_env_investment
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="investmentId != null">investment_id,</if>
+            <if test="entCode != null">ent_code,</if>
+            <if test="projectName != null">project_name,</if>
+            <if test="investmentAmount != null">investment_amount,</if>
+            <if test="proPersonId != null">pro_person_id,</if>
+            <if test="investmentDesc != null">investment_desc,</if>
+            <if test="reductionEffect != null">reduction_effect,</if>
+            <if test="governmentFund != null">government_fund,</if>
+            <if test="pipaTime != null">pipa_time,</if>
+            <if test="aipaTime != null">aipa_time,</if>
+            <if test="pceTime != null">pce_time,</if>
+            <if test="aceTime != null">ace_time,</if>
+            <if test="pcTime != null">pc_time,</if>
+            <if test="afTime != null">af_time,</if>
+            <if test="paTime != null">pa_time,</if>
+            <if test="acTime != null">ac_time,</if>
+            <if test="createTime != null">create_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="investmentId != null">#{investmentId},</if>
+            <if test="entCode != null">#{entCode},</if>
+            <if test="projectName != null">#{projectName},</if>
+            <if test="investmentAmount != null">#{investmentAmount},</if>
+            <if test="proPersonId != null">#{proPersonId},</if>
+            <if test="investmentDesc != null">#{investmentDesc},</if>
+            <if test="reductionEffect != null">#{reductionEffect},</if>
+            <if test="governmentFund != null">#{governmentFund},</if>
+            <if test="pipaTime != null">#{pipaTime},</if>
+            <if test="aipaTime != null">#{aipaTime},</if>
+            <if test="pceTime != null">#{pceTime},</if>
+            <if test="aceTime != null">#{aceTime},</if>
+            <if test="pcTime != null">#{pcTime},</if>
+            <if test="afTime != null">#{afTime},</if>
+            <if test="paTime != null">#{paTime},</if>
+            <if test="acTime != null">#{acTime},</if>
+            <if test="createTime != null">#{createTime},</if>
+        </trim>
+    </insert>
+
+    <update id="updateEnvInvestment" parameterType="com.zkhf.epmis.platform.envProtect.policy.domain.EnvInvestment">
+        update t_env_investment
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="projectName != null">project_name = #{projectName},</if>
+            <if test="investmentAmount != null">investment_amount = #{investmentAmount},</if>
+            <if test="proPersonId != null">pro_person_id = #{proPersonId},</if>
+            <if test="investmentDesc != null">investment_desc = #{investmentDesc},</if>
+            <if test="reductionEffect != null">reduction_effect = #{reductionEffect},</if>
+            <if test="governmentFund != null">government_fund = #{governmentFund},</if>
+            <if test="pipaTime != null">pipa_time = #{pipaTime},</if>
+            <if test="aipaTime != null">aipa_time = #{aipaTime},</if>
+            <if test="pceTime != null">pce_time = #{pceTime},</if>
+            <if test="aceTime != null">ace_time = #{aceTime},</if>
+            <if test="pcTime != null">pc_time = #{pcTime},</if>
+            <if test="afTime != null">af_time = #{afTime},</if>
+            <if test="paTime != null">pa_time = #{paTime},</if>
+            <if test="acTime != null">ac_time = #{acTime},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where investment_id = #{investmentId}
+    </update>
+
+    <delete id="deleteEnvInvestmentByInvestmentId" parameterType="string">
+        delete from t_env_investment where investment_id = #{investmentId}
+    </delete>
+</mapper>

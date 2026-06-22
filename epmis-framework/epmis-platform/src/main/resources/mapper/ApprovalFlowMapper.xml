@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.platform.mapper.approval.ApprovalFlowMapper">
+
+    <resultMap id="approvalFlowResult" type="com.zkhf.epmis.platform.approval.domain.ApprovalFlow">
+        <result property="flowId" column="flow_id"/>
+        <result property="entCode" column="ent_code"/>
+        <result property="entName" column="ent_name"/>
+        <result property="flowName" column="flow_name"/>
+        <result property="businessType" column="business_type"/>
+        <result property="startNodeId" column="start_node_id"/>
+        <result property="startNodeName" column="start_node_name"/>
+        <result property="version" column="version"/>
+        <result property="active" column="active"/>
+        <result property="defaultFlow" column="default_flow"/>
+        <result property="description" column="description"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <resultMap id="approvalNodeResult" type="com.zkhf.epmis.platform.approval.domain.ApprovalNode">
+        <result property="nodeId" column="node_id"/>
+        <result property="flowId" column="flow_id"/>
+        <result property="flowName" column="flow_name"/>
+        <result property="nodeName" column="node_name"/>
+        <result property="assigneeUser" column="assignee_user"/>
+        <result property="assigneeUserName" column="assignee_user_name"/>
+        <result property="nextNodeId" column="next_node_id"/>
+        <result property="timeoutHours" column="timeout_hours"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <select id="selectApprovalFlowList" parameterType="com.zkhf.epmis.platform.approval.domain.ApprovalFlowReq" resultMap="approvalFlowResult">
+        select 
+            f.flow_id, f.ent_code, e.ent_name, f.flow_name, f.business_type, f.start_node_id, n.node_name as start_node_name, f.version,
+            f.active, f.default_flow, f.description, f.create_time, f.update_time
+        from t_bas_approval_flow f
+        left join t_bas_enterprise e on e.ent_code = f.ent_code
+        left join t_bas_approval_node n on n.node_id = f.start_node_id
+        <where>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and f.ent_code = #{entCode}
+                </when>
+                <otherwise>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        and f.ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="flowName != null and flowName != ''">
+                and f.flow_name like concat('%', #{flowName}, '%')
+            </if>
+            <if test="businessType != null and businessType != ''">
+                and f.business_type = #{businessType}
+            </if>
+            <if test="version != null and version != ''">
+                and f.version = #{version}
+            </if>
+            <if test="active != null">
+                and f.active = #{active}
+            </if>
+            <if test="defaultFlow != null">
+                and f.default_flow = #{defaultFlow}
+            </if>
+        </where>
+        order by f.flow_id desc
+    </select>
+
+    <select id="checkExistsForInsert" parameterType="com.zkhf.epmis.platform.approval.domain.ApprovalFlow">
+        select count(1)
+        from t_bas_approval_flow
+        where ent_code = #{entCode} and flow_name = #{flowName} and business_type = #{businessType} and version = #{version}
+    </select>
+
+    <insert id="insertApprovalFlow" parameterType="com.zkhf.epmis.platform.approval.domain.ApprovalFlow">
+        insert into t_bas_approval_flow
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="flowId != null">flow_id,</if>
+            <if test="entCode != null and entCode != ''">ent_code,</if>
+            <if test="flowName != null and flowName != ''">flow_name,</if>
+            <if test="businessType != null">business_type,</if>
+            <if test="startNodeId != null">start_node_id,</if>
+            <if test="version != null">version,</if>
+            <if test="active != null">active,</if>
+            <if test="defaultFlow != null">default_flow,</if>
+            <if test="description != null">description,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="flowId != null">#{flowId},</if>
+            <if test="entCode != null and entCode != ''">#{entCode},</if>
+            <if test="flowName != null and flowName != ''">#{flowName},</if>
+            <if test="businessType != null">#{businessType},</if>
+            <if test="startNodeId != null">#{startNodeId},</if>
+            <if test="version != null">#{version},</if>
+            <if test="active != null">#{active},</if>
+            <if test="defaultFlow != null">#{defaultFlow},</if>
+            <if test="description != null">#{description},</if>
+        </trim>
+    </insert>
+
+    <select id="checkExistsForUpdate" parameterType="com.zkhf.epmis.platform.approval.domain.ApprovalFlow">
+        select count(1)
+        from t_bas_approval_flow t1
+        where
+          exists ( select 1 from t_bas_approval_flow t2 where t2.flow_id = #{flowId} and t1.ent_code = t2.ent_code)
+          and t1.flow_id != #{flowId} and t1.flow_name = #{flowName}
+          and t1.business_type = #{businessType} and t1.version = #{version}
+    </select>
+
+    <update id="updateApprovalFlow" parameterType="com.zkhf.epmis.platform.approval.domain.ApprovalFlow">
+        update t_bas_approval_flow
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="flowName != null and flowName != ''">flow_name = #{flowName},</if>
+            <if test="businessType != null">business_type = #{businessType},</if>
+            <if test="startNodeId != null">start_node_id = #{startNodeId},</if>
+            <if test="version != null">version = #{version},</if>
+            <if test="active != null">active = #{active},</if>
+            <if test="defaultFlow != null">default_flow = #{defaultFlow},</if>
+            <if test="description != null">description = #{description},</if>
+        </trim>
+        where flow_id = #{flowId}
+    </update>
+
+    <delete id="deleteApprovalFlowById" parameterType="String">
+        delete from t_bas_approval_flow where flow_id = #{flowId}
+    </delete>
+
+    <delete id="deleteApprovalFlowNodeByFlowIds" parameterType="String">
+        delete from t_bas_approval_node where flow_id in
+        <foreach collection="flowIds" item="flowId" open="(" separator="," close=")">
+            #{flowId}
+        </foreach>
+    </delete>
+
+    <select id="selectApprovalFlowStartNodeById">
+        select start_node_id from t_bas_approval_flow where flow_id = #{flowId}
+    </select>
+
+    <select id="selectApprovalFlowNodeListByFlowId" resultMap="approvalNodeResult">
+        select
+            n.node_id, n.flow_id, f.flow_name, n.node_name, n.assignee_user, u.user_name as assignee_user_name, n.next_node_id, n.timeout_hours, n.update_time
+        from t_bas_approval_node n
+        left join t_bas_approval_flow f on f.flow_id = n.flow_id
+        left join sys_user u on u.user_id = n.assignee_user
+        where n.flow_id = #{flowId}
+    </select>
+
+    <insert id="batchInsertApprovalFlowNode" parameterType="com.zkhf.epmis.platform.approval.domain.ApprovalNode">
+        insert into t_bas_approval_node
+            (node_id, flow_id, node_name, assignee_user, next_node_id, timeout_hours)
+        values
+        <foreach item="item" collection="list" separator=",">
+            (#{item.nodeId}, #{item.flowId}, #{item.nodeName}, #{item.assigneeUser}, #{item.nextNodeId}, #{item.timeoutHours})
+        </foreach>
+    </insert>
+
+    <update id="updateApprovalFlowStartNode" parameterType="java.util.Map">
+        update t_bas_approval_flow
+        set start_node_id =
+        case flow_id
+        <foreach collection="map" item="startNodeId" index="flowId" separator=" ">
+            when #{flowId} then #{startNodeId}
+        </foreach>
+        end
+        where flow_id in
+        <foreach collection="map.keys" item="flowId" open="(" close=")" separator=",">
+            #{flowId}
+        </foreach>
+    </update>
+
+    <select id="selectApprovalFlowFirstNodeByFlowId" resultMap="approvalNodeResult">
+        select
+            n.node_id, n.flow_id, f.flow_name, n.node_name, n.assignee_user, u.user_name as assignee_user_name, n.next_node_id, n.timeout_hours, n.update_time
+        from t_bas_approval_node n
+        inner join t_bas_approval_flow f on f.flow_id = #{flowId} and f.start_node_id = n.node_id
+        left join sys_user u on u.user_id = n.assignee_user
+    </select>
+</mapper>

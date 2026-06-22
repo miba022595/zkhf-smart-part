@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.platform.mapper.envProtect.policy.GovernFundSupportMapper">
+
+    <resultMap id="governFundSupportResult" type="com.zkhf.epmis.platform.envProtect.policy.domain.GovernFundSupport">
+        <result property="supportId" column="f_support_id"/>
+        <result property="entCode" column="ent_code"/>
+        <result property="entName" column="ent_name"/>
+        <result property="projectName" column="project_name"/>
+        <result property="investmentAmount" column="investment_amount"/>
+        <result property="proPersonId" column="pro_person_id"/>
+        <result property="proName" column="pro_name"/>
+        <result property="projectContent" column="project_content"/>
+        <result property="reduceEffect" column="reduce_effect"/>
+        <result property="epsTime" column="eps_time"/>
+        <result property="epaTime" column="epa_time"/>
+        <result property="pcsTime" column="pcs_time"/>
+        <result property="pcaTime" column="pca_time"/>
+        <result property="supportAmount" column="support_amount"/>
+        <result property="sendDept" column="send_dept"/>
+    </resultMap>
+
+    <resultMap id="planResult" type="com.zkhf.epmis.platform.envProtect.policy.domain.SupportBatchPlan">
+        <result property="id" column="id"/>
+        <result property="supportId" column="f_support_id"/>
+        <result property="planName" column="plan_name"/>
+        <result property="planRate" column="plan_rate"/>
+        <result property="sendTime" column="send_time"/>
+    </resultMap>
+
+    <resultMap id="actualResult" type="com.zkhf.epmis.platform.envProtect.policy.domain.SupportBatchActual">
+        <result property="id" column="id"/>
+        <result property="supportId" column="f_support_id"/>
+        <result property="actualTime" column="actual_time"/>
+        <result property="actualAmount" column="actual_amount"/>
+    </resultMap>
+
+    <select id="selectGovernFundSupportList" parameterType="com.zkhf.epmis.platform.envProtect.policy.domain.GovernFundSupportReq"
+            resultMap="governFundSupportResult">
+        select
+            s.f_support_id, s.ent_code, e.ent_name, s.project_name, s.investment_amount, s.pro_person_id, p.pro_name, s.project_content,
+            s.reduce_effect, s.eps_time, s.epa_time, s.pcs_time, s.pca_time, s.support_amount, s.send_dept
+        from t_govern_fund_support s
+        left join t_bas_enterprise e on e.ent_code = s.ent_code
+        left join t_env_pro_person p on p.pro_person_id = s.pro_person_id
+        <where>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and s.ent_code = #{entCode}
+                </when>
+                <otherwise>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        and s.ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="projectName != null and projectName != ''">and s.project_name like concat('%', #{projectName}, '%')</if>
+            <if test="entName != null and entName != ''">and e.ent_name like concat('%', #{entName}, '%')</if>
+        </where>
+        order by s.f_support_id desc
+    </select>
+
+    <select id="selectGovernFundSupportPList" parameterType="com.zkhf.epmis.platform.envProtect.policy.domain.GovernFundSupportReq"
+            resultMap="planResult">
+        select p.id, p.f_support_id, p.plan_name, p.plan_rate, p.send_time
+        from t_govern_fund_support_batch_plan p
+        where
+            exists (
+                select 1 from t_govern_fund_support s
+                where s.f_support_id = p.f_support_id
+                    <if test="entCode != null and entCode != ''">and s.ent_code = #{entCode}</if>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        and s.ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                    <if test="projectName != null and projectName != ''">and s.project_name like concat('%', #{projectName}, '%')</if>
+                    <if test="entName != null and entName != ''">
+                        and exists (select 1 from t_bas_enterprise where e.ent_code = s.ent_code and e.ent_name like concat('%', #{entName}, '%'))
+                    </if>
+            )
+        order by p.f_support_id desc, p.send_time asc
+    </select>
+
+    <select id="selectGovernFundSupportAList" parameterType="com.zkhf.epmis.platform.envProtect.policy.domain.GovernFundSupportReq"
+            resultMap="actualResult">
+        select a.id, a.f_support_id, a.actual_time, a.actual_amount
+        from t_govern_fund_support_batch_actual a
+        where
+            exists (
+                select 1 from t_govern_fund_support s
+                where s.f_support_id = a.f_support_id
+                    <if test="entCode != null and entCode != ''">and s.ent_code = #{entCode}</if>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        and s.ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                    <if test="projectName != null and projectName != ''">and s.project_name like concat('%', #{projectName}, '%')</if>
+                    <if test="entName != null and entName != ''">
+                        and exists (select 1 from t_bas_enterprise where e.ent_code = s.ent_code and e.ent_name like concat('%', #{entName}, '%'))
+                    </if>
+            )
+        order by a.f_support_id desc, a.actual_time asc
+    </select>
+
+    <select id="selectSupportBatchPlanList" resultMap="planResult">
+        select id, f_support_id, plan_name, plan_rate, send_time
+        from t_govern_fund_support_batch_plan
+        where f_support_id = #{supportId}
+        order by send_time asc
+    </select>
+
+    <select id="selectSupportBatchActualList" resultMap="actualResult">
+        select id, f_support_id, actual_time, actual_amount
+        from t_govern_fund_support_batch_actual
+        where f_support_id = #{supportId}
+        order by actual_time asc
+    </select>
+
+    <insert id="insertGovernFundSupport" parameterType="com.zkhf.epmis.platform.envProtect.policy.domain.GovernFundSupport">
+        insert into t_govern_fund_support
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="supportId != null">f_support_id,</if>
+            <if test="entCode != null and entCode != ''">ent_code,</if>
+            <if test="projectName != null">project_name,</if>
+            <if test="investmentAmount != null">investment_amount,</if>
+            <if test="proPersonId != null">pro_person_id,</if>
+            <if test="projectContent != null">project_content,</if>
+            <if test="reduceEffect != null">reduce_effect,</if>
+            <if test="epsTime != null">eps_time,</if>
+            <if test="epaTime != null">epa_time,</if>
+            <if test="pcsTime != null">pcs_time,</if>
+            <if test="pcaTime != null">pca_time,</if>
+            <if test="supportAmount != null">support_amount,</if>
+            <if test="sendDept != null">send_dept,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="supportId != null">#{supportId},</if>
+            <if test="entCode != null and entCode != ''">#{entCode},</if>
+            <if test="projectName != null">#{projectName},</if>
+            <if test="investmentAmount != null">#{investmentAmount},</if>
+            <if test="proPersonId != null">#{proPersonId},</if>
+            <if test="projectContent != null">#{projectContent},</if>
+            <if test="reduceEffect != null">#{reduceEffect},</if>
+            <if test="epsTime != null">#{epsTime},</if>
+            <if test="epaTime != null">#{epaTime},</if>
+            <if test="pcsTime != null">#{pcsTime},</if>
+            <if test="pcaTime != null">#{pcaTime},</if>
+            <if test="supportAmount != null">#{supportAmount},</if>
+            <if test="sendDept != null">#{sendDept},</if>
+        </trim>
+    </insert>
+
+    <insert id="insertGovernFundSupportP" parameterType="com.zkhf.epmis.platform.envProtect.policy.domain.SupportBatchPlan"
+            useGeneratedKeys="true" keyProperty="id">
+        insert into t_govern_fund_support_batch_plan
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="supportId != null">f_support_id,</if>
+            <if test="planName != null">plan_name,</if>
+            <if test="planRate != null">plan_rate,</if>
+            <if test="sendTime != null">send_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="supportId != null">#{supportId},</if>
+            <if test="planName != null">#{planName},</if>
+            <if test="planRate != null">#{planRate},</if>
+            <if test="sendTime != null">#{sendTime},</if>
+        </trim>
+    </insert>
+
+    <insert id="insertGovernFundSupportA" parameterType="com.zkhf.epmis.platform.envProtect.policy.domain.SupportBatchActual"
+            useGeneratedKeys="true" keyProperty="id">
+        insert into t_govern_fund_support_batch_actual
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="supportId != null">f_support_id,</if>
+            <if test="actualTime != null">actual_time,</if>
+            <if test="actualAmount != null">actual_amount,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="supportId != null">#{supportId},</if>
+            <if test="actualTime != null">#{actualTime},</if>
+            <if test="actualAmount != null">#{actualAmount},</if>
+        </trim>
+    </insert>
+
+    <update id="updateGovernFundSupport" parameterType="com.zkhf.epmis.platform.envProtect.policy.domain.GovernFundSupport">
+        update t_govern_fund_support
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="projectName != null">project_name = #{projectName},</if>
+            <if test="investmentAmount != null">investment_amount = #{investmentAmount},</if>
+            <if test="proPersonId != null">pro_person_id = #{proPersonId},</if>
+            <if test="projectContent != null">project_content = #{projectContent},</if>
+            <if test="reduceEffect != null">reduce_effect = #{reduceEffect},</if>
+            <if test="epsTime != null">eps_time = #{epsTime},</if>
+            <if test="epaTime != null">epa_time = #{epaTime},</if>
+            <if test="pcsTime != null">pcs_time = #{pcsTime},</if>
+            <if test="pcaTime != null">pca_time = #{pcaTime},</if>
+            <if test="supportAmount != null">support_amount = #{supportAmount},</if>
+            <if test="sendDept != null">send_dept = #{sendDept},</if>
+        </trim>
+        where f_support_id = #{supportId}
+    </update>
+
+    <update id="updateGovernFundSupportP" parameterType="com.zkhf.epmis.platform.envProtect.policy.domain.SupportBatchPlan">
+        update t_govern_fund_support_batch_plan
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="planName != null">plan_name = #{planName},</if>
+            <if test="planRate != null">plan_rate = #{planRate},</if>
+            <if test="sendTime != null">send_time = #{sendTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <update id="updateGovernFundSupportA" parameterType="com.zkhf.epmis.platform.envProtect.policy.domain.SupportBatchActual">
+        update t_govern_fund_support_batch_actual
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="actualTime != null">actual_time = #{actualTime},</if>
+            <if test="actualAmount != null">actual_amount = #{actualAmount},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteGovernFundSupportBySupportId" parameterType="String">
+        delete from t_govern_fund_support where f_support_id = #{supportId}
+    </delete>
+
+    <delete id="deleteGovernFundSupportPBySupportId" parameterType="String">
+        delete from t_govern_fund_support_batch_plan where f_support_id = #{supportId}
+    </delete>
+
+    <delete id="deleteGovernFundSupportABySupportId" parameterType="String">
+        delete from t_govern_fund_support_batch_actual where f_support_id = #{supportId}
+    </delete>
+
+    <delete id="deleteGovernFundSupportPById" parameterType="Long">
+        delete from t_govern_fund_support_batch_plan where id = #{id}
+    </delete>
+
+    <delete id="deleteGovernFundSupportAById" parameterType="Long">
+        delete from t_govern_fund_support_batch_actual where id = #{id}
+    </delete>
+
+</mapper>

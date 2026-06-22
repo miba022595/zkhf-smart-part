@@ -1,0 +1,367 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.platform.mapper.ent.EntOutPutMapper">
+
+    <resultMap id="entOutPutInfoResult" type="com.zkhf.epmis.platform.ent.domain.EntOutPutInfo">
+        <result property="outPutId" column="out_put_id"/>
+        <result property="entCode" column="ent_code"/>
+        <result property="entName" column="ent_name"/>
+        <result property="outPutCode" column="out_put_code"/>
+        <result property="outPutName" column="out_put_name"/>
+        <result property="outPutType" column="out_put_type"/>
+        <result property="mnNum" column="mn_num"/>
+        <result property="outPutStatus" column="out_put_status"/>
+        <result property="longitude" column="longitude"/>
+        <result property="latitude" column="latitude"/>
+        <result property="clockRange" column="clock_range"/>
+        <result property="outPutHeight" column="out_put_height"/>
+        <result property="outPutPosition" column="out_put_position"/>
+        <result property="installOnline" column="install_online"/>
+        <result property="transRate" column="trans_rate"/>
+        <result property="validRate" column="valid_rate"/>
+        <result property="realDataInterval" column="real_data_interval"/>
+        <result property="minuteDataInterval" column="minute_data_interval"/>
+        <result property="pollutantCode" column="pollutant_code"/>
+        <result property="controlLevel" column="control_level" />
+        <result property="perId" column="per_id" />
+        <result property="perName" column="perName" />
+        <result property="perPhone" column="perPhone" />
+        <result property="perEmail" column="perEmail" />
+        <result property="perAlarmId" column="per_alarm_id" />
+        <result property="perAlarmName" column="perAlarmName" />
+        <result property="perAlarmPhone" column="perAlarmPhone" />
+        <result property="perAlarmEmail" column="perAlarmEmail" />
+        <result property="remark" column="remark"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <resultMap id="typeTreeWithEntResult" type="com.zkhf.epmis.platform.ent.domain.EntOutPutTreeInfo">
+        <result property="entCode" column="ent_code"/>
+        <result property="entName" column="ent_name"/>
+        <result property="shorterName" column="shorter_name"/>
+        <result property="outPutType" column="out_put_type"/>
+        <result property="outPutId" column="out_put_id"/>
+        <result property="outPutCode" column="out_put_code"/>
+        <result property="outPutName" column="out_put_name"/>
+    </resultMap>
+
+    <select id="listAll" resultType="java.util.Map">
+        select
+            p.out_put_id as outPutId, p.ent_code as entCode, e.ent_name as entName, p.out_put_code as outPutCode, p.out_put_name as outPutName, p.mn_num as mnNum,
+            e.we_com_msg as weComMsg, p.out_put_type as outPutType, p.out_put_status as outPutStatus, p.trans_rate as transRate, p.valid_rate as validRate,
+            p.minute_data_interval as minuteDataInterval, p.per_alarm_id as perAlarmId, ua.user_name as perAlarmName, ua.phonenumber as perAlarmPhone,
+            ua.email as perAlarmEmail, e.region
+        from t_ent_out_put_info p
+        left join t_bas_enterprise e on e.ent_code = p.ent_code
+        left join sys_user ua on ua.user_id = p.per_alarm_id
+    </select>
+
+    <select id="listAllPosition" resultType="com.zkhf.epmis.platform.ent.domain.EntOutPutPosition">
+        select
+            p.out_put_id as outPutId, p.ent_code as entCode, e.ent_name as entName, p.out_put_code as outPutCode, p.out_put_name as outPutName, p.out_put_type as outPutType, p.mn_num as mnNum,
+            p.out_put_status as outPutStatus, p.longitude, p.latitude, p.out_put_height as outPutHeight, p.out_put_position as outPutPosition, p.install_online as installOnline
+        from t_ent_out_put_info p
+        left join t_bas_enterprise e on e.ent_code = p.ent_code
+        <where>
+            <if test="entCodes != null and entCodes.size() > 0">
+                and e.ent_code in
+                <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                    #{entCode}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="typeTreeWithEnt" resultMap="typeTreeWithEntResult">
+        select p.ent_code, e.ent_name, e.shorter_name, p.out_put_type, p.out_put_id, p.out_put_code, p.out_put_name
+        from t_ent_out_put_info p
+        left join t_bas_enterprise e on e.ent_code = p.ent_code
+        <where>
+            <if test="entCodes != null and entCodes.size() > 0">
+                and p.ent_code in
+                <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                    #{entCode}
+                </foreach>
+            </if>
+            <if test="outPutTypes != null and outPutTypes.length > 0 ">
+                and p.out_put_type in
+                <foreach item="outPutType" collection="outPutTypes" open="(" separator="," close=")">
+                    #{outPutType}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="listByEnterType" resultType="java.util.Map">
+        select out_put_id as outPutId, out_put_code as outPutCode, out_put_name as outPutName, out_put_type as outPutType, out_put_status as outPutStatus, mn_num as mnNum
+        from t_ent_out_put_info
+        where ent_code = #{entCode}
+        <if test="outPutType != null and outPutType > 0">
+            and out_put_type = #{outPutType}
+        </if>
+        order by create_time desc
+    </select>
+
+    <select id="selectOutPutList" parameterType="com.zkhf.epmis.platform.ent.domain.EntOutPutReq"
+            resultMap="entOutPutInfoResult">
+        select
+            i.out_put_id, e.ent_code, e.ent_name, i.out_put_code, i.out_put_name, i.out_put_type, i.out_put_status,
+            i.longitude, i.latitude, i.clock_range, i.out_put_height, i.out_put_position, i.install_online, i.mn_num, i.trans_rate, i.valid_rate,
+            i.real_data_interval, i.minute_data_interval, i.pollutant_code, i.remark, i.create_time, i.update_time
+        from t_ent_out_put_info i
+        left join t_bas_enterprise e on e.ent_code = i.ent_code
+        <where>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and i.ent_code = #{entCode}
+                </when>
+                <otherwise>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        and i.ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="entName != null and entName != ''">and e.ent_name like concat('%', #{entName}, '%')</if>
+            <if test="outPutName != null and outPutName != ''">and i.out_put_name like concat('%', #{outPutName}, '%')</if>
+            <if test="outPutType != null">and i.out_put_type = #{outPutType}</if>
+            <if test="outPutStatus != null">and i.out_put_status = #{outPutStatus}</if>
+            <if test="mnNum != null">and i.mn_num like concat('%', #{mnNum}, '%')</if>
+        </where>
+        order by i.out_put_id desc
+    </select>
+
+    <select id="selectOutPutById" resultMap="entOutPutInfoResult">
+        select
+            i.out_put_id, e.ent_code, e.ent_name, i.out_put_code, i.out_put_name, i.out_put_type, i.out_put_status,
+            i.longitude, i.latitude, i.clock_range, i.out_put_height, i.out_put_position, i.install_online, i.mn_num, i.trans_rate, i.valid_rate,
+            i.real_data_interval, i.minute_data_interval, i.pollutant_code, i.remark, i.create_time, i.update_time,
+            i.control_level, i.per_id, u.user_name as perName, u.phonenumber as perPhone, u.email as perEmail,
+            i.per_alarm_id, ua.user_name as perAlarmName, ua.phonenumber as perAlarmPhone, ua.email as perAlarmEmail
+        from t_ent_out_put_info i
+        left join t_bas_enterprise e on e.ent_code = i.ent_code
+        left join sys_user u on u.user_id = i.per_id
+        left join sys_user ua on ua.user_id = i.per_alarm_id
+        where i.out_put_id = #{outPutId}
+    </select>
+
+    <select id="selectOutPutCodeByEnt" resultType="java.util.Map">
+        select
+            out_put_id as outPutId, out_put_code as outPutCode
+        from t_ent_out_put_info
+        where ent_code = #{entCode}
+    </select>
+
+    <select id="selectOutPutCodeFromThisId" resultType="java.util.Map">
+        select
+            out_put_id as outPutId, out_put_code as outPutCode
+        from t_ent_out_put_info
+        where ent_code = (select ent_code from t_ent_out_put_info where out_put_id = #{outPutId} limit 1)
+    </select>
+
+    <insert id="insertOutPut" parameterType="com.zkhf.epmis.platform.ent.domain.EntOutPutInfo">
+        insert into t_ent_out_put_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="outPutId != null">out_put_id,</if>
+            <if test="entCode != null">ent_code,</if>
+            <if test="outPutCode != null">out_put_code,</if>
+            <if test="outPutName != null">out_put_name,</if>
+            <if test="outPutType != null">out_put_type,</if>
+            <if test="outPutStatus != null">out_put_status,</if>
+            <if test="longitude != null">longitude,</if>
+            <if test="latitude != null">latitude,</if>
+            <if test="clockRange != null">clock_range,</if>
+            <if test="outPutHeight != null">out_put_height,</if>
+            <if test="outPutPosition != null">out_put_position,</if>
+            <if test="installOnline != null">install_online,</if>
+            <if test="mnNum != null">mn_num,</if>
+            <if test="transRate != null">trans_rate,</if>
+            <if test="validRate != null">valid_rate,</if>
+            <if test="realDataInterval != null">real_data_interval,</if>
+            <if test="minuteDataInterval != null">minute_data_interval,</if>
+            <if test="pollutantCode != null">pollutant_code,</if>
+            <if test="controlLevel != null">control_level,</if>
+            <if test="perId != null">per_id,</if>
+            <if test="perAlarmId != null">per_alarm_id,</if>
+            <if test="remark != null">remark,</if>
+            <if test="createTime != null">create_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="outPutId != null">#{outPutId},</if>
+            <if test="entCode != null">#{entCode},</if>
+            <if test="outPutCode != null">#{outPutCode},</if>
+            <if test="outPutName != null">#{outPutName},</if>
+            <if test="outPutType != null">#{outPutType},</if>
+            <if test="outPutStatus != null">#{outPutStatus},</if>
+            <if test="longitude != null">#{longitude},</if>
+            <if test="latitude != null">#{latitude},</if>
+            <if test="clockRange != null">#{clockRange},</if>
+            <if test="outPutHeight != null">#{outPutHeight},</if>
+            <if test="outPutPosition != null">#{outPutPosition},</if>
+            <if test="installOnline != null">#{installOnline},</if>
+            <if test="mnNum != null">#{mnNum},</if>
+            <if test="transRate != null">#{transRate},</if>
+            <if test="validRate != null">#{validRate},</if>
+            <if test="realDataInterval != null">#{realDataInterval},</if>
+            <if test="minuteDataInterval != null">#{minuteDataInterval},</if>
+            <if test="pollutantCode != null">#{pollutantCode},</if>
+            <if test="controlLevel != null">#{controlLevel},</if>
+            <if test="perId != null">#{perId},</if>
+            <if test="perAlarmId != null">#{perAlarmId},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="createTime != null">#{createTime},</if>
+        </trim>
+    </insert>
+
+    <update id="updateOutPut" parameterType="com.zkhf.epmis.platform.ent.domain.EntOutPutInfo">
+        update t_ent_out_put_info
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="outPutCode != null">out_put_code = #{outPutCode},</if>
+            <if test="outPutName != null">out_put_name = #{outPutName},</if>
+            <if test="outPutType != null">out_put_type = #{outPutType},</if>
+            <if test="outPutStatus != null">out_put_status = #{outPutStatus},</if>
+            <if test="longitude != null">longitude = #{longitude},</if>
+            <if test="latitude != null">latitude = #{latitude},</if>
+            <if test="clockRange != null">clock_range = #{clockRange},</if>
+            <if test="outPutHeight != null">out_put_height = #{outPutHeight},</if>
+            <if test="outPutPosition != null">out_put_position = #{outPutPosition},</if>
+            <if test="installOnline != null">install_online = #{installOnline},</if>
+            <if test="mnNum != null">mn_num = #{mnNum},</if>
+            <if test="transRate != null">trans_rate = #{transRate},</if>
+            <if test="validRate != null">valid_rate = #{validRate},</if>
+            <if test="realDataInterval != null">real_data_interval = #{realDataInterval},</if>
+            <if test="minuteDataInterval != null">minute_data_interval = #{minuteDataInterval},</if>
+            <if test="pollutantCode != null">pollutant_code = #{pollutantCode},</if>
+            <if test="controlLevel != null">control_level = #{controlLevel},</if>
+            <if test="perId != null">per_id = #{perId},</if>
+            <if test="perAlarmId != null">per_alarm_id = #{perAlarmId},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where out_put_id = #{outPutId}
+    </update>
+
+    <delete id="deleteOutPutById" parameterType="String">
+        delete from t_ent_out_put_info where out_put_id = #{outPutId}
+    </delete>
+
+    <delete id="deleteOutputAtt" parameterType="String">
+        delete from t_bas_user_put_info where out_put_id = #{outPutId}
+    </delete>
+
+    <delete id="deleteOutPutPoll" parameterType="String">
+        delete from t_ent_output_pollutant where out_put_id = #{outPutId}
+    </delete>
+
+    <select id="selectPollutantByType" resultType="java.util.Map">
+        select
+        pollutant_code as pollutantCode, pollutant_name_cn as pollutantName
+        from t_bas_pollutant_code
+        <where>
+            <if test="outPutType != null">and pollutant_type = #{outPutType}</if>
+        </where>
+    </select>
+
+    <select id="selectUserPutInfoList" resultType="java.util.Map">
+        select out_put_id as outPutId, count(id) as `count` from t_bas_user_put_info
+        where user_id = #{userId}
+        group by out_put_id
+    </select>
+
+    <select id="userAttentionCount">
+        select count(*) from t_bas_user_put_info where user_id = #{userId}
+    </select>
+
+    <insert id="userAttentionAdd">
+        insert into t_bas_user_put_info (user_id, out_put_id)
+        values (#{userId}, #{outPutId})
+    </insert>
+
+    <delete id="userAttentionDel">
+        delete from t_bas_user_put_info where user_id = #{userId} and out_put_id = #{outPutId}
+    </delete>
+
+    <select id="userAttentionList">
+        select u.out_put_id as outPutId, p.ent_code as entCode, p.out_put_code as outPutCode, p.out_put_type as outPutType
+        from t_bas_user_put_info u left join t_ent_out_put_info p on p.out_put_id = u.out_put_id
+        where u.user_id = #{userId}
+    </select>
+
+    <select id="selectRelatePollControlFacilityList" resultType="java.util.Map">
+        select
+            r.other_id as outPutId, r.facility_id as facilityId, f.facility_code as facilityCode, f.facility_name as facilityName
+        from
+            t_ent_poll_control_facility_relate r, t_ent_poll_control_facility f
+        where
+            f.facility_id = r.facility_id and r.other_type = #{otherType} and r.other_id in
+            <foreach item="outPutId" collection="outPutIds" open="(" separator="," close=")">
+                #{outPutId}
+            </foreach>
+    </select>
+
+    <insert id="insertOutPutRelatePollControlFacility">
+        insert into t_ent_poll_control_facility_relate
+            (facility_id, other_type, other_id)
+        values
+        <foreach item="facilityId" collection="facilityIds" separator=",">
+            (#{facilityId}, #{otherType}, #{otherId})
+        </foreach>
+    </insert>
+
+    <delete id="deleteOutPutRelatePollControlFacilityById" parameterType="String">
+        delete from t_ent_poll_control_facility_relate where other_id = #{otherId} and other_type = #{otherType}
+    </delete>
+
+    <select id="outPutStatusList" resultType="java.util.Map">
+        select out_put_id as outPutId, out_put_status as outPutStatus
+        from t_ent_out_put_info
+        <where>
+            <if test="entCodes != null and entCodes.size() > 0">
+                and ent_code in
+                <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                    #{entCode}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="selectAlarmConf" resultType="com.zkhf.epmis.platform.ent.domain.OutPutAlarmConf">
+        select
+            out_put_id as outPutId, alarm_code as alarmCode, out_put_status as outPutStatus, is_enabled as isEnabled,
+            data_type as dataType, data_dur as dataDur, data_cycle as dataCycle
+        from t_ent_out_put_alarm
+        <where>
+            <if test="outPutId != null and outPutId != ''">
+                and out_put_id = #{outPutId}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectAlarmPubConf" resultType="com.zkhf.epmis.platform.ent.domain.OutPutAlarmConf">
+        select
+            a.out_put_id as outPutId, a.alarm_code as alarmCode, a.out_put_status as outPutStatus, a.is_enabled as isEnabled,
+            a.data_type as dataType, a.data_dur as dataDur, a.data_cycle as dataCycle
+        from t_ent_out_put_alarm a
+        left join t_ent_out_put_info o on o.out_put_id = #{outPutId}
+        where a.out_put_id = CONVERT(o.out_put_type, CHAR)
+    </select>
+
+    <delete id="alarmConfDel" parameterType="String">
+        delete from t_ent_out_put_alarm where out_put_id = #{outPutId}
+    </delete>
+
+    <insert id="alarmConfEdit">
+        insert into t_ent_out_put_alarm
+            (out_put_id, alarm_code, out_put_status, is_enabled, data_type, data_dur, data_cycle)
+        values
+        <foreach item="item" collection="list" separator=",">
+            (#{item.outPutId}, #{item.alarmCode}, #{item.outPutStatus}, #{item.isEnabled}, #{item.dataType}, #{item.dataDur}, #{item.dataCycle})
+        </foreach>
+    </insert>
+
+</mapper>

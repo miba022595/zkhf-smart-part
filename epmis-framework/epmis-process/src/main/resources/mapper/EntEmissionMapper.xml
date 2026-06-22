@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.process.mapper.statistics.EntEmissionMapper">
+
+    <resultMap id="entEmissionResult" type="com.zkhf.epmis.process.statistics.domain.EntEmission">
+        <result property="entCode" column="ent_code"/>
+        <result property="emissionYear" column="emission_year"/>
+        <result property="pollutantCode" column="pollutant_code"/>
+        <result property="emissions" column="emissions"/>
+    </resultMap>
+    <resultMap id="outEmissionResult" type="com.zkhf.epmis.process.statistics.domain.OutEmission">
+        <result property="outPutId" column="out_put_id"/>
+        <result property="emissions" column="emissions"/>
+    </resultMap>
+
+    <select id="selectEntEmissionList" parameterType="com.zkhf.epmis.process.statistics.domain.EmissionReq"
+            resultMap="entEmissionResult">
+        select
+            ent_code, emission_year, pollutant_code, sum(emissions) as emissions
+        from t_ent_annual_emission
+        <where>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and ent_code = #{entCode}
+                </when>
+                <otherwise>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        and ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="emissionYear != null">
+                and emission_year = #{emissionYear}
+            </if>
+            <if test="pollutantCodeList != null and pollutantCodeList.size() > 0">
+                and pollutant_code in
+                <foreach item="pollutantCode" collection="pollutantCodeList" open="(" separator="," close=")">
+                    #{pollutantCode}
+                </foreach>
+            </if>
+        </where>
+        group by ent_code, pollutant_code, emission_year
+        order by ent_code desc, pollutant_code desc, emission_year desc
+    </select>
+
+    <select id="selectOutEmissionList" resultMap="outEmissionResult">
+        select out_put_id, emissions
+        from t_ent_annual_emission
+        where ent_code = #{entCode} and emission_year = #{emissionYear} and pollutant_code = #{pollutantCode}
+        order by out_put_id desc
+    </select>
+</mapper>

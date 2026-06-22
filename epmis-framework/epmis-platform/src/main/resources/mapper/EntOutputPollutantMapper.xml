@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.platform.mapper.ent.EntOutputPollutantMapper">
+
+    <resultMap id="entOutputPollutantResult" type="com.zkhf.epmis.platform.ent.domain.EntOutputPollutant">
+        <result property="outPutPollId" column="out_put_poll_id"/>
+        <result property="outPutId" column="out_put_id"/>
+        <result property="pollutantCode" column="pollutant_code"/>
+        <result property="pollutantNameCn" column="pollutant_name_cn"/>
+        <result property="pollutantNameEn" column="pollutant_name_en"/>
+        <result property="pollutantSort" column="pollutant_sort"/>
+        <result property="isZeroAlarm" column="is_zero_alarm"/>
+        <result property="isContinuityAlarm" column="is_continuity_alarm"/>
+        <result property="isNegativeAlarm" column="is_negative_alarm"/>
+        <result property="monthlyLimitValue" column="monthly_limit_value"/>
+        <result property="overMaxvalue" column="over_maxValue"/>
+        <result property="overMinvalue" column="over_minValue"/>
+        <result property="rtdUnit" column="rtd_unit"/>
+        <result property="couUnit" column="cou_unit"/>
+        <result property="decimalPlaces" column="decimal_places"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="monFactor" column="mon_factor"/>
+    </resultMap>
+
+    <select id="selectPollutantCodesByOutPutId" resultType="java.util.Map">
+        select
+            op.pollutant_code as pollutantCode, pc.pollutant_name_cn as pollutantNameCn, pc.pollutant_unit_cn as pollutantUnitCn,
+            pc.pollutant_name_en as pollutantNameEn, pc.pollutant_unit_en as pollutantUnitEn
+        from t_ent_output_pollutant op
+        left join t_bas_pollutant_code pc on pc.pollutant_code = op.pollutant_code
+        where op.out_put_id = #{outPutId}
+        order by op.pollutant_sort desc
+    </select>
+
+    <select id="listAll" resultType="java.util.Map">
+        select
+            i.ent_code as entCode, e.ent_name as entName, p.out_put_id as outPutId, i.out_put_code as outPutCode, i.out_put_name as outPutName, i.mn_num as mnNum, i.out_put_type as outPutType,
+            p.pollutant_code as pollutantCode, p.monthly_limit_value as monthlyLimitValue,
+            pc.pollutant_name_cn as pollutantNameCn, pc.pollutant_name_en as pollutantNameEn, pc.pollutant_unit_cn as pollutantUnitCn, pc.pollutant_unit_en as pollutantUnitEn
+            , p.mon_factor as monFactor, p.is_continuity_alarm as isContinuityAlarm, p.is_negative_alarm as isNegativeAlarm, p.is_zero_alarm as isZeroAlarm, p.over_maxValue as overMaxValue
+            , p.over_minValue as overMinValue
+        from t_ent_output_pollutant p
+        left join t_ent_out_put_info i on i.out_put_id = p.out_put_id
+        left join t_bas_enterprise e on e.ent_code = i.ent_code
+        left join t_bas_pollutant_code pc on pc.pollutant_code = p.pollutant_code
+    </select>
+
+    <select id="selectOutputPollutantById" resultMap="entOutputPollutantResult">
+        select
+            op.out_put_poll_id, op.out_put_id, op.pollutant_code, pc.pollutant_name_cn, pc.pollutant_name_en, pc.pollutant_unit_en,
+            pc.pollutant_unit_cn, pc.unit_pf_cn, pc.unit_pf_en, op.pollutant_sort, op.is_zero_alarm, op.is_continuity_alarm, op.is_negative_alarm,
+            op.monthly_limit_value, op.over_maxValue,
+            op.over_minValue, op.create_time, op.update_time,
+            op.mon_factor
+        from t_ent_output_pollutant op
+        left join t_bas_pollutant_code pc on pc.pollutant_code = op.pollutant_code
+        where op.out_put_poll_id = #{outPutPollId}
+    </select>
+
+    <select id="selectOutputPollutantByOutPutId" resultMap="entOutputPollutantResult">
+        select
+            op.out_put_poll_id, op.out_put_id, op.pollutant_code, pc.pollutant_name_cn, pc.pollutant_name_en, pc.pollutant_unit_en,
+            pc.pollutant_unit_cn, pc.unit_pf_cn, pc.unit_pf_en, op.pollutant_sort, op.is_zero_alarm, op.is_continuity_alarm, op.is_negative_alarm,
+            op.monthly_limit_value, op.over_maxValue,
+            op.over_minValue, op.create_time, op.update_time, op.mon_factor, op.rtd_unit, op.cou_unit, op.decimal_places
+        from t_ent_output_pollutant op
+        left join t_bas_pollutant_code pc on pc.pollutant_code = op.pollutant_code
+        where op.out_put_id = #{outPutId}
+        order by op.pollutant_sort desc
+    </select>
+
+    <select id="selectAutoHead" resultType="com.zkhf.epmis.platform.ent.domain.EntAutoHead">
+        select
+            g.pollutant_code as pollutantCode,
+            g.is_zero_alarm as isZeroAlarm,
+            g.is_continuity_alarm as isContinuityAlarm,
+            g.is_negative_alarm as isNegativeAlarm,
+            g.monthly_limit_value as monthlyLimitValue,
+            g.over_maxValue as overMaxValue,
+            g.over_minValue as overMinValue,
+            g.rtd_unit as rtdUnit,
+            g.cou_unit as couUnit,
+            g.decimal_places as decimalPlaces,
+            g.mon_factor as monFactor,
+            p.pollutant_name_en as pollutantNameEn,
+            p.pollutant_name_cn as pollutantNameCn,
+            p.pollutant_unit_en as pollutantUnitEn,
+            p.pollutant_unit_cn as pollutantUnitCn,
+            p.unit_pf_cn as unitPfCn,
+            p.unit_pf_en as unitPfEn
+        from t_ent_output_pollutant g
+        left join t_bas_pollutant_code p on p.pollutant_code = g.pollutant_code
+        where g.out_put_id = #{outPutId}
+        order by g.pollutant_sort desc
+    </select>
+
+    <select id="autoHeadChart" resultType="java.util.Map">
+        select
+            g.pollutant_code as pollutantCode,
+            g.over_maxValue as overMaxValue,
+            g.rtd_unit as rtdUnit,
+            g.decimal_places as decimalPlaces,
+            g.mon_factor as monFactor,
+            p.pollutant_name_cn as pollutantNameCn,
+            p.pollutant_unit_en as pollutantUnitEn
+        from t_ent_output_pollutant g
+        left join t_bas_pollutant_code p on p.pollutant_code = g.pollutant_code
+        where g.out_put_id = #{outPutId}
+        order by g.pollutant_sort desc
+    </select>
+
+    <select id="multipleAutoHead" resultType="java.util.Map">
+        select
+            g.out_put_id as outPutId,
+            g.pollutant_code as pollutantCode,
+            g.rtd_unit as rtdUnit,
+            g.cou_unit as couUnit,
+            g.decimal_places as decimalPlaces,
+            g.mon_factor as monFactor,
+            g.pollutant_sort as pollutantSort,
+            p.pollutant_name_cn as pollutantNameCn,
+            p.pollutant_unit_en as pollutantUnitEn,
+            p.unit_pf_en as unitPfEn
+        from t_ent_output_pollutant g
+        left join t_bas_pollutant_code p on p.pollutant_code = g.pollutant_code
+        where g.out_put_id in
+        <foreach item="outPutId" collection="outPutIds" open="(" separator="," close=")">
+            #{outPutId}
+        </foreach>
+        order by g.pollutant_sort desc
+    </select>
+
+    <insert id="insertOutputPollutant" parameterType="com.zkhf.epmis.platform.ent.domain.EntOutputPollutant">
+        insert into t_ent_output_pollutant
+            (out_put_poll_id, out_put_id, pollutant_code, pollutant_sort, is_zero_alarm, is_continuity_alarm, is_negative_alarm,
+             monthly_limit_value, over_maxValue, over_minValue, rtd_unit, cou_unit, decimal_places, mon_factor, create_time)
+        values
+            (#{outPutPollId}, #{outPutId}, #{pollutantCode}, #{pollutantSort}, #{isZeroAlarm}, #{isContinuityAlarm}, #{isNegativeAlarm},
+             #{monthlyLimitValue}, #{overMaxvalue}, #{overMinvalue}, #{rtdUnit}, #{couUnit}, #{decimalPlaces}, #{monFactor}, #{createTime})
+    </insert>
+
+    <update id="updateOutputPollutant" parameterType="com.zkhf.epmis.platform.ent.domain.EntOutputPollutant">
+        update t_ent_output_pollutant
+        set pollutant_sort = #{pollutantSort}, is_zero_alarm = #{isZeroAlarm}, is_continuity_alarm = #{isContinuityAlarm},
+            is_negative_alarm = #{isNegativeAlarm}, monthly_limit_value = #{monthlyLimitValue}, over_maxValue = #{overMaxvalue},
+            over_minValue = #{overMinvalue}, rtd_unit = #{rtdUnit}, cou_unit = #{couUnit}, decimal_places = #{decimalPlaces},
+            update_time = #{updateTime}, mon_factor = #{monFactor}
+        where out_put_poll_id = #{outPutPollId}
+    </update>
+
+    <delete id="deleteOutputPollutantById" parameterType="String">
+        delete from t_ent_output_pollutant where out_put_poll_id = #{outPutPollId}
+    </delete>
+
+    <update id="updateOutPutPollCodeById">
+        update t_ent_out_put_info
+        set pollutant_code = (
+            select GROUP_CONCAT(pollutant_code ORDER BY pollutant_sort DESC SEPARATOR ',')
+            from t_ent_output_pollutant
+            where out_put_id = #{outPutId}
+        )
+        where out_put_id = #{outPutId}
+    </update>
+
+    <select id="selectEntOutPollutantPermitCount">
+        select c.permit_count
+        from t_ent_out_pollutant_permit_count c
+        where
+            c.pollutant_code = #{pollCode} and c.permit_year = #{year}
+            and exists (select 1 from t_ent_out_put_info where out_put_id = #{outPutId} and ent_code = c.ent_code)
+        order by c.poll_permit_count_id desc
+        limit 1
+    </select>
+
+    <select id="selectEntOutPollutantMonthlyLimit">
+        select monthly_limit_value
+        from t_ent_output_pollutant
+        where out_put_id = #{outPutId} and pollutant_code = #{pollCode}
+    </select>
+</mapper>

@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.platform.mapper.emergency.EmergencyExpertMapper">
+
+    <resultMap id="emergencyExpertResult" type="com.zkhf.epmis.platform.emergency.domain.EmergencyExpert">
+        <result property="expertId" column="expert_id"/>
+        <result property="entCode" column="ent_code"/>
+        <result property="entName" column="ent_name"/>
+        <result property="weComMsg" column="we_com_msg"/>
+        <result property="expertName" column="expert_name"/>
+        <result property="workUnit" column="work_unit"/>
+        <result property="positionTitle" column="position_title"/>
+        <result property="specialty" column="specialty"/>
+        <result property="phone" column="phone"/>
+        <result property="email" column="email"/>
+        <result property="remark" column="remark"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.zkhf.epmis.platform.emergency.domain.EmergencyExpert">
+        insert into t_emergency_expert
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="expertId != null and expertId != ''">expert_id,</if>
+            <if test="entCode != null and entCode != ''">ent_code,</if>
+            <if test="expertName != null and expertName != ''">expert_name,</if>
+            <if test="workUnit != null and workUnit != ''">work_unit,</if>
+            <if test="positionTitle != null and positionTitle != ''">position_title,</if>
+            <if test="specialty != null and specialty != ''">specialty,</if>
+            <if test="phone != null and phone != ''">phone,</if>
+            <if test="email != null and email != ''">email,</if>
+            <if test="remark != null and remark != ''">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="expertId != null and expertId != ''">#{expertId},</if>
+            <if test="entCode != null and entCode != ''">#{entCode},</if>
+            <if test="expertName != null and expertName != ''">#{expertName},</if>
+            <if test="workUnit != null and workUnit != ''">#{workUnit},</if>
+            <if test="positionTitle != null and positionTitle != ''">#{positionTitle},</if>
+            <if test="specialty != null and specialty != ''">#{specialty},</if>
+            <if test="phone != null and phone != ''">#{phone},</if>
+            <if test="email != null and email != ''">#{email},</if>
+            <if test="remark != null and remark != ''">#{remark},</if>
+        </trim>
+    </insert>
+
+    <insert id="batchInsert">
+        insert into t_emergency_expert
+            (expert_id, ent_code, expert_name, work_unit, position_title, specialty, phone, email, remark)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.expertId}, #{item.entCode}, #{item.expertName}, #{item.workUnit}, #{item.positionTitle}, #{item.specialty}, #{item.phone}, #{item.email}, #{item.remark})
+        </foreach>
+    </insert>
+
+    <update id="update" parameterType="com.zkhf.epmis.platform.emergency.domain.EmergencyExpert">
+        update t_emergency_expert
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="expertName != null and expertName != ''">expert_name = #{expertName},</if>
+            <if test="workUnit != null and workUnit != ''">work_unit = #{workUnit},</if>
+            <if test="positionTitle != null and positionTitle != ''">position_title = #{positionTitle},</if>
+            <if test="specialty != null and specialty != ''">specialty = #{specialty},</if>
+            <if test="phone != null and phone != ''">phone = #{phone},</if>
+            <if test="email != null and email != ''">email = #{email},</if>
+            <if test="remark != null and remark != ''">remark = #{remark},</if>
+        </trim>
+        where expert_id = #{expertId}
+    </update>
+
+    <delete id="deleteById">
+        delete from t_emergency_expert where expert_id = #{expertId}
+    </delete>
+
+    <select id="selectById" resultMap="emergencyExpertResult">
+        select x.*, e.ent_name, e.we_com_msg from t_emergency_expert x
+        left join t_bas_enterprise e on x.ent_code = e.ent_code
+        where x.expert_id = #{expertId}
+    </select>
+
+    <select id="selectList" resultMap="emergencyExpertResult">
+        select x.*, e.ent_name, e.we_com_msg from t_emergency_expert x
+        left join t_bas_enterprise e on x.ent_code = e.ent_code
+        <where>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and x.ent_code = #{entCode}
+                </when>
+                <otherwise>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        and x.ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="expertId != null and expertId != ''">
+                and x.expert_id = #{expertId}
+            </if>
+            <if test="expertName != null and expertName != ''">
+                and x.expert_name like concat('%', #{expertName}, '%')
+            </if>
+            <if test="workUnit != null and workUnit != ''">
+                and x.work_unit like concat('%', #{workUnit}, '%')
+            </if>
+            <if test="positionTitle != null and positionTitle != ''">
+                and x.position_title like concat('%', #{positionTitle}, '%')
+            </if>
+            <if test="specialty != null and specialty != ''">
+                and x.specialty like concat('%', #{specialty}, '%')
+            </if>
+            <if test="phone != null and phone != ''">
+                and x.phone like concat('%', #{phone}, '%')
+            </if>
+            <if test="email != null and email != ''">
+                and x.email like concat('%', #{email}, '%')
+            </if>
+            <if test="remark != null and remark != ''">
+                and x.remark like concat('%', #{remark}, '%')
+            </if>
+        </where>
+        order by x.create_time desc
+    </select>
+
+    <select id="selectAll" resultMap="emergencyExpertResult">
+        select x.*, e.ent_name, e.we_com_msg from t_emergency_expert x
+        left join t_bas_enterprise e on x.ent_code = e.ent_code
+        order by x.create_time desc
+    </select>
+</mapper>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.platform.mapper.base.IndustryCategoryMapper">
+
+    <resultMap id="industryCategoryResult" type="com.zkhf.epmis.platform.base.domain.IndustryCategory">
+        <result property="id" column="id"/>
+        <result property="pid" column="pid"/>
+        <result property="code" column="code"/>
+        <result property="name" column="name"/>
+        <result property="desc" column="desc"/>
+    </resultMap>
+
+    <select id="selectIndustryCategoryList" resultMap="industryCategoryResult">
+        select id, pid, code, `name`, `desc` from t_bas_industry_category
+        where status = 1;
+    </select>
+</mapper>

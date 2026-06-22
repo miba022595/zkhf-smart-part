@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.platform.mapper.ent.ExtUnitLibMapper">
+    
+    <resultMap id="extUnitResult" type="com.zkhf.epmis.platform.ent.domain.ExtUnit">
+        <result property="unitCode" column="unit_code"/>
+        <result property="unitName" column="unit_name"/>
+        <result property="contactPerson" column="contact_person"/>
+        <result property="contactNumber" column="contact_number"/>
+        <result property="socialNum" column="social_num"/>
+        <result property="registerAddr" column="register_addr"/>
+        <result property="certStart" column="cert_start"/>
+        <result property="certEnd" column="cert_end"/>
+        <result property="servItem" column="serv_item"/>
+        <result property="extraInfoStr" column="extra_info"/>
+    </resultMap>
+
+    <select id="selectExtUnitList" parameterType="com.zkhf.epmis.platform.ent.domain.ExtUnitReq"
+            resultMap="extUnitResult">
+        select
+            unit_code, unit_name, contact_person, contact_number, social_num, register_addr, cert_start, cert_end, serv_item, extra_info
+        from t_ext_unit_lib
+        <where>
+            <if test="userId != null and userId > 1">
+                and exists ( select 1 from t_ext_unit_user u where u.user_id = #{userId} and u.unit_code = unit_code)
+            </if>
+            <if test="unitName != null and unitName != ''"> and unit_name like concat('%', #{unitName}, '%')</if>
+        </where>
+        order by create_time desc
+    </select>
+
+    <select id="checkExistsUnitCode">
+        select count(1)
+        from t_ext_unit_lib
+        where unit_code = #{unitCode}
+    </select>
+
+    <insert id="insertExtUnit" parameterType="com.zkhf.epmis.platform.ent.domain.ExtUnit">
+        insert into t_ext_unit_lib
+            (unit_code, unit_name, contact_person, contact_number, social_num, register_addr, cert_start, cert_end, serv_item, extra_info)
+        values
+            (#{unitCode}, #{unitName}, #{contactPerson}, #{contactNumber}, #{socialNum}, #{registerAddr}, #{certStart}, #{certEnd}, #{servItem}, #{extraInfoStr})
+    </insert>
+
+    <update id="updateExtUnit" parameterType="com.zkhf.epmis.platform.ent.domain.ExtUnit">
+        update t_ext_unit_lib
+        set unit_name = #{unitName}, contact_person = #{contactPerson}, contact_number = #{contactNumber}, social_num = #{socialNum},
+            register_addr = #{registerAddr}, cert_start = #{certStart}, cert_end = #{certEnd}, serv_item = #{servItem}, extra_info = #{extraInfoStr}
+        where unit_code = #{unitCode}
+    </update>
+
+    <delete id="deleteUnitUser">
+        delete from t_ext_unit_user where user_id = #{userId}
+    </delete>
+
+    <insert id="insertUnitUser">
+        insert into t_ext_unit_user
+            (user_id, unit_code)
+        values
+        <foreach item="unitCode" collection="unitCodes" separator=",">
+            (#{userId}, #{unitCode})
+        </foreach>
+    </insert>
+</mapper>

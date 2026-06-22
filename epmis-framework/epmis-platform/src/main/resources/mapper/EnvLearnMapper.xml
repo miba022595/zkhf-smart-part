@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.platform.mapper.envProtect.policy.EnvLearnMapper">
+
+    <resultMap id="learnResult" type="com.zkhf.epmis.platform.envProtect.policy.domain.EnvLearn">
+        <result property="learnId" column="learn_id"/>
+        <result property="learnTheme" column="learn_theme"/>
+        <result property="requiredDuration" column="required_duration"/>
+        <result property="learnStart" column="learn_start"/>
+        <result property="learnEnd" column="learn_end"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <select id="selectEnvLearnList" parameterType="com.zkhf.epmis.platform.envProtect.policy.domain.EnvLearnReq"
+            resultMap="learnResult">
+        select
+            m.learn_id, m.learn_theme, m.required_duration, m.learn_start, m.learn_end, m.create_time, m.update_time
+        from t_env_learn m
+        <where>
+            <if test="userId != null">
+                <choose>
+                    <when test="entAdmin">
+                        and exists (
+                            select 1 from sys_user_ent ue, t_env_learn_ent le where ue.user_id = #{userId} and le.ent_code = ue.ent_code and le.learn_id = m.learn_id
+                        )
+                    </when>
+                    <otherwise>
+                        and exists (
+                            select 1 from t_env_learn_user u where u.learn_id = m.learn_id and u.user_id = #{userId}
+                        )
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="policyName != null and policyName != ''">
+                and exists (
+                select 1 from t_env_learn_policy p, t_env_policy_regulation r
+                where m.learn_id = p.learn_id and r.policy_id = p.policy_id and r.policy_name like concat('%', #{policyName}, '%')
+                )
+            </if>
+            <if test="learnTheme != null and learnTheme != ''">and m.learn_theme like concat('%', #{learnTheme}, '%')</if>
+        </where>
+        order by m.learn_id desc
+    </select>
+
+    <select id="selectEnvLearnPolicy" resultType="com.zkhf.epmis.platform.envProtect.policy.domain.EnvLearnPolicy">
+        select lp.learn_id as learnId, lp.policy_id as policyId, pr.policy_name as policyName
+        from t_env_learn_policy lp
+        left join t_env_policy_regulation pr on pr.policy_id = lp.policy_id
+        where lp.learn_id in
+        <foreach item="learnId" collection="learnIds" open="(" separator="," close=")">
+            #{learnId}
+        </foreach>
+    </select>
+
+    <select id="selectEnvLearnEnt" resultType="com.zkhf.epmis.platform.envProtect.policy.domain.EnvLearnEnt">
+        select le.learn_id as learnId, le.ent_code as entCode, e.ent_name as entName
+        from t_env_learn_ent le
+        left join t_bas_enterprise e on e.ent_code = le.ent_code
+        where le.learn_id in
+        <foreach item="learnId" collection="learnIds" open="(" separator="," close=")">
+            #{learnId}
+        </foreach>
+    </select>
+
+    <select id="selectEnvLearnUser" resultType="com.zkhf.epmis.platform.envProtect.policy.domain.EnvLearnUser">
+        select
+            lu.learn_user_id as learnUserId, lu.learn_id as learnId, lu.user_id as userId, u.user_name as userName,
+            lu.completed_duration as completedDuration
+        from t_env_learn_user lu
+        left join sys_user u on u.user_id = lu.user_id
+        where lu.learn_id in
+        <foreach item="learnId" collection="learnIds" open="(" separator="," close=")">
+            #{learnId}
+        </foreach>
+    </select>
+
+    <insert id="insertEnvLearn" parameterType="com.zkhf.epmis.platform.envProtect.policy.domain.EnvLearn">
+        insert into t_env_learn
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="learnId != null">learn_id,</if>
+            <if test="learnTheme != null">learn_theme,</if>
+            <if test="requiredDuration != null">required_duration,</if>
+            <if test="learnStart != null">learn_start,</if>
+            <if test="learnEnd != null">learn_end,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="learnId != null">#{learnId},</if>
+            <if test="learnTheme != null">#{learnTheme},</if>
+            <if test="requiredDuration != null">#{requiredDuration},</if>
+            <if test="learnStart != null">#{learnStart},</if>
+            <if test="learnEnd != null">#{learnEnd},</if>
+        </trim>
+    </insert>
+
+    <insert id="insertEnvLearnPolicy">
+        insert into t_env_learn_policy
+            (learn_id, policy_id)
+        values
+        <foreach item="item" collection="policyList" separator=",">
+            (#{item.learnId}, #{item.policyId})
+        </foreach>
+    </insert>
+
+    <insert id="insertEnvLearnEnt">
+        insert into t_env_learn_ent
+        (learn_id, ent_code)
+        values
+        <foreach item="item" collection="entList" separator=",">
+            (#{item.learnId}, #{item.entCode})
+        </foreach>
+    </insert>
+
+    <insert id="insertEnvLearnUser">
+        insert into t_env_learn_user
+            (learn_user_id, learn_id, user_id, completed_duration)
+        values
+            <foreach item="item" collection="userList" separator=",">
+                (#{item.learnUserId}, #{item.learnId}, #{item.userId}, #{item.completedDuration})
+            </foreach>
+    </insert>
+
+    <update id="updateEnvLearn" parameterType="com.zkhf.epmis.platform.envProtect.policy.domain.EnvLearn">
+        update t_env_learn
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="learnTheme != null">learn_theme = #{learnTheme},</if>
+            <if test="requiredDuration != null">required_duration = #{requiredDuration},</if>
+            <if test="learnStart != null">learn_start = #{learnStart},</if>
+            <if test="learnEnd != null">learn_end = #{learnEnd},</if>
+        </trim>
+        where learn_id = #{learnId}
+    </update>
+
+    <select id="selectEnvLearnUserByLearnId" parameterType="string" resultType="com.zkhf.epmis.platform.envProtect.policy.domain.EnvLearnUser">
+        select
+            c.learn_user_id as learnUserId, c.user_id as userId, u.user_name as userName,
+            l.required_duration as requiredDuration, c.completed_duration as completedDuration
+        from t_env_learn_user c
+                 left join t_env_learn l on l.learn_id = c.learn_id
+                 left join sys_user u on u.user_id = c.user_id
+        where c.learn_id = #{learnId}
+        order by c.learn_user_id desc
+    </select>
+
+    <delete id="deleteEnvLearnPolicy">
+        delete from t_env_learn_policy
+        where learn_id = #{learnId}
+    </delete>
+
+    <delete id="deleteEnvLearnEnt">
+        delete from t_env_learn_ent
+        where learn_id = #{learnId}
+    </delete>
+
+    <delete id="deleteEnvLearnUser">
+        delete from t_env_learn_user
+        where learn_user_id in
+        <foreach item="id" collection="learnUserIds" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <delete id="deleteEnvLearnDetail">
+        delete from t_env_learn_detail
+        where learn_user_id in
+        <foreach item="id" collection="learnUserIds" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <delete id="deleteEnvLearnByLearnId" parameterType="String">
+        delete from t_env_learn where learn_id = #{learnId}
+    </delete>
+
+    <delete id="deleteEnvLearnDetailByLearnId" parameterType="String">
+        delete from t_env_learn_detail
+        where learn_user_id in (
+            select learn_user_id
+            from t_env_learn_user
+            where learn_id = #{learnId}
+        )
+    </delete>
+
+    <delete id="deleteEnvLearnUserByLearnId" parameterType="String">
+        delete from t_env_learn_user where learn_id = #{learnId}
+    </delete>
+
+    <select id="learnDetailList" parameterType="string" resultType="com.zkhf.epmis.platform.envProtect.policy.domain.LearnDetail">
+        select
+            d.learn_detail_id as learnDetailId, d.learn_start as learnStart, d.learn_end as learnEnd, d.duration, a.annex_id as annexId, a.file_name as fileName
+        from t_env_learn_detail d
+        left join t_data_annex a on a.annex_id = d.annex_id
+        where learn_user_id = #{learnUserId} and duration > 0
+        order by learn_detail_id desc
+    </select>
+
+    <select id="getLearnUserById" parameterType="string" resultType="com.zkhf.epmis.platform.envProtect.policy.domain.EnvLearnUser">
+        select
+            c.learn_user_id as learnUserId, c.user_id as userId, c.completed_duration as completedDuration
+        from t_env_learn_user c
+        where c.learn_user_id = #{learnUserId}
+    </select>
+
+    <update id="learnDetailUpdate">
+        <choose>
+            <when test="newLearnDetail == 1"> <!-- 新的数据 -->
+                insert into t_env_learn_detail
+                    (learn_detail_id, learn_user_id, annex_id, learn_start, learn_end, duration)
+                values
+                    (#{learnDetailId}, #{learnUserId}, #{annexId}, #{learnDate}, #{learnDate}, 0)
+            </when>
+            <otherwise>
+                update t_env_learn_detail
+                set learn_end = #{learnDate}, duration = TIMESTAMPDIFF(MINUTE, learn_start, #{learnDate})
+                where learn_detail_id = #{learnDetailId}
+            </otherwise>
+        </choose>
+    </update>
+
+    <update id="updateLearnUserCompleted">
+        update t_env_learn_user
+        set completed_duration = (
+            select sum(COALESCE(duration, 0))
+            from t_env_learn_detail
+            where learn_user_id = #{learnUserId}
+        )
+        where learn_user_id = #{learnUserId}
+    </update>
+
+    <select id="checkExistsLearnByPolicyId">
+        select count(*) from t_env_learn_policy where policy_id = #{policyId}
+    </select>
+</mapper>

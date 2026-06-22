@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.platform.mapper.envProtect.OtherCertificateMapper">
+
+    <resultMap id="otherCertificateResult" type="com.zkhf.epmis.platform.envProtect.domain.OtherCertificate">
+        <result property="otherId" column="other_id"/>
+        <result property="entCode" column="ent_code"/>
+        <result property="entName" column="ent_name"/>
+        <result property="certName" column="cert_name"/>
+        <result property="issueOffice" column="issue_office"/>
+        <result property="certBelong" column="cert_belong"/>
+        <result property="belongType" column="belong_type"/>
+        <result property="beginDate" column="begin_date"/>
+        <result property="endDate" column="end_date"/>
+        <result property="issueDate" column="issue_date"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <select id="selectOtherCertificateList" parameterType="com.zkhf.epmis.platform.envProtect.domain.OtherCertificateReq"
+            resultMap="otherCertificateResult">
+        select
+            c.other_id, c.ent_code, e.ent_name, c.cert_name, c.issue_office, c.cert_belong, c.belong_type, c.begin_date, c.end_date, c.issue_date, c.remark
+        from t_other_certificate c
+        left join t_bas_enterprise e on e.ent_code = c.ent_code
+        <where>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and c.ent_code = #{entCode}
+                </when>
+                <otherwise>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        and c.ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="certName != null and certName != ''">and c.cert_name like concat('%', #{certName}, '%')</if>
+            <if test="issueOffice != null and issueOffice != ''">and c.issue_office like concat('%', #{issueOffice},'%')
+            </if>
+            <if test="certBelong != null and certBelong != ''">and c.cert_belong like concat('%', #{certBelong}, '%')</if>
+            <if test="belongType != null ">and c.belong_type = #{belongType}</if>
+        </where>
+        order by c.other_id desc
+    </select>
+
+    <insert id="insertOtherCertificate" parameterType="com.zkhf.epmis.platform.envProtect.domain.OtherCertificate">
+        insert into t_other_certificate
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="otherId != null">other_id,</if>
+            <if test="entCode != null">ent_code,</if>
+            <if test="certName != null">cert_name,</if>
+            <if test="issueOffice != null">issue_office,</if>
+            <if test="certBelong != null">cert_belong,</if>
+            <if test="belongType != null">belong_type,</if>
+            <if test="beginDate != null">begin_date,</if>
+            <if test="endDate != null">end_date,</if>
+            <if test="issueDate != null">issue_date,</if>
+            <if test="remark != null">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="otherId != null">#{otherId},</if>
+            <if test="entCode != null">#{entCode},</if>
+            <if test="certName != null">#{certName},</if>
+            <if test="issueOffice != null">#{issueOffice},</if>
+            <if test="certBelong != null">#{certBelong},</if>
+            <if test="belongType != null">#{belongType},</if>
+            <if test="beginDate != null">#{beginDate},</if>
+            <if test="endDate != null">#{endDate},</if>
+            <if test="issueDate != null">#{issueDate},</if>
+            <if test="remark != null">#{remark},</if>
+        </trim>
+    </insert>
+
+    <update id="updateOtherCertificate" parameterType="com.zkhf.epmis.platform.envProtect.domain.OtherCertificate">
+        update t_other_certificate
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="certName != null">cert_name = #{certName},</if>
+            <if test="issueOffice != null">issue_office = #{issueOffice},</if>
+            <if test="certBelong != null">cert_belong = #{certBelong},</if>
+            <if test="belongType != null">belong_type = #{belongType},</if>
+            <if test="beginDate != null">begin_date = #{beginDate},</if>
+            <if test="endDate != null">end_date = #{endDate},</if>
+            <if test="issueDate != null">issue_date = #{issueDate},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where other_id = #{otherId}
+    </update>
+
+    <delete id="deleteOtherCertificateById" parameterType="String">
+        delete from t_other_certificate where other_id = #{otherId}
+    </delete>
+</mapper>

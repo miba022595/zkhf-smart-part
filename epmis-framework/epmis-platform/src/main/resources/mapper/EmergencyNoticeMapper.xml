@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.platform.mapper.emergency.EmergencyNoticeMapper">
+
+    <resultMap id="emergencyNoticeResult" type="com.zkhf.epmis.platform.emergency.domain.EmergencyNotice">
+        <result property="noticeId" column="notice_id"/>
+        <result property="entCode" column="ent_code"/>
+        <result property="entName" column="ent_name"/>
+        <result property="weComMsg" column="we_com_msg"/>
+        <result property="noticeTitle" column="notice_title"/>
+        <result property="noticeContent" column="notice_content"/>
+        <result property="eventLocation" column="event_location"/>
+        <result property="eventTime" column="event_time"/>
+        <result property="receiverNames" column="receiver_names"/>
+        <result property="sendStatus" column="send_status"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.zkhf.epmis.platform.emergency.domain.EmergencyNotice">
+        insert into t_emergency_notice
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="noticeId != null and noticeId != ''">notice_id,</if>
+            <if test="entCode != null and entCode != ''">ent_code,</if>
+            <if test="noticeTitle != null and noticeTitle != ''">notice_title,</if>
+            <if test="noticeContent != null and noticeContent != ''">notice_content,</if>
+            <if test="eventLocation != null and eventLocation != ''">event_location,</if>
+            <if test="eventTime != null">event_time,</if>
+            <if test="receiverNames != null and receiverNames != ''">receiver_names,</if>
+            <if test="sendStatus != null and sendStatus != ''">send_status,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="noticeId != null and noticeId != ''">#{noticeId},</if>
+            <if test="entCode != null and entCode != ''">#{entCode},</if>
+            <if test="noticeTitle != null and noticeTitle != ''">#{noticeTitle},</if>
+            <if test="noticeContent != null and noticeContent != ''">#{noticeContent},</if>
+            <if test="eventLocation != null and eventLocation != ''">#{eventLocation},</if>
+            <if test="eventTime != null">#{eventTime},</if>
+            <if test="receiverNames != null and receiverNames != ''">#{receiverNames},</if>
+            <if test="sendStatus != null and sendStatus != ''">#{sendStatus},</if>
+        </trim>
+    </insert>
+
+    <delete id="deleteById">
+        delete from t_emergency_notice where notice_id = #{noticeId}
+    </delete>
+
+    <select id="selectList" resultMap="emergencyNoticeResult">
+        select n.*, e.ent_name, e.we_com_msg from t_emergency_notice n
+        left join t_bas_enterprise e on n.ent_code = e.ent_code
+        <where>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and n.ent_code = #{entCode}
+                </when>
+                <otherwise>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        and n.ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="noticeId != null and noticeId != ''">
+                and n.notice_id = #{noticeId}
+            </if>
+            <if test="noticeTitle != null and noticeTitle != ''">
+                and n.notice_title like concat('%', #{noticeTitle}, '%')
+            </if>
+            <if test="eventLocation != null and eventLocation != ''">
+                and n.event_location like concat('%', #{eventLocation}, '%')
+            </if>
+            <if test="startTime != null and startTime != ''">
+                and n.create_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null and endTime != ''">
+                and n.create_time &lt;= #{endTime}
+            </if>
+        </where>
+        order by n.create_time desc
+    </select>
+
+    <select id="selectNickName" resultType="java.util.Map">
+        select user_name as userName, nick_name as nickName
+        from sys_user
+        <where>
+            <if test="userNames != null and !userNames.isEmpty()">
+                and user_name in
+                <foreach collection="userNames" item="userName" open="(" separator="," close=")">
+                    #{userName}
+                </foreach>
+            </if>
+        </where>
+    </select>
+</mapper>

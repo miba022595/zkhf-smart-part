@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.process.mapper.valid.ValidPeriodInfoMapper">
+
+    <resultMap id="infoResult" type="com.zkhf.epmis.process.valid.domain.ValidPeriodInfo">
+        <result property="id" column="id"/>
+        <result property="entCode" column="ent_code"/>
+        <result property="confType" column="conf_type"/>
+        <result property="itemId" column="item_id"/>
+        <result property="itemName" column="item_name"/>
+        <result property="leftDays" column="left_days"/>
+        <result property="alarmType" column="alarm_type"/>
+        <result property="alarmRage" column="alarm_rage"/>
+        <result property="beginDate" column="begin_date"/>
+        <result property="endDate" column="end_date"/>
+        <result property="sendTime" column="send_time"/>
+    </resultMap>
+
+    <select id="selectValidPeriodInfoList" resultMap="infoResult">
+        select
+            id, ent_code, conf_type, item_id, item_name, left_days, alarm_type, alarm_rage, begin_date, end_date, send_time
+        from t_valid_period_info
+        <where>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and ent_code = #{entCode}
+                </when>
+                <otherwise>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        and ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="confType != null">
+                and conf_type = #{confType}
+            </if>
+        </where>
+        order by ent_code desc, item_id desc
+    </select>
+
+</mapper>

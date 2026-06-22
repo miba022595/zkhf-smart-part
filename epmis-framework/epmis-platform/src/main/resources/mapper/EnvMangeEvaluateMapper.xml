@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.platform.mapper.envProtect.EnvMangeEvaluateMapper">
+
+    <resultMap id="envMangeEvaluateResult" type="com.zkhf.epmis.platform.envProtect.domain.EnvMangeEvaluate">
+        <result property="evaluateId" column="evaluate_id"/>
+        <result property="entCode" column="ent_code"/>
+        <result property="entName" column="ent_name"/>
+        <result property="evaluateName" column="evaluate_name"/>
+        <result property="eiaLevel" column="eia_level"/>
+        <result property="approvalDepart" column="approval_depart"/>
+        <result property="replyNo" column="reply_no"/>
+        <result property="ratingAgency" column="rating_agency"/>
+        <result property="leadAuthor" column="lead_author"/>
+        <result property="ratingCost" column="rating_cost"/>
+        <result property="pollutantCode" column="pollutant_code"/>
+        <result property="pollutantTotal" column="pollutant_total"/>
+        <result property="contractTime" column="contract_time"/>
+        <result property="reportSubTime" column="report_sub_time"/>
+        <result property="publicityTime" column="publicity_time"/>
+        <result property="approvalTime" column="approval_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <select id="selectMangeEvaluateList" resultMap="envMangeEvaluateResult">
+        select
+            v.evaluate_id, v.ent_code, e.ent_name, v.evaluate_name, v.eia_level, v.approval_depart, v.reply_no, v.rating_agency, v.lead_author, v.rating_cost,
+            v.pollutant_code, v.pollutant_total, v.contract_time, v.report_sub_time, v.publicity_time, v.approval_time, v.remark
+        from
+            t_env_mange_evaluate v
+        left join
+            t_bas_enterprise e on e.ent_code = v.ent_code
+        <where>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and v.ent_code = #{entCode}
+                </when>
+                <otherwise>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        and v.ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="entName != null and entName != ''">
+                and e.ent_name like concat('%', #{entName}, '%')
+            </if>
+            <if test="key != null and key != ''">
+                and v.evaluate_name like concat('%', #{key}, '%')
+            </if>
+        </where>
+        order by v.evaluate_id desc
+    </select>
+
+    <insert id="insertMangeEvaluate" parameterType="com.zkhf.epmis.platform.envProtect.domain.EnvMangeEvaluate">
+        insert into t_env_mange_evaluate
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="evaluateId != null">evaluate_id,</if>
+            <if test="entCode != null and entCode != ''">ent_code,</if>
+            <if test="evaluateName != null and evaluateName != ''">evaluate_name,</if>
+            <if test="eiaLevel != null">eia_level,</if>
+            <if test="approvalDepart != null">approval_depart,</if>
+            <if test="replyNo != null">reply_no,</if>
+            <if test="ratingAgency != null">rating_agency,</if>
+            <if test="leadAuthor != null">lead_author,</if>
+            <if test="ratingCost != null">rating_cost,</if>
+            <if test="pollutantCode != null">pollutant_code,</if>
+            <if test="pollutantTotal != null">pollutant_total,</if>
+            <if test="contractTime != null">contract_time,</if>
+            <if test="reportSubTime != null">report_sub_time,</if>
+            <if test="publicityTime != null">publicity_time,</if>
+            <if test="approvalTime != null">approval_time,</if>
+            <if test="remark != null">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="evaluateId != null">#{evaluateId},</if>
+            <if test="entCode != null and entCode != ''">#{entCode},</if>
+            <if test="evaluateName != null and evaluateName != ''">#{evaluateName},</if>
+            <if test="eiaLevel != null">#{eiaLevel},</if>
+            <if test="approvalDepart != null">#{approvalDepart},</if>
+            <if test="replyNo != null">#{replyNo},</if>
+            <if test="ratingAgency != null">#{ratingAgency},</if>
+            <if test="leadAuthor != null">#{leadAuthor},</if>
+            <if test="ratingCost != null">#{ratingCost},</if>
+            <if test="pollutantCode != null">#{pollutantCode},</if>
+            <if test="pollutantTotal != null">#{pollutantTotal},</if>
+            <if test="contractTime != null">#{contractTime},</if>
+            <if test="reportSubTime != null">#{reportSubTime},</if>
+            <if test="publicityTime != null">#{publicityTime},</if>
+            <if test="approvalTime != null">#{approvalTime},</if>
+            <if test="remark != null">#{remark},</if>
+        </trim>
+    </insert>
+
+    <update id="updateMangeEvaluate" parameterType="com.zkhf.epmis.platform.envProtect.domain.EnvMangeEvaluate">
+        update t_env_mange_evaluate
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="evaluateName != null and evaluateName != ''">evaluate_name = #{evaluateName},</if>
+            <if test="eiaLevel != null">eia_level = #{eiaLevel},</if>
+            <if test="approvalDepart != null">approval_depart = #{approvalDepart},</if>
+            <if test="replyNo != null">reply_no = #{replyNo},</if>
+            <if test="ratingAgency != null">rating_agency = #{ratingAgency},</if>
+            <if test="leadAuthor != null">lead_author = #{leadAuthor},</if>
+            <if test="ratingCost != null">rating_cost = #{ratingCost},</if>
+            <if test="pollutantCode != null">pollutant_code = #{pollutantCode},</if>
+            <if test="pollutantTotal != null">pollutant_total = #{pollutantTotal},</if>
+            <if test="contractTime != null">contract_time = #{contractTime},</if>
+            <if test="reportSubTime != null">report_sub_time = #{reportSubTime},</if>
+            <if test="publicityTime != null">publicity_time = #{publicityTime},</if>
+            <if test="approvalTime != null">approval_time = #{approvalTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where evaluate_id = #{evaluateId}
+    </update>
+
+    <delete id="deleteMangeEvaluateById">
+        delete from t_env_mange_evaluate where evaluate_id = #{evaluateId}
+    </delete>
+</mapper>

@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.platform.mapper.envManual.EnvManualCheckPlanMapper">
+
+    <resultMap id="envManualCheckPlanResult" type="com.zkhf.epmis.platform.envManual.domain.EnvManualCheckPlan">
+        <result property="outPutPollId" column="out_put_poll_id"/>
+        <result property="executionStandard" column="execution_standard"/>
+        <result property="firstDate" column="first_date"/>
+        <result property="checkFrequency" column="check_frequency"/>
+        <result property="planDesc" column="plan_desc"/>
+        <result property="submitContent" column="submit_content"/>
+        <result property="approvalOpinion" column="approval_opinion"/>
+        <result property="status" column="status"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="outPutId" column="out_put_id"/>
+        <result property="outPutName" column="out_put_name"/>
+        <result property="outPutType" column="out_put_type"/>
+        <result property="pollutantCode" column="pollutant_code"/>
+        <result property="pollutantNameCn" column="pollutant_name_cn"/>
+        <result property="pollutantNameEn" column="pollutant_name_en"/>
+        <result property="overMaxvalue" column="over_maxValue"/>
+        <result property="overMinvalue" column="over_minValue"/>
+    </resultMap>
+
+    <select id="selectEnvManualCheckPlanByOutPutPollId" resultMap="envManualCheckPlanResult">
+        select
+            p.out_put_poll_id, p.execution_standard, p.first_date, p.check_frequency, p.plan_desc, p.submit_content, p.approval_opinion, p.status, p.create_time, p.update_time,
+            o.out_put_id, o.out_put_name, o.out_put_type,
+            op.pollutant_code, pc.pollutant_name_cn, pc.pollutant_name_en, op.over_maxValue, op.over_minValue
+        from t_env_manual_check_plan p
+        left join t_ent_output_pollutant op on op.out_put_poll_id = p.out_put_poll_id
+        left join t_bas_pollutant_code pc on pc.pollutant_code = op.pollutant_code
+        left join t_ent_out_put_info o on o.out_put_id = op.out_put_id
+        where p.out_put_poll_id = #{outPutPollId}
+    </select>
+
+    <select id="selectEnvManualCheckPlanList" parameterType="com.zkhf.epmis.platform.envManual.domain.EnvManualCheckPlanReq"
+            resultMap="envManualCheckPlanResult">
+        select
+            p.out_put_poll_id, p.execution_standard, p.first_date, p.check_frequency, p.plan_desc, p.submit_content, p.approval_opinion, p.status, p.create_time, p.update_time,
+            o.out_put_id, o.out_put_name, o.out_put_type,
+            op.pollutant_code, pc.pollutant_name_cn, pc.pollutant_name_en, op.over_maxValue, op.over_minValue
+        from t_env_manual_check_plan p
+        left join t_ent_output_pollutant op on op.out_put_poll_id = p.out_put_poll_id
+        left join t_bas_pollutant_code pc on pc.pollutant_code = op.pollutant_code
+        left join t_ent_out_put_info o on o.out_put_id = op.out_put_id
+        <where>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and o.ent_code = #{entCode}
+                </when>
+                <otherwise>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        and o.ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="outPutId != null and outPutId != ''">
+                and o.out_put_id = #{outPutId}
+            </if>
+            <if test="status != null">
+                and p.status = #{status}
+            </if>
+            <if test="firstDateStart != null and firstDateEnd != null">
+                and p.first_date between #{firstDateStart} and #{firstDateEnd}
+            </if>
+        </where>
+        order by o.out_put_id desc, p.first_date desc
+    </select>
+
+    <insert id="insertEnvManualCheckPlan" parameterType="com.zkhf.epmis.platform.envManual.domain.EnvManualCheckPlan">
+        insert into t_env_manual_check_plan
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="outPutPollId != null">out_put_poll_id,</if>
+            <if test="executionStandard != null">execution_standard,</if>
+            <if test="firstDate != null">first_date,</if>
+            <if test="checkFrequency != null">check_frequency,</if>
+            <if test="planDesc != null">plan_desc,</if>
+            <if test="status != null">status,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="outPutPollId != null">#{outPutPollId},</if>
+            <if test="executionStandard != null">#{executionStandard},</if>
+            <if test="firstDate != null">#{firstDate},</if>
+            <if test="checkFrequency != null">#{checkFrequency},</if>
+            <if test="planDesc != null">#{planDesc},</if>
+            <if test="status != null">#{status},</if>
+        </trim>
+    </insert>
+
+    <update id="updateEnvManualCheckPlan" parameterType="com.zkhf.epmis.platform.envManual.domain.EnvManualCheckPlan">
+        update t_env_manual_check_plan
+        <set><!-- 计划状态：0-已取消、1-草稿、2-待审批、3-已审批、4-已完成、5-已终止 -->
+            status = #{status}
+            <if test="status != null and status == 1">
+                , execution_standard = #{executionStandard}, first_date = #{firstDate}, check_frequency = #{checkFrequency}, plan_desc = #{planDesc}
+            </if>
+            <if test="status != null and status == 2">
+                , submit_content = #{submitContent}
+            </if>
+            <if test="status != null and status == 3">
+                , approval_opinion = #{approvalOpinion}
+            </if>
+        </set>
+        where out_put_poll_id = #{outPutPollId}
+    </update>
+
+    <delete id="deleteEnvManualCheckPlanByOutPutPollId" parameterType="String">
+        delete from t_env_manual_check_plan where out_put_poll_id = #{outPutPollId}
+    </delete>
+
+</mapper>

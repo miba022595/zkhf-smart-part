@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.zkhf.epmis.platform.mapper.envProtect.EntOutPollutantPermitMapper">
+
+    <resultMap id="entOutPollutantPermitResult" type="com.zkhf.epmis.platform.envProtect.domain.EntOutPollutantPermit">
+        <result property="entCode" column="ent_code"/>
+        <result property="entName" column="ent_name"/>
+        <result property="socialCreditCode" column="social_credit_code"/>
+        <result property="permitLevel" column="permit_level"/>
+        <result property="permitNum" column="permit_num"/>
+        <result property="beginDate" column="begin_date"/>
+        <result property="endDate" column="end_date"/>
+        <result property="issueOffice" column="issue_office"/>
+        <result property="issueDate" column="issue_date"/>
+        <result property="reportRequire" column="report_require"/>
+        <result property="productDesc" column="product_desc"/>
+        <result property="productOutput" column="product_output"/>
+        <result property="gasPollType" column="gas_poll_type"/>
+        <result property="gasEmissionRule" column="gas_emission_rule"/>
+        <result property="gasExecuteStandard" column="gas_execute_standard"/>
+        <result property="gasCharPoll" column="gas_char_poll"/>
+        <result property="waterPollType" column="water_poll_type"/>
+        <result property="waterEmissionRule" column="water_emission_rule"/>
+        <result property="waterExecuteStandard" column="water_execute_standard"/>
+        <result property="waterCharPoll" column="water_char_poll"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <resultMap id="entOutPollutantPermitCountResult"
+               type="com.zkhf.epmis.platform.envProtect.domain.EntOutPollutantPermitCount">
+        <result property="pollPermitCountId" column="poll_permit_Count_id"/>
+        <result property="entCode" column="ent_code"/>
+        <result property="pollType" column="poll_type"/>
+        <result property="pollutantCode" column="pollutant_code"/>
+        <result property="pollutantNameCn" column="pollutant_name_cn"/>
+        <result property="pollutantNameEn" column="pollutant_name_en"/>
+        <result property="permitYear" column="permit_year"/>
+        <result property="permitCount" column="permit_count"/>
+    </resultMap>
+
+    <select id="selectAllEntOutPollutantPermitCount" resultType="java.util.Map">
+        select ent_code as entCode, pollutant_code as pollutantCode, permit_count as permitCount
+        from t_ent_out_pollutant_permit_count
+        where permit_year = #{permitYear}
+    </select>
+
+    <select id="selectEntOutPollutantPermitList"
+            parameterType="com.zkhf.epmis.platform.envProtect.domain.EntOutPollutantPermitReq"
+            resultMap="entOutPollutantPermitResult">
+        select
+        e.ent_code, e.ent_name, e.social_credit_code, p.permit_level, p.permit_num, p.begin_date, p.end_date,
+        p.issue_office,
+        p.issue_date, p.report_require, p.product_desc, p.product_output, p.gas_poll_type, p.gas_emission_rule,
+        p.gas_execute_standard, p.gas_char_poll,
+        p.water_poll_type, p.water_emission_rule, p.water_execute_standard, p.water_char_poll, p.update_time, p.remark
+        from t_bas_enterprise e
+        left join t_ent_out_pollutant_permit p on p.ent_code = e.ent_code
+        <where>
+            <if test="entCodes != null and entCodes.size() > 0">
+                and e.ent_code in
+                <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                    #{entCode}
+                </foreach>
+            </if>
+            <if test="entName != null and entName != ''">and e.ent_name like concat('%', #{entName}, '%')</if>
+            <if test="permitNum != null and permitNum != ''">and p.permit_num like concat('%', #{permitNum}, '%')</if>
+        </where>
+        order by e.create_time desc
+    </select>
+
+    <select id="checkExistEntOutPollutantPermit">
+        select count(*)
+        from t_ent_out_pollutant_permit
+        where ent_code = #{entCode}
+    </select>
+
+    <insert id="insertEntOutPollutantPermit"
+            parameterType="com.zkhf.epmis.platform.envProtect.domain.EntOutPollutantPermit">
+        insert into t_ent_out_pollutant_permit
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="entCode != null">ent_code,</if>
+            <if test="permitLevel != null">permit_level,</if>
+            <if test="permitNum != null">permit_num,</if>
+            <if test="beginDate != null">begin_date,</if>
+            <if test="endDate != null">end_date,</if>
+            <if test="issueOffice != null">issue_office,</if>
+            <if test="issueDate != null">issue_date,</if>
+            <if test="reportRequire != null">report_require,</if>
+            <if test="productDesc != null">product_desc,</if>
+            <if test="productOutput != null">product_output,</if>
+            <if test="gasPollType != null">gas_poll_type,</if>
+            <if test="gasEmissionRule != null">gas_emission_rule,</if>
+            <if test="gasExecuteStandard != null">gas_execute_standard,</if>
+            <if test="gasCharPoll != null">gas_char_poll,</if>
+            <if test="waterPollType != null">water_poll_type,</if>
+            <if test="waterEmissionRule != null">water_emission_rule,</if>
+            <if test="waterExecuteStandard != null">water_execute_standard,</if>
+            <if test="waterCharPoll != null">water_char_poll,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="entCode != null">#{entCode},</if>
+            <if test="permitLevel != null">#{permitLevel},</if>
+            <if test="permitNum != null">#{permitNum},</if>
+            <if test="beginDate != null">#{beginDate},</if>
+            <if test="endDate != null">#{endDate},</if>
+            <if test="issueOffice != null">#{issueOffice},</if>
+            <if test="issueDate != null">#{issueDate},</if>
+            <if test="reportRequire != null">#{reportRequire},</if>
+            <if test="productDesc != null">#{productDesc},</if>
+            <if test="productOutput != null">#{productOutput},</if>
+            <if test="gasPollType != null">#{gasPollType},</if>
+            <if test="gasEmissionRule != null">#{gasEmissionRule},</if>
+            <if test="gasExecuteStandard != null">#{gasExecuteStandard},</if>
+            <if test="gasCharPoll != null">#{gasCharPoll},</if>
+            <if test="waterPollType != null">#{waterPollType},</if>
+            <if test="waterEmissionRule != null">#{waterEmissionRule},</if>
+            <if test="waterExecuteStandard != null">#{waterExecuteStandard},</if>
+            <if test="waterCharPoll != null">#{waterCharPoll},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+        </trim>
+    </insert>
+
+    <update id="updateEntOutPollutantPermit"
+            parameterType="com.zkhf.epmis.platform.envProtect.domain.EntOutPollutantPermit">
+        update t_ent_out_pollutant_permit
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="permitLevel != null">permit_level = #{permitLevel},</if>
+            <if test="permitNum != null">permit_num = #{permitNum},</if>
+            <if test="beginDate != null">begin_date = #{beginDate},</if>
+            <if test="endDate != null">end_date = #{endDate},</if>
+            <if test="issueOffice != null">issue_office = #{issueOffice},</if>
+            <if test="issueDate != null">issue_date = #{issueDate},</if>
+            <if test="reportRequire != null">report_require = #{reportRequire},</if>
+            <if test="productDesc != null">product_desc = #{productDesc},</if>
+            <if test="productOutput != null">product_output = #{productOutput},</if>
+            <if test="gasPollType != null">gas_poll_type = #{gasPollType},</if>
+            <if test="gasEmissionRule != null">gas_emission_rule = #{gasEmissionRule},</if>
+            <if test="gasExecuteStandard != null">gas_execute_standard = #{gasExecuteStandard},</if>
+            <if test="gasCharPoll != null">gas_char_poll = #{gasCharPoll},</if>
+            <if test="waterPollType != null">water_poll_type = #{waterPollType},</if>
+            <if test="waterEmissionRule != null">water_emission_rule = #{waterEmissionRule},</if>
+            <if test="waterExecuteStandard != null">water_execute_standard = #{waterExecuteStandard},</if>
+            <if test="waterCharPoll != null">water_char_poll = #{waterCharPoll},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where ent_code = #{entCode}
+    </update>
+
+    <select id="selectEntOutPollutantPermitCountList"
+            parameterType="com.zkhf.epmis.platform.envProtect.domain.EntOutPollutantPermitCountReq"
+            resultMap="entOutPollutantPermitCountResult">
+        select
+            c.poll_permit_count_id, c.ent_code, c.poll_type, c.pollutant_code, p.pollutant_name_cn, p.pollutant_name_en,
+            c.permit_year, c.permit_count, p.unit_pf_en as couUnit
+        from t_ent_out_pollutant_permit_count c
+        left join t_bas_pollutant_code p on p.pollutant_code = c.pollutant_code
+        <where>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and c.ent_code = #{entCode}
+                </when>
+                <otherwise>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        and c.ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="pollutantNameCn != null and pollutantNameCn != ''">and p.pollutant_name_cn like concat('%',
+                #{pollutantNameCn}, '%')
+            </if>
+            <if test="pollutantNameEn != null and pollutantNameEn != ''">and p.pollutant_name_en like concat('%',
+                #{pollutantNameEn}, '%')
+            </if>
+            <if test="permitYear != null ">and c.permit_year = #{permitYear}</if>
+        </where>
+        order by c.permit_year, c.poll_permit_count_id desc
+    </select>
+
+    <select id="existsEntOutPollutantPermitCount" parameterType="com.zkhf.epmis.platform.envProtect.domain.EntOutPollutantPermitCount">
+        select count(*)
+        from t_ent_out_pollutant_permit_count
+        where ent_code = #{entCode} and pollutant_code = #{pollutantCode} and permit_year = #{permitYear}
+    </select>
+
+    <insert id="insertEntOutPollutantPermitCount"
+            parameterType="com.zkhf.epmis.platform.envProtect.domain.EntOutPollutantPermitCount">
+        insert into t_ent_out_pollutant_permit_count
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="pollPermitCountId != null">poll_permit_count_id,</if>
+            <if test="entCode != null and entCode != ''">ent_code,</if>
+            <if test="pollType != null">poll_type,</if>
+            <if test="pollutantCode != null">pollutant_code,</if>
+            <if test="permitYear != null">permit_year,</if>
+            <if test="permitCount != null">permit_count,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="pollPermitCountId != null">#{pollPermitCountId},</if>
+            <if test="entCode != null and entCode != ''">#{entCode},</if>
+            <if test="pollType != null">#{pollType},</if>
+            <if test="pollutantCode != null">#{pollutantCode},</if>
+            <if test="permitYear != null">#{permitYear},</if>
+            <if test="permitCount != null">#{permitCount},</if>
+        </trim>
+    </insert>
+
+    <update id="updateEntOutPollutantPermitCount"
+            parameterType="com.zkhf.epmis.platform.envProtect.domain.EntOutPollutantPermitCount">
+        update t_ent_out_pollutant_permit_count
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="pollType != null">poll_type = #{pollType},</if>
+            <if test="pollutantCode != null">pollutant_code = #{pollutantCode},</if>
+            <if test="permitYear != null">permit_year = #{permitYear},</if>
+            <if test="permitCount != null">permit_count = #{permitCount},</if>
+        </trim>
+        where poll_permit_count_id = #{pollPermitCountId}
+    </update>
+
+    <delete id="deleteEntOutPollutantPermitCountByPollPermitCountIds" parameterType="String">
+        delete from t_ent_out_pollutant_permit_count where poll_permit_count_id in
+        <foreach item="pollPermitCountId" collection="pollPermitCountIds" open="(" separator="," close=")">
+            #{pollPermitCountId}
+        </foreach>
+    </delete>
+</mapper>

@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.process.mapper.solidWaste.WasteRoomMapper">
+
+    <resultMap id="wasteRoomResult" type="com.zkhf.epmis.process.solidWaste.domain.WasteRoom">
+        <result property="roomId" column="room_id"/>
+        <result property="entCode" column="ent_code"/>
+        <result property="outPutId" column="out_put_id"/>
+        <result property="roomName" column="room_name"/>
+        <result property="roomCode" column="room_code"/>
+        <result property="wasteType" column="waste_type"/>
+        <result property="roomType" column="room_type"/>
+        <result property="maxCapacity" column="max_capacity"/>
+        <result property="warnLimit" column="warn_limit"/>
+        <result property="area" column="area"/>
+        <result property="hasCamera" column="has_camera"/>
+        <result property="hasLeakProof" column="has_leak_proof"/>
+        <result property="hasVentilation" column="has_ventilation"/>
+        <result property="hasFireControl" column="has_fire_control"/>
+        <result property="hasEmergencySupplies" column="has_emergency_supplies"/>
+        <result property="longitude" column="longitude"/>
+        <result property="latitude" column="latitude"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <select id="selectWasteRoomList" parameterType="com.zkhf.epmis.process.solidWaste.domain.WasteRoomReq"
+            resultMap="wasteRoomResult">
+        select
+            room_id, ent_code, out_put_id, room_name, room_code, room_type, waste_type, max_capacity, warn_limit,
+            area, has_camera, has_leak_proof, has_ventilation, has_fire_control, has_emergency_supplies, longitude, latitude, remark
+        from t_waste_room
+        <where>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and ent_code = #{entCode}
+                </when>
+                <otherwise>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        and ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="outPutId != null and outPutId != ''">
+                and out_put_id = #{outPutId}
+            </if>
+            <if test="roomType != null and roomType != ''">
+                and room_type = #{roomType}
+            </if>
+            <if test="wasteType != null and wasteType != ''">
+                and waste_type = #{wasteType}
+            </if>
+        </where>
+        order by room_id desc
+    </select>
+
+    <insert id="insertWasteRoom" parameterType="com.zkhf.epmis.process.solidWaste.domain.WasteRoom">
+        insert into t_waste_room
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="roomId != null">room_id,</if>
+            <if test="entCode != null and entCode != ''">ent_code,</if>
+            <if test="outPutId != null">out_put_id,</if>
+            <if test="roomName != null and roomName != ''">room_name,</if>
+            <if test="roomCode != null">room_code,</if>
+            <if test="wasteType != null">waste_type,</if>
+            <if test="roomType != null">room_type,</if>
+            <if test="maxCapacity != null">max_capacity,</if>
+            <if test="warnLimit != null">warn_limit,</if>
+            <if test="area != null">area,</if>
+            <if test="hasCamera != null">has_camera,</if>
+            <if test="hasLeakProof != null">has_leak_proof,</if>
+            <if test="hasVentilation != null">has_ventilation,</if>
+            <if test="hasFireControl != null">has_fire_control,</if>
+            <if test="hasEmergencySupplies != null">has_emergency_supplies,</if>
+            <if test="longitude != null">longitude,</if>
+            <if test="latitude != null">latitude,</if>
+            <if test="remark != null">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="roomId != null">#{roomId},</if>
+            <if test="entCode != null and entCode != ''">#{entCode},</if>
+            <if test="outPutId != null">#{outPutId},</if>
+            <if test="roomName != null and roomName != ''">#{roomName},</if>
+            <if test="roomCode != null">#{roomCode},</if>
+            <if test="wasteType != null">#{wasteType},</if>
+            <if test="roomType != null">#{roomType},</if>
+            <if test="maxCapacity != null">#{maxCapacity},</if>
+            <if test="warnLimit != null">#{warnLimit},</if>
+            <if test="area != null">#{area},</if>
+            <if test="hasCamera != null">#{hasCamera},</if>
+            <if test="hasLeakProof != null">#{hasLeakProof},</if>
+            <if test="hasVentilation != null">#{hasVentilation},</if>
+            <if test="hasFireControl != null">#{hasFireControl},</if>
+            <if test="hasEmergencySupplies != null">#{hasEmergencySupplies},</if>
+            <if test="longitude != null">#{longitude},</if>
+            <if test="latitude != null">#{latitude},</if>
+            <if test="remark != null">#{remark},</if>
+        </trim>
+    </insert>
+
+    <update id="updateWasteRoom" parameterType="com.zkhf.epmis.process.solidWaste.domain.WasteRoom">
+        update t_waste_room
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="outPutId != null">out_put_id = #{outPutId},</if>
+            <if test="roomName != null and roomName != ''">room_name = #{roomName},</if>
+            <if test="roomCode != null">room_code = #{roomCode},</if>
+            <if test="wasteType != null">waste_type = #{wasteType},</if>
+            <if test="roomType != null">room_type = #{roomType},</if>
+            <if test="maxCapacity != null">max_capacity = #{maxCapacity},</if>
+            <if test="warnLimit != null">warn_limit = #{warnLimit},</if>
+            <if test="area != null">area = #{area},</if>
+            <if test="hasCamera != null">has_camera = #{hasCamera},</if>
+            <if test="hasLeakProof != null">has_leak_proof = #{hasLeakProof},</if>
+            <if test="hasVentilation != null">has_ventilation = #{hasVentilation},</if>
+            <if test="hasFireControl != null">has_fire_control = #{hasFireControl},</if>
+            <if test="hasEmergencySupplies != null">has_emergency_supplies = #{hasEmergencySupplies},</if>
+            <if test="longitude != null">longitude = #{longitude},</if>
+            <if test="latitude != null">latitude = #{latitude},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where room_id = #{roomId}
+    </update>
+
+    <delete id="deleteWasteRoomByRoomId" parameterType="String">
+        delete from t_waste_room where room_id = #{roomId}
+    </delete>
+
+    <select id="selectUsedSizeRoom" resultType="int">
+        SELECT
+            COALESCE((SELECT COUNT(*) FROM t_waste_generate WHERE room_id = #{roomId}), 0) +
+            COALESCE((SELECT COUNT(*) FROM t_waste_reduction WHERE room_id = #{roomId}), 0) +
+            COALESCE((SELECT COUNT(*) FROM t_waste_storage WHERE room_id = #{roomId}), 0) AS total_occurrence
+    </select>
+
+    <select id="selectRoomCapacityBatch" resultType="java.util.Map">
+        SELECT
+            room_id,
+            SUM(remain_qty) AS curr_capacity
+        FROM (
+            SELECT
+                room_id,
+                COALESCE(SUM(remain_qty), 0) AS remain_qty
+            FROM t_waste_generate
+            <where>
+                <if test="roomIds != null and roomIds.size() > 0">
+                    and room_id in
+                    <foreach collection="roomIds" item="roomId" open="(" separator="," close=")">
+                        #{roomId}
+                    </foreach>
+                </if>
+            </where>
+            GROUP BY room_id
+            UNION ALL
+            SELECT
+                room_id,
+                COALESCE(SUM(remain_qty), 0) AS remain_qty
+            FROM t_waste_storage
+            <where>
+                <if test="roomIds != null and roomIds.size() > 0">
+                    and room_id in
+                    <foreach collection="roomIds" item="roomId" open="(" separator="," close=")">
+                        #{roomId}
+                    </foreach>
+                </if>
+            </where>
+            GROUP BY room_id
+        ) t
+        GROUP BY room_id
+    </select>
+
+</mapper>

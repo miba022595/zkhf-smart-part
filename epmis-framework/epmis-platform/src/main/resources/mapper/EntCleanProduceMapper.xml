@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.platform.mapper.envProtect.EntCleanProduceMapper">
+
+    <resultMap id="entCleanProduceResult" type="com.zkhf.epmis.platform.envProtect.domain.EntCleanProduce">
+        <result property="cleanProduceId" column="clean_produce_id"/>
+        <result property="entCode" column="ent_code"/>
+        <result property="entName" column="ent_name"/>
+        <result property="cleanName" column="clean_name"/>
+        <result property="makeDate" column="make_date"/>
+        <result property="auditFocus" column="audit_focus"/>
+        <result property="planInfo" column="plan_info"/>
+        <result property="reduceEffect" column="reduce_effect"/>
+        <result property="workProgress" column="work_progress"/>
+        <result property="effectiveDate" column="effective_date"/>
+    </resultMap>
+
+    <select id="selectCleanProduceById" resultMap="entCleanProduceResult">
+        select
+            p.clean_produce_id, p.ent_code, e.ent_name, p.clean_name, p.make_date, p.audit_focus,
+            p.plan_info, p.reduce_effect, p.work_progress, p.effective_date
+        from t_ent_clean_produce p
+        left join t_bas_enterprise e on e.ent_code = p.ent_code
+        where p.clean_produce_id = #{cleanProduceId}
+    </select>
+
+    <select id="selectCleanProduceList" parameterType="com.zkhf.epmis.platform.envProtect.domain.EntCleanProduceReq"
+            resultMap="entCleanProduceResult">
+        select
+        p.clean_produce_id, p.ent_code, e.ent_name, p.clean_name, p.make_date, p.audit_focus,
+        p.plan_info, p.reduce_effect, p.work_progress, p.effective_date
+        from t_ent_clean_produce p
+        left join t_bas_enterprise e on e.ent_code = p.ent_code
+        <where>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and p.ent_code = #{entCode}
+                </when>
+                <otherwise>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        and p.ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="entName != null and entName != ''">and e.ent_name like concat('%', #{entName}, '%')</if>
+            <if test="cleanName != null and cleanName != ''">and p.clean_name like concat('%', #{cleanName}, '%')</if>
+        </where>
+    </select>
+
+    <insert id="insertCleanProduce" parameterType="com.zkhf.epmis.platform.envProtect.domain.EntCleanProduce">
+        insert into t_ent_clean_produce
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="cleanProduceId != null">clean_produce_id,</if>
+            <if test="entCode != null">ent_code,</if>
+            <if test="cleanName != null">clean_name,</if>
+            <if test="makeDate != null">make_date,</if>
+            <if test="auditFocus != null">audit_focus,</if>
+            <if test="planInfo != null">plan_info,</if>
+            <if test="reduceEffect != null">reduce_effect,</if>
+            <if test="workProgress != null">work_progress,</if>
+            <if test="effectiveDate != null">effective_date,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="cleanProduceId != null">#{cleanProduceId},</if>
+            <if test="entCode != null">#{entCode},</if>
+            <if test="cleanName != null">#{cleanName},</if>
+            <if test="makeDate != null">#{makeDate},</if>
+            <if test="auditFocus != null">#{auditFocus},</if>
+            <if test="planInfo != null">#{planInfo},</if>
+            <if test="reduceEffect != null">#{reduceEffect},</if>
+            <if test="workProgress != null">#{workProgress},</if>
+            <if test="effectiveDate != null">#{effectiveDate},</if>
+        </trim>
+    </insert>
+
+    <update id="updateCleanProduce" parameterType="com.zkhf.epmis.platform.envProtect.domain.EntCleanProduce">
+        update t_ent_clean_produce
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="cleanName != null">clean_name = #{cleanName},</if>
+            <if test="makeDate != null">make_date = #{makeDate},</if>
+            <if test="auditFocus != null">audit_focus = #{auditFocus},</if>
+            <if test="planInfo != null">plan_info = #{planInfo},</if>
+            <if test="reduceEffect != null">reduce_effect = #{reduceEffect},</if>
+            <if test="workProgress != null">work_progress = #{workProgress},</if>
+            <if test="effectiveDate != null">effective_date = #{effectiveDate},</if>
+        </trim>
+        where clean_produce_id = #{cleanProduceId}
+    </update>
+
+    <delete id="deleteCleanProduceByIds" parameterType="String">
+        delete from t_ent_clean_produce where clean_produce_id in
+        <foreach item="cleanProduceId" collection="cleanProduceIds" open="(" separator="," close=")">
+            #{cleanProduceId}
+        </foreach>
+    </delete>
+</mapper>

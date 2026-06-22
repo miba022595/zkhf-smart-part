@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.zkhf.epmis</groupId>
+        <artifactId>epmis</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>epmis-service</artifactId>
+    <description>主体服务</description>
+
+    <dependencies>
+        <!-- 核心模块 -->
+        <dependency>
+            <groupId>com.zkhf.epmis</groupId>
+            <artifactId>epmis-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!-- 认证模块 -->
+        <dependency>
+            <groupId>com.zkhf.epmis</groupId>
+            <artifactId>epmis-auth</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!-- 平台模块 -->
+        <dependency>
+            <groupId>com.zkhf.epmis</groupId>
+            <artifactId>epmis-platform</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!-- 业务处理模块 -->
+        <dependency>
+            <groupId>com.zkhf.epmis</groupId>
+            <artifactId>epmis-process</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!-- xxljob依赖问题引入 -->
+        <dependency>
+            <groupId>javax.annotation</groupId>
+            <artifactId>javax.annotation-api</artifactId>
+            <version>1.3.2</version>
+        </dependency>
+    </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.zkhf.epmis</groupId>
+                <artifactId>epmis-framework</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <finalName>${project.artifactId}</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring-boot.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.compiler.version}</version>
+                <configuration>
+                    <encoding>${maven.compiler.encoding}</encoding>
+                    <parameters>true</parameters>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

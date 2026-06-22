@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.platform.mapper.envFee.EnvFeeDictMapper">
+
+    <!-- 费用类型字典表查询全部 -->
+    <select id="selectAllFeeType" resultType="com.zkhf.epmis.platform.envFee.dict.FeeTypeDict">
+        SELECT
+            id, type_code as typeCode, type_name as typeName, description, sort_order as sortOrder
+        FROM t_bas_fee_type_dict
+        ORDER BY sort_order ASC
+    </select>
+
+    <!-- 费用状态字典表查询全部 -->
+    <select id="selectAllFeeStatus" resultType="com.zkhf.epmis.platform.envFee.dict.FeeStatusDict">
+        SELECT
+            id, status_code as statusCode, status_name as statusName, description, sort_order as sortOrder
+        FROM t_bas_fee_status_dict
+        ORDER BY sort_order ASC
+    </select>
+
+    <!-- 支付方式字典表查询全部 -->
+    <select id="selectAllPaymentMethod" resultType="com.zkhf.epmis.platform.envFee.dict.PaymentMethodDict">
+        SELECT
+            id, method_code as methodCode, method_name as methodName, description, sort_order as sortOrder
+        FROM t_bas_payment_method_dict
+        ORDER BY sort_order ASC
+    </select>
+
+    <!-- 付款状态字典表查询全部 -->
+    <select id="selectAllPaymentStatus" resultType="com.zkhf.epmis.platform.envFee.dict.PaymentStatusDict">
+        SELECT
+            id, status_code as statusCode, status_name as statusName, description, sort_order as sortOrder
+        FROM t_bas_payment_status_dict
+        ORDER BY sort_order ASC
+    </select>
+</mapper>

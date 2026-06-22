@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.platform.mapper.ops.OpsTemplateMapper">
+
+    <resultMap id="opsTemplateResult" type="com.zkhf.epmis.platform.ops.domain.OpsTemplate">
+        <result property="entCode" column="ent_code"/>
+        <result property="entName" column="ent_name"/>
+        <result property="outPutId" column="out_put_id"/>
+        <result property="outPutCode" column="out_put_code"/>
+        <result property="outPutName" column="out_put_name"/>
+        <result property="templateCode" column="template_code"/>
+        <result property="templateName" column="template_name"/>
+        <result property="showAttachmentFlag" column="show_attachment_flag"/>
+        <result property="showQualifiedFlag" column="show_qualified_flag"/>
+        <result property="promptText" column="prompt_text"/>
+        <result property="itemArray" column="item_array"/>
+        <result property="remark" column="remark"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <select id="allTemplateType" resultMap="opsTemplateResult">
+        select
+            ent_code, out_put_id, template_code, template_name
+        from t_ops_template
+    </select>
+
+    <select id="allTemplateTypeByOutId" resultMap="opsTemplateResult">
+        select
+            ent_code, out_put_id, template_code, template_name
+        from t_ops_template
+        where out_put_id = #{outPutId}
+        union all
+        select
+            ent_code, out_put_id, template_code, template_name
+        from t_ops_template t
+        where exists (select 1 from t_ent_out_put_info o where o.out_put_id = #{outPutId} and t.out_put_id = CONVERT(o.out_put_type, CHAR))
+    </select>
+
+    <select id="selectOpsTemplateDetail" resultMap="opsTemplateResult">
+        select
+            t.ent_code, t.out_put_id, t.template_code, t.template_name, t.show_attachment_flag,
+            t.show_qualified_flag, t.prompt_text, t.item_array, t.remark, t.create_by, t.create_time, t.update_by, t.update_time,
+            e.ent_name, o.out_put_code, o.out_put_name
+        from t_ops_template t
+        left join t_bas_enterprise e on e.ent_code = t.ent_code
+        left join t_ent_out_put_info o on o.out_put_id = t.out_put_id
+        where t.ent_code = #{entCode} and t.out_put_id = #{outPutId} and t.template_code = #{templateCode}
+    </select>
+
+    <select id="selectOpsPubTemplateDetail" resultMap="opsTemplateResult">
+        select
+            t.ent_code, t.out_put_id, t.template_code, t.template_name, t.show_attachment_flag,
+            t.show_qualified_flag, t.prompt_text, t.item_array, t.remark, t.create_by, t.create_time, t.update_by, t.update_time,
+            e.ent_name, o.out_put_code, o.out_put_name
+        from t_ops_template t
+        left join t_bas_enterprise e on e.ent_code = #{entCode}
+        left join t_ent_out_put_info o on o.out_put_id = #{outPutId}
+        where t.ent_code = '-1' and t.out_put_id = CONVERT(o.out_put_type, CHAR) and t.template_code = #{templateCode}
+    </select>
+
+    <select id="selectOpsTemplateList" parameterType="com.zkhf.epmis.platform.ops.domain.OpsTemplateReq" resultMap="opsTemplateResult">
+        select
+            t.ent_code, t.out_put_id, t.template_code, t.template_name, t.show_attachment_flag,
+            t.show_qualified_flag, t.prompt_text, t.remark, t.create_by, t.create_time, t.update_by, t.update_time,
+            e.ent_name, o.out_put_code, o.out_put_name
+        from t_ops_template t
+        left join t_bas_enterprise e on e.ent_code = t.ent_code
+        left join t_ent_out_put_info o on o.out_put_id = t.out_put_id
+        <where>
+            <choose>
+                <when test="entCode != null and entCode == '-1'">
+                    and t.ent_code = '-1'
+                </when>
+                <otherwise>
+                    <choose>
+                        <when test="entCode != null and entCode != ''">
+                            and t.ent_code = #{entCode}
+                        </when>
+                        <when test="entCodes != null and entCodes.size() > 0">
+                            and t.ent_code in
+                            <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                                #{entCode}
+                            </foreach>
+                        </when>
+                        <otherwise>
+                            and t.ent_code != '-1'
+                        </otherwise>
+                    </choose>
+                </otherwise>
+            </choose>
+            <if test="outPutId != null and outPutId != ''">
+                and t.out_put_id = #{outPutId}
+            </if>
+            <if test="templateCode != null and templateCode != ''">
+                and t.template_code = #{templateCode}
+            </if>
+        </where>
+        order by t.ent_code desc, t.out_put_id desc, t.template_code desc
+    </select>
+
+    <select id="checkOpsTemplate" parameterType="com.zkhf.epmis.platform.ops.domain.OpsTemplate">
+        select
+            count(1)
+        from t_ops_template
+        where ent_code = #{entCode} and out_put_id = #{outPutId} and template_code = #{templateCode}
+    </select>
+
+    <insert id="insertOpsTemplate" parameterType="com.zkhf.epmis.platform.ops.domain.OpsTemplate">
+        insert into t_ops_template
+            (ent_code, out_put_id, template_code, template_name, show_attachment_flag, show_qualified_flag,
+             prompt_text, item_array, remark, create_by, create_time, update_by, update_time)
+        values
+            (#{entCode}, #{outPutId}, #{templateCode}, #{templateName}, #{showAttachmentFlag}, #{showQualifiedFlag},
+             #{promptText}, #{itemArray}, #{remark}, #{createBy}, now(), #{updateBy}, now())
+    </insert>
+
+    <select id="checkOpsTemplateCode" parameterType="com.zkhf.epmis.platform.ops.domain.OpsTemplate">
+        select
+            count(1)
+        from t_ops_template
+        where ent_code = #{entCode} and out_put_id = #{outPutId} and template_code != #{templateCode} and template_name = #{templateName}
+    </select>
+
+    <update id="updateOpsTemplate" parameterType="com.zkhf.epmis.platform.ops.domain.OpsTemplate">
+        update t_ops_template
+        set
+            template_name = #{templateName}, show_attachment_flag = #{showAttachmentFlag}, show_qualified_flag = #{showQualifiedFlag},
+            prompt_text = #{promptText}, item_array = #{itemArray}, remark = #{remark}, update_by = #{updateBy}, update_time = now()
+        where ent_code = #{entCode} and out_put_id = #{outPutId} and template_code = #{templateCode}
+    </update>
+
+    <delete id="deleteOpsTemplate">
+        delete from t_ops_template where ent_code = #{entCode} and out_put_id = #{outPutId} and template_code = #{templateCode}
+    </delete>
+
+</mapper>

@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.process.mapper.alarm.DurAlarmMapper">
+
+    <resultMap id="durAlarmInfoResult" type="com.zkhf.epmis.process.alarm.domain.DurAlarmInfo">
+        <result property="alarmId" column="alarm_id"/>
+        <result property="outPutId" column="out_put_id"/>
+        <result property="pollutantCode" column="pollutant_code"/>
+        <result property="dataType" column="data_type"/>
+        <result property="alarmType" column="alarm_type"/>
+        <result property="startTime" column="start_time"/>
+        <result property="endTime" column="end_time"/>
+        <result property="alarmStatus" column="alarm_status"/>
+        <result property="dealStatus" column="deal_status"/>
+        <result property="alarmMsg" column="alarm_msg"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <resultMap id="durAlarmDealResult" type="com.zkhf.epmis.process.alarm.domain.DurAlarmDeal">
+        <result property="dealId" column="deal_id"/>
+        <result property="dealUserId" column="deal_user_id"/>
+        <result property="dealInfo" column="deal_info"/>
+        <result property="dealTime" column="deal_time"/>
+    </resultMap>
+
+    <!-- alarm_status: 报警状态，0未解除；1已解除 -->
+    <select id="selectActiveAlarmList" resultMap="durAlarmInfoResult">
+        select out_put_id, alarm_type from t_data_out_warn
+        union all
+        select out_put_id, alarm_type from t_data_out_alarm where alarm_status = 0
+    </select>
+
+    <select id="countAlarm" parameterType="com.zkhf.epmis.process.alarm.domain.DurAlarmReq"
+            resultType="com.zkhf.epmis.process.alarm.domain.DurAlarmCount">
+        select
+            alarm_type as alarmType,
+            count(*) as totalCount,
+            count(case when alarm_status = 0 then 1 end) as activeCount,
+            count(case when alarm_status = 1 then 1 end) as resolvedCount,
+            count(case when deal_status = 0 then 1 end) as pendingCount,
+            count(case when deal_status = 1 then 1 end) as completedCount
+        from (
+            select alarm_type, 0 as alarm_status, 0 as deal_status
+            from t_data_out_warn
+            <where>
+                <if test="null != req.outMap and req.outMap.size() > 0">
+                    and out_put_id in
+                    <foreach index="outPutId" collection="req.outMap" open="(" separator="," close=")">
+                        #{outPutId}
+                    </foreach>
+                </if>
+                <if test="req.beginTime != null and req.endTime != null">
+                    and start_time between #{req.beginTime} and #{req.endTime}
+                </if>
+                <if test="req.outPutType != null">
+                    and out_put_type = #{req.outPutType}
+                </if>
+                <if test="req.alarmType != null">
+                    and alarm_type = #{req.alarmType}
+                </if>
+            </where>
+            union all
+            select alarm_type, alarm_status, deal_status
+            from t_data_out_alarm
+            <where>
+                <if test="null != req.outMap and req.outMap.size() > 0">
+                    and out_put_id in
+                    <foreach index="outPutId" collection="req.outMap" open="(" separator="," close=")">
+                        #{outPutId}
+                    </foreach>
+                </if>
+                <if test="req.beginTime != null and req.endTime != null">
+                    and start_time between #{req.beginTime} and #{req.endTime}
+                </if>
+                <if test="req.outPutType != null">
+                    and out_put_type = #{req.outPutType}
+                </if>
+                <if test="req.alarmType != null">
+                    and alarm_type = #{req.alarmType}
+                </if>
+                <if test="req.alarmStatus != null">
+                    and alarm_status = #{req.alarmStatus}
+                </if>
+                <if test="req.dealStatus != null">
+                    and deal_status = #{req.dealStatus}
+                </if>
+            </where>
+        ) t
+        group by alarm_type
+    </select>
+
+    <select id="selectAlarmList" parameterType="com.zkhf.epmis.process.alarm.domain.DurAlarmReq"
+            resultMap="durAlarmInfoResult">
+        select alarm_id, out_put_id, pollutant_code, data_type, alarm_type, start_time, null as end_time, 0 as alarm_status, 0 as deal_status, alarm_msg
+        from t_data_out_warn
+        <where>
+            <if test="null != req.outMap and req.outMap.size() > 0">
+                and out_put_id in
+                <foreach index="outPutId" collection="req.outMap" open="(" separator="," close=")">
+                    #{outPutId}
+                </foreach>
+            </if>
+            <if test="req.beginTime != null and req.endTime != null">
+                and start_time between #{req.beginTime} and #{req.endTime}
+            </if>
+            <if test="req.alarmType != null">
+                and alarm_type = #{req.alarmType}
+            </if>
+        </where>
+        union all
+        select alarm_id, out_put_id, pollutant_code, data_type, alarm_type, start_time, end_time, alarm_status, deal_status, alarm_msg
+        from t_data_out_alarm
+        <where>
+            <if test="null != req.outMap and req.outMap.size() > 0">
+                and out_put_id in
+                <foreach index="outPutId" collection="req.outMap" open="(" separator="," close=")">
+                    #{outPutId}
+                </foreach>
+            </if>
+            <if test="req.beginTime != null and req.endTime != null">
+                and start_time between #{req.beginTime} and #{req.endTime}
+            </if>
+            <if test="req.alarmType != null">
+                and alarm_type = #{req.alarmType}
+            </if>
+            <if test="req.alarmStatus != null">
+                and alarm_status = #{req.alarmStatus}
+            </if>
+            <if test="req.dealStatus != null">
+                and deal_status = #{req.dealStatus}
+            </if>
+        </where>
+        order by alarm_id desc
+    </select>
+
+    <select id="selectAlarmDealList" resultMap="durAlarmDealResult">
+        select deal_id, deal_user_id, deal_info, deal_time
+        from t_data_out_alarm_deal
+        where alarm_id = #{alarmId}
+        order by deal_time desc
+    </select>
+
+    <insert id="insertAlarmDeal">
+        insert into t_data_out_alarm_deal
+            (deal_id, alarm_id, deal_user_id, deal_info, deal_time)
+        values
+            (#{deal.dealId}, #{alarmId}, #{deal.dealUserId}, #{deal.dealInfo}, #{deal.dealTime})
+    </insert>
+
+    <update id="updateAlarmDealStatus">
+        update t_data_out_alarm
+        set deal_status = #{dealStatus}
+        where alarm_id = #{alarmId}
+    </update>
+
+    <delete id="deleteAlarmDealById">
+        delete from t_data_out_alarm_deal where deal_id = #{dealId}
+    </delete>
+</mapper>

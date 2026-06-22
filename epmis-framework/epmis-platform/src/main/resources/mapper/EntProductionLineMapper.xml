@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.platform.mapper.ent.EntProductionLineMapper">
+
+    <resultMap id="entProductionLineResult" type="com.zkhf.epmis.platform.ent.domain.EntProductionLine">
+        <result property="lineId" column="line_id"/>
+        <result property="lineCode" column="line_code"/>
+        <result property="lineName" column="line_name"/>
+        <result property="workshopId" column="workshop_id"/>
+        <result property="processType" column="process_type"/>
+        <result property="productType" column="product_type"/>
+        <result property="status" column="status"/>
+        <result property="capacity" column="capacity"/>
+        <result property="capacityUnit" column="capacity_unit"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="entCode" column="ent_code"/>
+        <result property="entName" column="ent_name"/>
+        <result property="workshopName" column="workshop_name"/>
+        <result property="workshopCode" column="workshop_code"/>
+    </resultMap>
+
+    <select id="selectEntProductionLineByLineId" resultMap="entProductionLineResult">
+        select
+            l.line_id, l.line_code, l.line_name, l.process_type, l.product_type, l.status, l.capacity, l.capacity_unit, l.create_time, l.update_time,
+            l.workshop_id, w.workshop_code, w.workshop_name, w.ent_code, e.ent_name
+        from t_ent_production_line l
+        left join t_ent_produce_workshop w on w.workshop_id = l.workshop_id
+        left join t_bas_enterprise e on e.ent_code = w.ent_code
+        where l.line_id = #{lineId}
+    </select>
+
+    <select id="selectEntProductionLineList" parameterType="com.zkhf.epmis.platform.ent.domain.EntProductionLineReq"
+            resultMap="entProductionLineResult">
+        select
+            l.line_id, l.line_code, l.line_name, l.process_type, l.product_type, l.status, l.capacity, l.capacity_unit, l.create_time, l.update_time
+             , l.workshop_id, w.workshop_code, w.workshop_name, w.ent_code, e.ent_name
+        from t_ent_production_line l
+        left join t_ent_produce_workshop w on w.workshop_id = l.workshop_id
+        left join t_bas_enterprise e on e.ent_code = w.ent_code
+        <where>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and w.ent_code = #{entCode}
+                </when>
+                <otherwise>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        AND w.ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="workshopId != null and workshopId != ''">
+                and l.workshop_id = #{workshopId}
+            </if>
+            <if test="lineName != null and lineName != ''">
+                and l.line_name like concat('%', #{lineName}, '%')
+            </if>
+            <if test="status != null ">
+                and l.status = #{status}
+            </if>
+        </where>
+        order by l.line_id desc
+    </select>
+
+    <!-- 批量查询所有关联数据 -->
+    <select id="selectEntProductionLineRelateList" resultType="java.util.Map">
+        <!-- 生产设施 -->
+        select
+            '${relateProduceFacilityType}' as dataType,
+            r.source_id as lineId,
+            pf.facility_id as id,
+            pf.facility_code as code,
+            pf.facility_name as name,
+            null as type
+        from t_bas_relate r
+        join t_ent_produce_facility pf on pf.facility_id = r.target_id
+        where
+            r.target_type = #{relateProduceFacilityType}
+            <if test="lineIds != null and lineIds.size() > 0">
+                and r.source_id in
+                <foreach collection="lineIds" item="lineId" open="(" close=")" separator=",">
+                    #{lineId}
+                </foreach>
+            </if>
+        union all
+        <!-- 治理设施 -->
+        select
+            '${relateGovernanceFacilityType}' as dataType,
+            r.source_id as lineId,
+            cf.facility_id as id,
+            cf.facility_code as code,
+            cf.facility_name as name,
+            null as type
+        from t_bas_relate r
+        join t_ent_poll_control_facility cf on cf.facility_id = r.target_id
+        where
+            r.target_type = #{relateGovernanceFacilityType}
+            <if test="lineIds != null and lineIds.size() > 0">
+                and r.source_id in
+                <foreach collection="lineIds" item="lineId" open="(" close=")" separator=",">
+                    #{lineId}
+                </foreach>
+            </if>
+        union all
+        <!-- 排口信息 -->
+        select
+            '${relateOutPutType}' as dataType,
+            r.source_id as lineId,
+            op.out_put_id as id,
+            op.out_put_code as code,
+            op.out_put_name as name,
+            op.out_put_type as type
+        from t_bas_relate r
+        join t_ent_out_put_info op on op.out_put_id = r.target_id
+        where
+            r.target_type = #{relateOutPutType}
+            <if test="lineIds != null and lineIds.size() > 0">
+                and r.source_id in
+                <foreach collection="lineIds" item="lineId" open="(" close=")" separator=",">
+                    #{lineId}
+                </foreach>
+            </if>
+    </select>
+
+    <select id="selectLineIdByWorkLineCode" resultType="String">
+        select line_id
+        from t_ent_production_line
+        where workshop_id = #{workshopId} and line_code = #{lineCode}
+        limit 1
+    </select>
+
+    <insert id="insertEntProductionLine" parameterType="com.zkhf.epmis.platform.ent.domain.EntProductionLine">
+        insert into t_ent_production_line
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="lineId != null">line_id,</if>
+            <if test="lineCode != null and lineCode != ''">line_code,</if>
+            <if test="lineName != null">line_name,</if>
+            <if test="workshopId != null and workshopId != ''">workshop_id,</if>
+            <if test="processType != null">process_type,</if>
+            <if test="productType != null">product_type,</if>
+            <if test="status != null">status,</if>
+            <if test="capacity != null">capacity,</if>
+            <if test="capacityUnit != null">capacity_unit,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="lineId != null">#{lineId},</if>
+            <if test="lineCode != null and lineCode != ''">#{lineCode},</if>
+            <if test="lineName != null">#{lineName},</if>
+            <if test="workshopId != null and workshopId != ''">#{workshopId},</if>
+            <if test="processType != null">#{processType},</if>
+            <if test="productType != null">#{productType},</if>
+            <if test="status != null">#{status},</if>
+            <if test="capacity != null">#{capacity},</if>
+            <if test="capacityUnit != null">#{capacityUnit},</if>
+        </trim>
+    </insert>
+
+    <select id="selectLineIdByLineIdCode" resultType="String">
+        select line_id
+        from t_ent_production_line
+        where
+            workshop_id = (select workshop_id from t_ent_production_line where line_id = #{lineId})
+          and line_code = #{lineCode}
+          and line_id != #{lineId}
+        limit 1
+    </select>
+
+    <update id="updateEntProductionLine" parameterType="com.zkhf.epmis.platform.ent.domain.EntProductionLine">
+        update t_ent_production_line
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="lineCode != null and lineCode != ''">line_code = #{lineCode},</if>
+            <if test="lineName != null">line_name = #{lineName},</if>
+            <if test="processType != null">process_type = #{processType},</if>
+            <if test="productType != null">product_type = #{productType},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="capacity != null">capacity = #{capacity},</if>
+            <if test="capacityUnit != null">capacity_unit = #{capacityUnit},</if>
+        </trim>
+        where line_id = #{lineId}
+    </update>
+
+    <delete id="deleteEntProductionLineById" parameterType="String">
+        delete from t_ent_production_line where line_id = #{lineId}
+    </delete>
+
+</mapper>

@@ -1,0 +1,140 @@
+# 项目相关配置
+epmis:
+  name: 环管控平台（EPMIS）-数据处理    # 名称
+  version: 1.0.0-SNAPSHOT   # 版本
+  online-monitoring:
+    original-mess:
+      log-base-dir: logs/protocol/
+      max-result-count: 1000
+    fallback-dir: logs/fallback/
+
+# 开发环境配置
+server:
+  port: 9532    # 服务器的HTTP端口，默认为8080
+  servlet:
+    context-path: /   # 应用的访问路径
+  tomcat:
+    uri-encoding: UTF-8    # tomcat的URI编码
+    accept-count: 10    # 连接数满后的排队数，默认为100
+    threads:
+      max: 10    # tomcat最大线程数，默认为200
+      min-spare: 5   # Tomcat启动初始化的线程数，默认值10
+
+# xxl-job配置
+xxl:
+  job:
+    enabled: false
+    admin:
+      addresses: http://127.0.0.1:9510/job/jobinfo
+    accessToken: default_token
+    executor:
+      appName: epmis-test
+      ip:
+      port: 10001
+      logPath: logs/xxl-job
+      logRetentionDays: 30
+
+# redis 配置
+spring:
+  data:
+    redis:
+      host: localhost   # 地址
+      port: 6379    # 端口，默认为6379
+      password:     # 密码
+  config:
+    use-legacy-processing: true    # 配置文件的处理方式
+  datasource:   # mysql配置
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://182.92.7.39:13306/zkhf_pollution?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
+    username: root
+    password: zkhf!123456
+    hikari:
+      maximum-pool-size: 3   # Hikari连接池配置
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+
+# Feign 客户端配置
+feign:
+  epmis-auth:
+    url: http://127.0.0.1:9531
+  epmis-platform:
+    url: http://127.0.0.1:9533
+  client:
+    config:
+      default:  # 全局默认配置（适用于所有Feign客户端）
+        connectTimeout: 1000   # 连接超时(ms)
+        readTimeout: 5000   # 读取响应超时(ms)
+      epmis-protocol:  # 针对特定服务的覆盖配置（可选）
+        connect-timeout: 1000
+        read-timeout: 6000
+# 企业微信发送消息设置
+data:
+  send:
+    wecom:
+      corpId: wwae1969950e96e896
+      agentId: 1000002
+      secretId: mtyHjR9hdlfarzav_JjyqrryisSpgHR2qLDKhOEUA24
+      expireTime: 110
+      getTokenUrl: https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=%s&corpsecret=%s
+      sendMsgUrl: https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=
+
+freeApi:
+  workWeChat:
+    sToken: 9PqBzBNKd9wzH5o9SK2uj9fgOZr   # 自建应用中的开通api接口消息详情里的sToken
+    sCorpID: wwae1969950e96e896   # 企业微信后台的企业微信id
+    sEncodingAESKey: odpINjTJh5GkS9lhDB8rpkjlb5laYJcxss6ojaBRv93    # 自建应用的开通api接口消息详情里的sEncodingAESKey
+
+# 日志配置
+logging:
+  level:
+    com.zkhf.epmis: debug
+    org.springframework: warn
+  file:
+    name: logs/process-app.log       # 当前活动日志文件路径
+  logback:
+    rollingpolicy:
+      file-name-pattern: "logs/process-app-%d{yyyy-MM-dd}-%i.log.gz"  # 滚动压缩文件名模式
+      max-file-size: 10MB    # 单个日志文件最大大小
+      total-size-cap: 2GB    # 归档日志总大小限制
+      max-history: 30        # 保留日志天数
+  pattern:
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"  # 日志格式
+
+# token配置
+token:
+  # 令牌自定义标识
+  header: Authorization
+# mqtt配置
+mqtt:
+  enabled: false                           # 是否开启消息订阅
+  broker-url: tcp://172.28.159.22:1883    # 公共测试服务器
+  client-id: spring-boot-mqtt-subscriber-1 # 客户端ID加入随机值，确保唯一
+  username: zkhf_emqx                     # 如果需要用户名认证
+  password: zukq3h9Sf#                    # 如果需要密码认证
+  qos: 1              # 消息质量等级 (0,1,2)
+  # 可选：设置自定义配置，如超时时间、保持连接等
+  connection-timeout: 30
+  keep-alive-interval: 60
+  clean-session: true
+  topics:
+    out-put-data-real: out_put_data_real
+    out-put-data-minute: out_put_data_minute
+    out-put-data-hour: out_put_data_hour
+    out-put-data-day: out_put_data_day
+    device-data-plc: device_data_plc
+    approval-result: approval_result
+
+# 阿里云配置
+aliyun:
+  open: false
+  access-key-id: your-access-key-id
+  access-key-secret: your-access-key-secret
+  region-id: cn-hangzhou
+  voice:
+    tts-template-id: TTS_12345678  # 在阿里云控制台创建的TTS模板ID
+    called-show-number: 0571XXXXXXX  # 审批通过的显示号码
+    play-times: 2
+    volume: 100

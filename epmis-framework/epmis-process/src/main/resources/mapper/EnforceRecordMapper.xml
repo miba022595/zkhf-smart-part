@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.process.mapper.enforce.EnforceRecordMapper">
+
+    <resultMap id="enforceRecordResult" type="com.zkhf.epmis.process.enforce.domain.EnforceRecord">
+        <result property="id" column="id"/>
+        <result property="entCode" column="ent_code"/>
+        <result property="outPutId" column="out_put_id"/>
+        <result property="unitName" column="unit_name"/>
+        <result property="inspector" column="inspector"/>
+        <result property="opsUnit" column="ops_unit"/>
+        <result property="opsUser" column="ops_user"/>
+        <result property="checkDate" column="check_date"/>
+        <result property="checkReason" column="check_reason"/>
+        <result property="checkFlag" column="check_flag"/>
+        <result property="checkConclusion" column="check_conclusion"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <select id="selectEnforceRecordById" parameterType="Long" resultMap="enforceRecordResult">
+        select
+            id, ent_code, out_put_id, unit_name, inspector, ops_unit, ops_user, check_date, check_reason, check_flag, check_conclusion, remark
+        from t_enforce_record
+        where id = #{id}
+    </select>
+
+    <select id="selectEnforceRecordList" parameterType="com.zkhf.epmis.process.enforce.domain.EnforceRecordReq"
+            resultMap="enforceRecordResult">
+        select
+            id, ent_code, out_put_id, unit_name, inspector, ops_unit, ops_user, check_date, check_reason, check_flag, check_conclusion, remark
+        from t_enforce_record
+        <where>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and ent_code = #{entCode}
+                </when>
+                <otherwise>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        and ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="outPutId != null and outPutId != ''">
+                and out_put_id = #{outPutId}
+            </if>
+            <if test="opsUser != null ">
+                and ops_user = #{opsUser}
+            </if>
+            <if test="checkFlag != null">
+                and check_flag = #{checkFlag}
+            </if>
+            <if test="checkDateStart != null and checkDateEnd != null">
+                and check_date between #{checkDateStart} and #{checkDateEnd}
+            </if>
+        </where>
+        order by check_date desc
+    </select>
+
+    <insert id="insertEnforceRecord" parameterType="com.zkhf.epmis.process.enforce.domain.EnforceRecord">
+        insert into t_enforce_record
+            (ent_code, out_put_id, unit_name, inspector, ops_unit, ops_user, check_date, check_reason, check_flag, check_conclusion, remark)
+        values
+            (#{entCode}, #{outPutId}, #{unitName}, #{inspector}, #{opsUnit}, #{opsUser}, #{checkDate}, #{checkReason}, #{checkFlag}, #{checkConclusion}, #{remark})
+    </insert>
+
+    <update id="updateEnforceRecord" parameterType="com.zkhf.epmis.process.enforce.domain.EnforceRecord">
+        update t_enforce_record
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="unitName != null and unitName != ''">unit_name = #{unitName},</if>
+            <if test="inspector != null">inspector = #{inspector},</if>
+            <if test="opsUnit != null">ops_unit = #{opsUnit},</if>
+            <if test="opsUser != null">ops_user = #{opsUser},</if>
+            <if test="checkDate != null">check_date = #{checkDate},</if>
+            <if test="checkReason != null">check_reason = #{checkReason},</if>
+            <if test="checkFlag != null">check_flag = #{checkFlag},</if>
+            <if test="checkConclusion != null">check_conclusion = #{checkConclusion},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteEnforceRecordById" parameterType="Long">
+        delete from t_enforce_record where id = #{id}
+    </delete>
+
+</mapper>

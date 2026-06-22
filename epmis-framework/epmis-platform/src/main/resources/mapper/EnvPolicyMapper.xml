@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.platform.mapper.envProtect.policy.EnvPolicyMapper">
+
+    <resultMap id="policyResult" type="com.zkhf.epmis.platform.envProtect.policy.domain.EnvPolicyInfo">
+        <result property="policyId" column="policy_id"/>
+        <result property="entCode" column="ent_code"/>
+        <result property="entName" column="ent_name"/>
+        <result property="policyName" column="policy_name"/>
+        <result property="policyCode" column="policy_code"/>
+        <result property="issueDept" column="issue_dept"/>
+        <result property="region" column="region"/>
+        <result property="policyType" column="policy_type"/>
+        <result property="industryCategory" column="industry_category"/>
+        <result property="envElement" column="env_element"/>
+        <result property="mangeElement" column="mange_element"/>
+        <result property="significance" column="significance"/>
+        <result property="publishDate" column="publish_date"/>
+        <result property="implementDate" column="implement_date"/>
+        <result property="status" column="status"/>
+        <result property="applicableScope" column="applicable_scope"/>
+        <result property="mainContent" column="main_content"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <select id="getAllEnvPolicy">
+        select policy_id as policyId, ent_code as entCode, policy_name as policyName
+        from t_env_policy_regulation
+        <where>
+            <if test="entCodes != null and entCodes.size() > 0">
+                and (ent_code = '-1' or ent_code in
+                <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                    #{entCode}
+                </foreach>)
+            </if>
+        </where>
+        order by policy_id desc
+    </select>
+
+    <select id="selectEnvPolicyList" parameterType="com.zkhf.epmis.platform.envProtect.policy.domain.EnvPolicyReq"
+            resultMap="policyResult">
+        select
+            p.policy_id, p.ent_code, e.ent_name, p.policy_name, p.policy_code, p.issue_dept, p.policy_type, p.region,
+            p.industry_category, p.env_element, p.mange_element, p.significance, p.publish_date,
+            p.implement_date, p.status, p.applicable_scope, p.main_content, p.create_time, p.update_time
+        from t_env_policy_regulation p
+        left join t_bas_enterprise e on e.ent_code = p.ent_code
+        <where>
+            <choose>
+                <when test="pubSign != null and pubSign == '-1'">
+                    <!-- 查询公共法规 -->
+                    and p.ent_code = '-1'
+                </when>
+                <when test="pubSign != null and pubSign != '-1'">
+                    <!-- 查询私有的法规 -->
+                    <choose>
+                        <when test="entCode != null and entCode != ''">
+                            <!-- 查询单个企业法规 -->
+                            and p.ent_code = #{entCode}
+                        </when>
+                        <when test="entCodes != null and entCodes.size() > 0">
+                            <!-- 查询多个企业法规 -->
+                            and p.ent_code in
+                            <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                                #{entCode}
+                            </foreach>
+                        </when>
+                        <otherwise>
+                            and p.ent_code != '-1'
+                        </otherwise>
+                    </choose>
+                </when>
+                <when test="entCode != null and entCode != ''">
+                    <!-- 查询单个企业法规和私有的 -->
+                    and (p.ent_code = '-1' or p.ent_code = #{entCode})
+                </when>
+                <when test="entCodes != null and entCodes.size() > 0">
+                    <!-- 查询多个企业法规和私有的 -->
+                    and (p.ent_code = '-1' or p.ent_code in
+                    <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                        #{entCode}
+                    </foreach>)
+                </when>
+            </choose>
+            <if test="entName != null and entName != ''">and e.ent_name like concat('%', #{entName}, '%')</if>
+            <if test="policyName != null and policyName != ''">and p.policy_name like concat('%', #{policyName}, '%')</if>
+            <if test="policyType != null and policyType != ''">and p.policy_type = #{policyType}</if>
+            <if test="status != null">and p.status = #{status}</if>
+        </where>
+        order by p.policy_id desc
+    </select>
+
+    <insert id="insertEnvPolicy" parameterType="com.zkhf.epmis.platform.envProtect.policy.domain.EnvPolicyInfo">
+        insert into t_env_policy_regulation
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="policyId != null">policy_id,</if>
+            <if test="entCode != null">ent_code,</if>
+            <if test="policyName != null">policy_name,</if>
+            <if test="policyCode != null">policy_code,</if>
+            <if test="issueDept != null">issue_dept,</if>
+            <if test="region != null">region,</if>
+            <if test="policyType != null">policy_type,</if>
+            <if test="industryCategory != null">industry_category,</if>
+            <if test="envElement != null">env_element,</if>
+            <if test="mangeElement != null">mange_element,</if>
+            <if test="significance != null">significance,</if>
+            <if test="publishDate != null">publish_date,</if>
+            <if test="implementDate != null">implement_date,</if>
+            <if test="status != null">status,</if>
+            <if test="applicableScope != null">applicable_scope,</if>
+            <if test="mainContent != null">main_content,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="policyId != null">#{policyId},</if>
+            <if test="entCode != null">#{entCode},</if>
+            <if test="policyName != null">#{policyName},</if>
+            <if test="policyCode != null">#{policyCode},</if>
+            <if test="issueDept != null">#{issueDept},</if>
+            <if test="region != null">#{region},</if>
+            <if test="policyType != null">#{policyType},</if>
+            <if test="industryCategory != null">#{industryCategory},</if>
+            <if test="envElement != null">#{envElement},</if>
+            <if test="mangeElement != null">#{mangeElement},</if>
+            <if test="significance != null">#{significance},</if>
+            <if test="publishDate != null">#{publishDate},</if>
+            <if test="implementDate != null">#{implementDate},</if>
+            <if test="status != null">#{status},</if>
+            <if test="applicableScope != null">#{applicableScope},</if>
+            <if test="mainContent != null">#{mainContent},</if>
+        </trim>
+    </insert>
+
+    <select id="selectEnvPolicyById" resultMap="policyResult">
+        select
+            policy_id, ent_code, policy_name, policy_code, issue_dept, policy_type, region, industry_category,
+            env_element, mange_element, significance, publish_date, implement_date, status, applicable_scope, main_content,
+            create_time, update_time
+        from t_env_policy_regulation
+        where policy_id = #{policyId}
+    </select>
+
+    <update id="updateEnvPolicy" parameterType="com.zkhf.epmis.platform.envProtect.policy.domain.EnvPolicyInfo">
+        update t_env_policy_regulation
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="policyName != null">policy_name = #{policyName},</if>
+            <if test="policyCode != null">policy_code = #{policyCode},</if>
+            <if test="issueDept != null">issue_dept = #{issueDept},</if>
+            <if test="region != null">region = #{region},</if>
+            <if test="industryCategory != null">industry_category = #{industryCategory},</if>
+            <if test="envElement != null">env_element = #{envElement},</if>
+            <if test="mangeElement != null">mange_element = #{mangeElement},</if>
+            <if test="significance != null">significance = #{significance},</if>
+            <if test="publishDate != null">publish_date = #{publishDate},</if>
+            <if test="implementDate != null">implement_date = #{implementDate},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="applicableScope != null">applicable_scope = #{applicableScope},</if>
+            <if test="mainContent != null">main_content = #{mainContent},</if>
+        </trim>
+        where policy_id = #{policyId}
+    </update>
+
+    <delete id="deleteEnvPolicyById" parameterType="String">
+        delete from t_env_policy_regulation where policy_id = #{policyId}
+    </delete>
+</mapper>

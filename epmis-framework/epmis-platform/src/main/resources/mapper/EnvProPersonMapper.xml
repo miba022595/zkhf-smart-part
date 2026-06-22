@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.platform.mapper.envProtect.EnvProPersonMapper">
+
+    <resultMap id="envProPersonResult" type="com.zkhf.epmis.platform.envProtect.domain.EnvProPerson">
+        <result property="proPersonId" column="pro_person_id"/>
+        <result property="entCode" column="ent_code"/>
+        <result property="entName" column="ent_name"/>
+        <result property="proName" column="pro_name"/>
+        <result property="proCode" column="pro_code"/>
+        <result property="proSex" column="pro_sex"/>
+        <result property="birthDate" column="birth_date"/>
+        <result property="telPhone" column="tel_phone"/>
+        <result property="proTitle" column="pro_title"/>
+        <result property="proPost" column="pro_post"/>
+        <result property="address" column="address"/>
+        <result property="entryDate" column="entry_date"/>
+        <result property="resignDate" column="resign_date"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <select id="selectProPersonByEnt" resultType="java.util.Map">
+        select pro_person_id as proPersonId, pro_name as proName
+        from t_env_pro_person
+        where ent_code = #{entCode}
+    </select>
+
+    <select id="selectProPersonById" resultMap="envProPersonResult">
+        select
+            p.pro_person_id, p.ent_code, e.ent_name, p.pro_name, p.pro_code, p.pro_sex, p.birth_date, p.tel_phone, p.pro_title,
+            p.pro_post, p.address, p.entry_date, p.resign_date, p.remark
+        from t_env_pro_person p
+        left join t_bas_enterprise e on e.ent_code = p.ent_code
+        where pro_person_id = #{proPersonId}
+    </select>
+
+    <select id="selectProPersonList" parameterType="com.zkhf.epmis.platform.envProtect.domain.EnvProPersonReq"
+            resultMap="envProPersonResult">
+        select
+            p.pro_person_id, p.ent_code, e.ent_name, p.pro_name, p.pro_code, p.pro_sex, p.birth_date, p.tel_phone,
+            p.pro_title, p.pro_post, p.address, p.entry_date, p.resign_date, p.remark
+        from t_env_pro_person p
+        left join t_bas_enterprise e on e.ent_code = p.ent_code
+        <where>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and e.ent_code = #{entCode}
+                </when>
+                <otherwise>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        and e.ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="entName != null and entName != ''">and e.ent_name like concat('%', #{entName}, '%')</if>
+            <if test="proName != null and proName != ''">and p.pro_name like concat('%', #{proName}, '%')</if>
+            <if test="proSex != null ">and p.pro_sex = #{proSex}</if>
+            <if test="proPost != null and proPost != ''">and p.pro_post like concat('%', #{proPost}, '%')</if>
+            <if test="status != null ">
+                <choose>
+                    <when test="status == 0"> <!-- 离职(离职时间均小于当前时间) -->
+                        and p.resign_date &lt; #{now}
+                    </when>
+                    <when test="status == 1"> <!-- 在职(入职时间不大于当前时间，离职时间为空或大于当前时间) -->
+                        and p.entry_date &lt;= #{now} and (p.resign_date is null or p.resign_date &gt; #{now})
+                    </when>
+                    <when test="status == 2"> <!-- 未入职(入职时间为空或大于当前时间) -->
+                        and (p.entry_date is null or p.entry_date &gt; #{now})
+                    </when>
+                </choose>
+            </if>
+        </where>
+        order by p.pro_person_id desc
+    </select>
+
+    <insert id="insertProPerson" parameterType="com.zkhf.epmis.platform.envProtect.domain.EnvProPerson">
+        insert into t_env_pro_person
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="proPersonId != null">pro_person_id,</if>
+            <if test="entCode != null and entCode != ''">ent_code,</if>
+            <if test="proName != null">pro_name,</if>
+            <if test="proCode != null">pro_code,</if>
+            <if test="proSex != null">pro_sex,</if>
+            <if test="birthDate != null">birth_date,</if>
+            <if test="telPhone != null">tel_phone,</if>
+            <if test="proTitle != null">pro_title,</if>
+            <if test="proPost != null">pro_post,</if>
+            <if test="address != null">address,</if>
+            <if test="entryDate != null">entry_date,</if>
+            <if test="resignDate != null">resign_date,</if>
+            <if test="remark != null">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="proPersonId != null">#{proPersonId},</if>
+            <if test="entCode != null and entCode != ''">#{entCode},</if>
+            <if test="proName != null">#{proName},</if>
+            <if test="proCode != null">#{proCode},</if>
+            <if test="proSex != null">#{proSex},</if>
+            <if test="birthDate != null">#{birthDate},</if>
+            <if test="telPhone != null">#{telPhone},</if>
+            <if test="proTitle != null">#{proTitle},</if>
+            <if test="proPost != null">#{proPost},</if>
+            <if test="address != null">#{address},</if>
+            <if test="entryDate != null">#{entryDate},</if>
+            <if test="resignDate != null">#{resignDate},</if>
+            <if test="remark != null">#{remark},</if>
+        </trim>
+    </insert>
+
+    <update id="updateProPerson" parameterType="com.zkhf.epmis.platform.envProtect.domain.EnvProPerson">
+        update t_env_pro_person
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="proName != null">pro_name = #{proName},</if>
+            <if test="proCode != null">pro_code = #{proCode},</if>
+            <if test="proSex != null">pro_sex = #{proSex},</if>
+            <if test="birthDate != null">birth_date = #{birthDate},</if>
+            <if test="telPhone != null">tel_phone = #{telPhone},</if>
+            <if test="proTitle != null">pro_title = #{proTitle},</if>
+            <if test="proPost != null">pro_post = #{proPost},</if>
+            <if test="address != null">address = #{address},</if>
+            <if test="entryDate != null">entry_date = #{entryDate},</if>
+            <if test="resignDate != null">resign_date = #{resignDate},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where pro_person_id = #{proPersonId}
+    </update>
+
+    <delete id="deleteProPersonByIds" parameterType="String">
+        delete from t_env_pro_person where pro_person_id in
+        <foreach item="id" collection="ids" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <insert id="batchInsertProPerson" parameterType="com.zkhf.epmis.platform.envProtect.domain.EnvProPerson">
+        insert into t_env_pro_person
+        (pro_person_id, ent_code, pro_name, pro_code, pro_sex, birth_date, tel_phone, pro_title, pro_post, address,
+        entry_date, resign_date, remark)
+        values
+        <foreach item="item" collection="infos" separator=",">
+            (#{item.proPersonId}, #{item.entCode}, #{item.proName}, #{item.proCode}, #{item.proSex}, #{item.birthDate},
+            #{item.telPhone}, #{item.proTitle}, #{item.proPost}, #{item.address}, #{item.entryDate}, #{item.resignDate},
+            #{item.remark})
+        </foreach>
+    </insert>
+</mapper>

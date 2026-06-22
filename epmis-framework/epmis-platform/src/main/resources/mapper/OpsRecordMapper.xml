@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.platform.mapper.ops.OpsRecordMapper">
+
+    <resultMap id="opsRecordResult" type="com.zkhf.epmis.platform.ops.domain.OpsRecord">
+        <result property="recordId" column="record_id"/>
+        <result property="entCode" column="ent_code"/>
+        <result property="entName" column="ent_name"/>
+        <result property="templateCode" column="template_code"/>
+        <result property="opsUnitId" column="ops_unit_id"/>
+        <result property="opsUnitName" column="ops_unit_name"/>
+        <result property="region" column="region"/>
+        <result property="outPutId" column="out_put_id"/>
+        <result property="outPutCode" column="out_put_code"/>
+        <result property="outPutName" column="out_put_name"/>
+        <result property="recordDate" column="record_date"/>
+        <result property="opsUserId" column="ops_user_id"/>
+        <result property="opsUserName" column="ops_user_name"/>
+        <result property="opsNickName" column="ops_nick_name"/>
+        <result property="qualifiedFlag" column="qualified_flag"/>
+        <result property="reviewStatus" column="review_status"/>
+        <result property="recordArray" column="record_array"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <select id="selectNewestRecordDateList" parameterType="com.zkhf.epmis.platform.ops.domain.OpsTaskReq" resultMap="opsRecordResult">
+        select ent_code, out_put_id, template_code, max(record_date) as record_date
+        from t_ops_record
+        <where>
+            review_status = 4
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and ent_code = #{entCode}
+                </when>
+                <when test="entCodes != null and entCodes.size() > 0">
+                    and ent_code in
+                    <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                        #{entCode}
+                    </foreach>
+                </when>
+            </choose>
+            <if test="outPutId != null and outPutId != ''">
+                and out_put_id = #{outPutId}
+            </if>
+            <if test="templateCode != null and templateCode != ''">
+                and template_code = #{templateCode}
+            </if>
+            <if test="operator != null">
+                and ops_user_id = #{operator}
+            </if>
+        </where>
+        group by ent_code, out_put_id, template_code
+    </select>
+
+    <select id="selectOpsRecordById" parameterType="String" resultMap="opsRecordResult">
+        select
+            r.record_id, r.ent_code, r.out_put_id, r.template_code, r.ops_unit_id, r.record_date, r.ops_user_id,
+            r.qualified_flag, r.review_status, r.record_array, r.create_by, r.create_time, r.update_by, r.update_time,
+            ext.unit_name as ops_unit_name, e.ent_name, e.region, o.out_put_code, o.out_put_name, u.user_name as ops_user_name, u.nick_name as ops_nick_name
+        from t_ops_record r
+        left join t_bas_enterprise e on e.ent_code = r.ent_code
+        left join t_ent_out_put_info o on o.out_put_id = r.out_put_id
+        left join sys_user u on u.user_id = r.ops_user_id
+        left join t_ext_unit_lib ext on ext.unit_code = r.ops_unit_id
+        where r.record_id = #{recordId}
+    </select>
+
+    <select id="selectOpsRecordList" parameterType="com.zkhf.epmis.platform.ops.domain.OpsRecordReq" resultMap="opsRecordResult">
+        select
+            r.record_id, r.ent_code, r.out_put_id, r.template_code, r.ops_unit_id, r.record_date, r.ops_user_id,
+            r.qualified_flag, r.review_status, r.create_by, r.create_time, r.update_by, r.update_time,
+            ext.unit_name as ops_unit_name, e.ent_name, e.region, o.out_put_code, o.out_put_name, u.user_name as ops_user_name, u.nick_name as ops_nick_name
+        from t_ops_record r
+        left join t_bas_enterprise e on e.ent_code = r.ent_code
+        left join t_ent_out_put_info o on o.out_put_id = r.out_put_id
+        left join sys_user u on u.user_id = r.ops_user_id
+        left join t_ext_unit_lib ext on ext.unit_code = r.ops_unit_id
+        <where>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and r.ent_code = #{entCode}
+                </when>
+                <when test="entCodes != null and entCodes.size() > 0">
+                    and r.ent_code in
+                    <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                        #{entCode}
+                    </foreach>
+                </when>
+            </choose>
+            <if test="region != null and region != ''">
+                and (e.region = #{region} or e.region like CONCAT(#{region}, ',%'))
+            </if>
+            <if test="outPutId != null and outPutId != ''">
+                and r.out_put_id = #{outPutId}
+            </if>
+            <if test="templateCode != null and templateCode != ''">
+                and r.template_code = #{templateCode}
+            </if>
+            <if test="opsUserId != null">
+                and r.ops_user_id = #{opsUserId}
+            </if>
+            <if test="recordStart != null and recordEnd != null">
+                and r.record_date between #{recordStart} and #{recordEnd}
+            </if>
+        </where>
+        order by r.record_id desc
+    </select>
+
+    <insert id="insertOpsRecord" parameterType="com.zkhf.epmis.platform.ops.domain.OpsRecord">
+        insert into t_ops_record
+            (record_id, ent_code, out_put_id, template_code, ops_unit_id, record_date, ops_user_id, qualified_flag, review_status, record_array,
+             create_by, create_time, update_by, update_time)
+        values
+            (#{recordId}, #{entCode}, #{outPutId}, #{templateCode}, #{opsUnitId}, #{recordDate}, #{opsUserId}, #{qualifiedFlag}, #{reviewStatus}, #{recordArray},
+             #{createBy}, now(), #{createBy}, now())
+    </insert>
+
+    <update id="updateOpsRecord" parameterType="com.zkhf.epmis.platform.ops.domain.OpsRecord">
+        update t_ops_record
+        <set><!-- 运维审批状态：1-草稿、2-已提交、3-审核中、4-审核通过、5-审核拒绝、6已取消 -->
+            review_status = #{reviewStatus}
+            <if test="reviewStatus != null">
+                <if test="reviewStatus == 1">
+                    , qualified_flag = #{qualifiedFlag}, record_array = #{recordArray}
+                    <if test="recordDate != null">
+                        , record_date = #{recordDate}
+                    </if>
+                    , update_by = #{updateBy}, update_time = now()
+                </if>
+                <if test="reviewStatus == 2">
+                    , qualified_flag = #{qualifiedFlag}, record_array = #{recordArray}, record_date = #{recordDate}
+                    , update_by = #{updateBy}, update_time = now()
+                </if>
+            </if>
+        </set>
+        where record_id = #{recordId}
+    </update>
+
+    <delete id="deleteOpsRecordById" parameterType="String">
+        delete from t_ops_record where record_id = #{recordId}
+    </delete>
+
+    <select id="selectOpsTaskStat" parameterType="com.zkhf.epmis.platform.ops.domain.OpsRecordReq"
+            resultType="com.zkhf.epmis.platform.ops.domain.OpsStat">
+        select
+            template_code as templateCode,
+            sum(auto_tasks) as autoTasks,
+            sum(manual_tasks) as manualTasks,
+            sum(completed_tasks) as completedTasks,
+            sum(qualified_tasks) as qualifiedTasks,
+            sum(unqualified_tasks) as unqualifiedTasks
+        from t_ops_task_stat
+        <where>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and ent_code = #{entCode}
+                </when>
+                <when test="entCodes != null and entCodes.size() > 0">
+                    and ent_code in
+                    <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                        #{entCode}
+                    </foreach>
+                </when>
+            </choose>
+            <if test="outPutId != null and outPutId != ''">
+                and out_put_id = #{outPutId}
+            </if>
+            <if test="templateCode != null and templateCode != ''">
+                and template_code = #{templateCode}
+            </if>
+            <if test="opsUserId != null">
+                and operator = #{opsUserId}
+            </if>
+            <if test="recordStart != null and recordEnd != null">
+                and task_stat_date between DATE(#{recordStart}) and DATE(#{recordEnd})
+            </if>
+        </where>
+        group by template_code
+    </select>
+
+</mapper>

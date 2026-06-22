@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.platform.mapper.base.DistrictsMapper">
+
+    <resultMap id="districtsResult" type="com.zkhf.epmis.platform.base.domain.Districts">
+        <result property="id" column="id"/>
+        <result property="pid" column="pid"/>
+        <result property="name" column="name"/>
+        <result property="pinyin" column="pinyin"/>
+        <result property="extName" column="ext_name"/>
+    </resultMap>
+
+    <select id="selectDistrictsSingleListByPid" resultMap="districtsResult">
+        select id, pid, `name`, pinyin, ext_name
+        from t_bas_districts
+        where pid = #{pid}
+        order by id
+    </select>
+
+    <select id="selectDistrictsList" resultMap="districtsResult">
+        select id, pid, `name`, pinyin, ext_name
+        from t_bas_districts
+        order by pid, id
+    </select>
+
+    <insert id="insertDistricts" parameterType="com.zkhf.epmis.platform.base.domain.Districts">
+        insert into t_bas_districts
+         (id, pid, `name`, pinyin, ext_name)
+        values
+         (#{id}, #{pid}, #{name}, #{pinyin}, #{extName})
+    </insert>
+
+    <update id="updateDistricts" parameterType="com.zkhf.epmis.platform.base.domain.Districts">
+        update t_bas_districts
+        set `name` = #{name}, pinyin = #{pinyin}, ext_name = #{extName}
+        where id = #{id}
+    </update>
+
+    <delete id="deleteDistrictsById">
+        delete from t_bas_districts where id = #{id}
+    </delete>
+</mapper>

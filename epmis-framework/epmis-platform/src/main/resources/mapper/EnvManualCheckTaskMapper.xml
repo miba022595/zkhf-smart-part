@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.platform.mapper.envManual.EnvManualCheckTaskMapper">
+
+    <resultMap id="envManualCheckTaskResult" type="com.zkhf.epmis.platform.envManual.domain.EnvManualCheckTask">
+        <result property="taskId" column="task_id"/>
+        <result property="outPutPollId" column="out_put_poll_id"/>
+        <result property="taskDate" column="task_date"/>
+        <result property="checkFrequency" column="check_frequency"/>
+        <result property="executionStandard" column="execution_standard"/>
+        <result property="overMaxvalue" column="over_maxValue"/>
+        <result property="overMinvalue" column="over_minValue"/>
+        <result property="monitorUnit" column="monitor_unit"/>
+        <result property="monitorUnitName" column="monitorUnitName"/>
+        <result property="taskDesc" column="task_desc"/>
+        <result property="reportName" column="report_name"/>
+        <result property="reportCode" column="report_code"/>
+        <result property="monitorCategory" column="monitor_category"/>
+        <result property="sampleDate" column="sample_date"/>
+        <result property="reportDate" column="report_date"/>
+        <result property="analysisStartDate" column="analysis_start_date"/>
+        <result property="analysisEndDate" column="analysis_end_date"/>
+        <result property="analysisPerson" column="analysis_person"/>
+        <result property="samplingPerson" column="sampling_person"/>
+        <result property="operationHour" column="operation_hour"/>
+        <result property="contactPerson" column="contact_person"/>
+        <result property="contactPhone" column="contact_phone"/>
+        <result property="status" column="status"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="outPutId" column="out_put_id"/>
+        <result property="outPutName" column="out_put_name"/>
+        <result property="outPutType" column="out_put_type"/>
+        <result property="pollutantCode" column="pollutant_code"/>
+        <result property="pollutantNameCn" column="pollutant_name_cn"/>
+        <result property="pollutantNameEn" column="pollutant_name_en"/>
+    </resultMap>
+
+    <select id="selectEnvManualCheckByTaskId" resultMap="envManualCheckTaskResult">
+        select
+            t.task_id, t.out_put_poll_id, t.task_date, t.check_frequency, p.execution_standard, t.monitor_unit, ext.unit_name as monitorUnitName, t.task_desc, t.report_name,
+            t.report_code, t.monitor_category, t.sample_date, t.report_date, t.analysis_person, t.contact_person, t.contact_phone,
+            t.status, t.update_time, o.out_put_id, o.out_put_name, o.out_put_type, op.pollutant_code, pc.pollutant_name_cn, pc.pollutant_name_en, op.over_maxValue, op.over_minValue,
+            t.analysis_start_date, t.analysis_end_date, t.sampling_person, t.operation_hour
+        from t_env_manual_check_task t
+        left join t_env_manual_check_plan p on p.out_put_poll_id = t.out_put_poll_id
+        left join t_ent_output_pollutant op on op.out_put_poll_id = t.out_put_poll_id
+        left join t_bas_pollutant_code pc on pc.pollutant_code = op.pollutant_code
+        left join t_ent_out_put_info o on o.out_put_id = op.out_put_id
+        left join t_ext_unit_lib ext on ext.unit_code = t.monitor_unit
+        where t.task_id = #{taskId}
+    </select>
+
+    <insert id="batchInsertEnvManualCheckTask" parameterType="com.zkhf.epmis.platform.envManual.domain.EnvManualInitTask">
+        insert into t_env_manual_check_task
+            (task_id, out_put_poll_id, task_date, check_frequency)
+        values
+        <foreach item="task" collection="taskList" separator=",">
+            (#{task.taskId}, #{task.outPutPollId}, #{task.taskDate}, #{task.checkFrequency})
+        </foreach>
+    </insert>
+
+    <select id="selectEnvManualCheckTaskList" parameterType="com.zkhf.epmis.platform.envManual.domain.EnvManualCheckTaskReq"
+            resultMap="envManualCheckTaskResult">
+        select
+            t.task_id, t.out_put_poll_id, t.task_date, t.check_frequency, p.execution_standard, t.monitor_unit, ext.unit_name as monitorUnitName, t.task_desc, t.report_name,
+            t.report_code, t.monitor_category, t.sample_date, t.report_date, t.analysis_person, t.contact_person, t.contact_phone,
+            t.status, t.update_time, o.out_put_id, o.out_put_name, o.out_put_type, op.pollutant_code, pc.pollutant_name_cn, pc.pollutant_name_en, op.over_maxValue, op.over_minValue,
+            t.analysis_start_date, t.analysis_end_date, t.sampling_person, t.operation_hour
+        from t_env_manual_check_task t
+        left join t_env_manual_check_plan p on p.out_put_poll_id = t.out_put_poll_id
+        left join t_ent_output_pollutant op on op.out_put_poll_id = t.out_put_poll_id
+        left join t_bas_pollutant_code pc on pc.pollutant_code = op.pollutant_code
+        left join t_ent_out_put_info o on o.out_put_id = op.out_put_id
+        left join t_ext_unit_lib ext on ext.unit_code = t.monitor_unit
+        <where>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and o.ent_code = #{entCode}
+                </when>
+                <otherwise>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        and o.ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="outPutId != null and outPutId != ''">
+                and o.out_put_id = #{outPutId}
+            </if>
+            <if test="outPutPollId != null and outPutPollId != ''">
+                and t.out_put_poll_id = #{outPutPollId}
+            </if>
+            <if test="status != null">
+                and t.status = #{status}
+            </if>
+            <if test="taskDateStart != null and taskDateEnd != null">
+                and t.task_date between #{taskDateStart} and #{taskDateEnd}
+            </if>
+            <if test="monitorUnit != null and monitorUnit != ''">
+                and t.monitor_unit = #{monitorUnit}
+            </if>
+            <if test="reportCode != null and reportCode != ''">
+                and t.report_code like concat('%', #{reportCode}, '%')
+            </if>
+            <if test="statusList != null and statusList.size() > 0">
+                and t.status in
+                <foreach item="status" collection="statusList" open="(" separator="," close=")">
+                    #{status}
+                </foreach>
+            </if>
+            <if test="taskIdList != null and taskIdList.size() > 0">
+                and t.task_id in
+                <foreach item="taskId" collection="taskIdList" open="(" separator="," close=")">
+                    #{taskId}
+                </foreach>
+            </if>
+        </where>
+        order by o.out_put_id desc, t.out_put_poll_id desc, t.task_date desc, t.task_id desc
+    </select>
+
+    <update id="updateEnvManualCheckTask" parameterType="com.zkhf.epmis.platform.envManual.domain.EnvManualCheckTask">
+        update t_env_manual_check_task
+        <set><!-- 任务状态：0-已取消，1-待下发，2-待执行，3-已完成 -->
+            status = #{status}
+            <if test="status != null and status == 2">
+                , monitor_unit = #{monitorUnit}, task_desc = #{taskDesc}
+            </if>
+            <if test="status != null and status == 3">
+                , report_name = #{reportName}, report_code = #{reportCode}, monitor_category = #{monitorCategory},
+                sample_date = #{sampleDate}, report_date = #{reportDate}, analysis_start_date = #{analysisStartDate},
+                analysis_end_date = #{analysisEndDate}, analysis_person = #{analysisPerson}, sampling_person = #{samplingPerson},
+                operation_hour = #{operationHour}, contact_person = #{contactPerson}, contact_phone = #{contactPhone}
+            </if>
+        </set>
+        where task_id = #{taskId}
+    </update>
+
+    <update id="batchUpdateEnvManualCheckTask">
+        insert into t_env_manual_check_task
+            (task_id, status, report_name, report_code, monitor_category, sample_date, report_date, analysis_start_date, analysis_end_date, analysis_person,
+             sampling_person, operation_hour, contact_person, contact_phone)
+        values
+        <foreach collection="taskList" item="task" separator=",">
+            (#{task.taskId}, #{task.status}, #{task.reportName}, #{task.reportCode}, #{task.monitorCategory}, #{task.sampleDate}, #{task.reportDate},
+            #{task.analysisStartDate}, #{task.analysisEndDate}, #{task.analysisPerson}, #{task.samplingPerson}, #{task.operationHour}, #{task.contactPerson}, #{task.contactPhone})
+        </foreach>
+        on duplicate key update
+            status = values(status),
+            report_name = values(report_name),
+            report_code = values(report_code),
+            monitor_category = values(monitor_category),
+            sample_date = values(sample_date),
+            report_date = values(report_date),
+            analysis_start_date = values(analysis_start_date),
+            analysis_end_date = values(analysis_end_date),
+            analysis_person = values(analysis_person),
+            sampling_person = values(sampling_person),
+            operation_hour = values(operation_hour),
+            contact_person = values(contact_person),
+            contact_phone = values(contact_phone)
+    </update>
+</mapper>

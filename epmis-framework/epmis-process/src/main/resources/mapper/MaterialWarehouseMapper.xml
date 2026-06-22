@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.process.mapper.material.MaterialWarehouseMapper">
+
+    <resultMap id="materialWarehouseResult" type="com.zkhf.epmis.process.material.domain.MaterialWarehouse">
+        <result property="warehouseId" column="warehouse_id"/>
+        <result property="entCode" column="ent_code"/>
+        <result property="warehouseCode" column="warehouse_code"/>
+        <result property="warehouseName" column="warehouse_name"/>
+        <result property="managerName" column="manager_name"/>
+        <result property="managerPhone" column="manager_phone"/>
+        <result property="warehouseAddress" column="warehouse_address"/>
+        <result property="sortNum" column="sort_num"/>
+        <result property="status" column="status"/>
+        <result property="remark" column="remark"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <select id="selectMaterialWarehouseList" parameterType="com.zkhf.epmis.process.material.domain.MaterialWarehouseReq" resultMap="materialWarehouseResult">
+        select warehouse_id, ent_code, warehouse_code, warehouse_name, manager_name, manager_phone, warehouse_address,
+               sort_num, status, remark, create_time, update_time
+        from t_material_warehouse
+        <where>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and ent_code = #{entCode}
+                </when>
+                <otherwise>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        and ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="warehouseCode != null and warehouseCode != ''">
+                and warehouse_code like concat('%', #{warehouseCode}, '%')
+            </if>
+            <if test="warehouseName != null and warehouseName != ''">
+                and warehouse_name like concat('%', #{warehouseName}, '%')
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+        </where>
+        order by sort_num asc, update_time desc, warehouse_id desc
+    </select>
+
+    <select id="selectMaterialWarehouseById" parameterType="String" resultMap="materialWarehouseResult">
+        select warehouse_id, ent_code, warehouse_code, warehouse_name, manager_name, manager_phone, warehouse_address,
+               sort_num, status, remark, create_time, update_time
+        from t_material_warehouse
+        where warehouse_id = #{warehouseId}
+    </select>
+
+    <select id="selectMaterialWarehouseByCodes" resultMap="materialWarehouseResult">
+        select warehouse_id, ent_code, warehouse_code, warehouse_name, manager_name, manager_phone, warehouse_address,
+               sort_num, status, remark, create_time, update_time
+        from t_material_warehouse
+        <where>
+            ent_code = #{entCode}
+            <if test="warehouseCodes != null and warehouseCodes.size() > 0">
+                and warehouse_code in
+                <foreach collection="warehouseCodes" item="c" open="(" separator="," close=")">
+                    #{c}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <insert id="insertMaterialWarehouse" parameterType="com.zkhf.epmis.process.material.domain.MaterialWarehouse">
+        insert into t_material_warehouse
+        (warehouse_id, ent_code, warehouse_code, warehouse_name, manager_name, manager_phone, warehouse_address,
+         sort_num, status, remark)
+        values
+        (#{warehouseId}, #{entCode}, #{warehouseCode}, #{warehouseName}, #{managerName}, #{managerPhone}, #{warehouseAddress},
+         #{sortNum}, #{status}, #{remark})
+    </insert>
+
+    <update id="updateMaterialWarehouse" parameterType="com.zkhf.epmis.process.material.domain.MaterialWarehouse">
+        update t_material_warehouse
+        <trim prefix="set" suffixOverrides=",">
+            <if test="warehouseCode != null and warehouseCode != ''">warehouse_code = #{warehouseCode},</if>
+            <if test="warehouseName != null and warehouseName != ''">warehouse_name = #{warehouseName},</if>
+            <if test="managerName != null">manager_name = #{managerName},</if>
+            <if test="managerPhone != null">manager_phone = #{managerPhone},</if>
+            <if test="warehouseAddress != null">warehouse_address = #{warehouseAddress},</if>
+            <if test="sortNum != null">sort_num = #{sortNum},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where warehouse_id = #{warehouseId}
+    </update>
+
+    <update id="deleteMaterialWarehouseById" parameterType="String">
+        delete from t_material_warehouse where warehouse_id = #{warehouseId}
+    </update>
+
+    <select id="countMaterialWarehouseRef" parameterType="String" resultType="int">
+        select
+            coalesce((select count(*) from t_material_stock where warehouse_id = #{warehouseId}), 0) +
+            coalesce((select count(*) from t_material_in_order where warehouse_id = #{warehouseId}), 0) +
+            coalesce((select count(*) from t_material_out_order where warehouse_id = #{warehouseId}), 0) +
+            coalesce((select count(*) from t_material_return_order where warehouse_id = #{warehouseId}), 0)
+    </select>
+</mapper>

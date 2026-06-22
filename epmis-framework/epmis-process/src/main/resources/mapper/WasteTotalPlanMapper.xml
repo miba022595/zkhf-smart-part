@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.process.mapper.solidWaste.WasteTotalPlanMapper">
+
+    <resultMap id="wasteTotalPlanResult" type="com.zkhf.epmis.process.solidWaste.domain.WasteTotalPlan">
+        <result property="wasteDictId" column="waste_dict_id"/>
+        <result property="entCode" column="ent_code"/>
+        <result property="outPutId" column="out_put_id"/>
+        <result property="year" column="year"/>
+        <result property="annualLimit" column="annual_limit"/>
+        <result property="firstLimit" column="first_limit"/>
+        <result property="secondLimit" column="second_limit"/>
+        <result property="thirdLimit" column="third_limit"/>
+        <result property="fourthLimit" column="fourth_limit"/>
+        <result property="warnVal" column="warn_val"/>
+        <result property="alarmVal" column="alarm_val"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <select id="selectWasteTotalPlanList" parameterType="com.zkhf.epmis.process.solidWaste.domain.WasteLibReq"
+            resultMap="wasteTotalPlanResult">
+        select
+            waste_dict_id, ent_code, out_put_id, `year`, annual_limit, first_limit, second_limit, third_limit, fourth_limit, warn_val, alarm_val, remark
+        from t_waste_total_plan
+        <where>
+            <if test="wasteDictId != null and wasteDictId != ''">
+                and waste_dict_id = #{wasteDictId}
+            </if>
+            <if test="entCodes != null and entCodes.size() > 0">
+                and ent_code in
+                <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                    #{entCode}
+                </foreach>
+            </if>
+            <if test="year != null">
+                and `year` = #{year}
+            </if>
+        </where>
+        order by ent_code desc, out_put_id desc, waste_dict_id asc, `year` desc
+    </select>
+
+    <insert id="insertWasteTotalPlan">
+        insert into t_waste_total_plan
+            (waste_dict_id, ent_code, out_put_id, `year`, annual_limit, first_limit, second_limit, third_limit, fourth_limit, warn_val, alarm_val, remark)
+        values
+            (#{wasteDictId}, #{entCode}, #{outPutId}, #{year}, #{annualLimit}, #{firstLimit}, #{secondLimit}, #{thirdLimit}, #{fourthLimit}, #{warnVal}, #{alarmVal}, #{remark})
+    </insert>
+
+    <update id="updateWasteTotalPlan">
+        update t_waste_total_plan
+        set
+            annual_limit = #{annualLimit}, first_limit = #{firstLimit}, second_limit = #{secondLimit}, third_limit = #{thirdLimit},
+            fourth_limit = #{fourthLimit}, warn_val = #{warnVal}, alarm_val = #{alarmVal}, remark = #{remark}
+        where waste_dict_id = #{wasteDictId} and ent_code = #{entCode} and out_put_id = #{outPutId} and `year` = #{year}
+    </update>
+
+    <delete id="deleteWasteTotalPlan">
+        delete from t_waste_total_plan
+        where waste_dict_id = #{wasteDictId} and ent_code = #{entCode} and out_put_id = #{outPutId} and `year` = #{year}
+    </delete>
+</mapper>

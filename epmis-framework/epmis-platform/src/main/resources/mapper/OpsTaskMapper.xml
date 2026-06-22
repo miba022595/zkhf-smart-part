@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.platform.mapper.ops.OpsTaskMapper">
+    
+    <resultMap id="opsTaskConfResult" type="com.zkhf.epmis.platform.ops.domain.OpsTaskConf">
+        <result property="entCode" column="ent_code"/>
+        <result property="entName" column="ent_name"/>
+        <result property="outPutId" column="out_put_id"/>
+        <result property="outPutCode" column="out_put_code"/>
+        <result property="outPutName" column="out_put_name"/>
+        <result property="templateCode" column="template_code"/>
+        <result property="beginDate" column="begin_date"/>
+        <result property="enabled" column="enabled"/>
+        <result property="cycleType" column="cycle_type"/>
+        <result property="cycleValue" column="cycle_value"/>
+        <result property="earlyDays" column="early_days"/>
+        <result property="createId" column="create_id"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+    
+    <resultMap id="opsTaskResult" type="com.zkhf.epmis.platform.ops.domain.OpsTask">
+        <result property="taskId" column="task_id"/>
+        <result property="entCode" column="ent_code"/>
+        <result property="entName" column="ent_name"/>
+        <result property="outPutId" column="out_put_id"/>
+        <result property="outPutCode" column="out_put_code"/>
+        <result property="outPutName" column="out_put_name"/>
+        <result property="templateCode" column="template_code"/>
+        <result property="taskType" column="task_type"/>
+        <result property="taskStatus" column="task_status"/>
+        <result property="taskDesc" column="task_desc"/>
+        <result property="planDate" column="plan_date"/>
+        <result property="earlyDays" column="early_days"/>
+        <result property="operator" column="operator"/>
+        <result property="operatorName" column="operator_name"/>
+        <result property="operatorNick" column="operator_nick"/>
+        <result property="assignTime" column="assign_time"/>
+        <result property="remark" column="remark"/>
+        <result property="createId" column="create_id"/>
+        <result property="createName" column="create_name"/>
+        <result property="createNick" column="create_nick"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <select id="selectOpsTaskConfDetail" resultMap="opsTaskConfResult">
+        select
+            c.ent_code, c.out_put_id, c.template_code, c.begin_date, c.enabled, c.cycle_type, c.cycle_value, c.early_days,
+            c.create_id, c.create_time, c.update_by, c.update_time, e.ent_name, o.out_put_code, o.out_put_name
+        from t_ops_task_conf c
+        left join t_bas_enterprise e on e.ent_code = c.ent_code
+        left join t_ent_out_put_info o on o.out_put_id = c.out_put_id
+        where c.ent_code = #{entCode} and c.out_put_id = #{outPutId} and c.template_code = #{templateCode}
+    </select>
+
+    <select id="selectOpsTaskConfList" parameterType="com.zkhf.epmis.platform.ops.domain.OpsTaskReq" resultMap="opsTaskConfResult">
+        select
+            c.ent_code, c.out_put_id, c.template_code, c.begin_date, c.enabled, c.cycle_type, c.cycle_value, c.early_days,
+            c.create_id, c.create_time, c.update_time, e.ent_name, o.out_put_code, o.out_put_name
+        from t_ops_task_conf c
+        left join t_bas_enterprise e on e.ent_code = c.ent_code
+        left join t_ent_out_put_info o on o.out_put_id = c.out_put_id
+        <where>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and c.ent_code = #{entCode}
+                </when>
+                <when test="entCodes != null and entCodes.size() > 0">
+                    and c.ent_code in
+                    <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                        #{entCode}
+                    </foreach>
+                </when>
+            </choose>
+            <if test="region != null and region != ''">
+                and (e.region = #{region} or e.region like CONCAT(#{region}, ',%'))
+            </if>
+            <if test="outPutId != null and outPutId != ''">
+                and c.out_put_id = #{outPutId}
+            </if>
+            <if test="templateCode != null and templateCode != ''">
+                and c.template_code = #{templateCode}
+            </if>
+            <if test="taskStart != null and taskEnd != null">
+                and c.begin_date between #{taskStart} and #{taskEnd}
+            </if>
+        </where>
+        order by c.ent_code desc, c.out_put_id desc, c.template_code desc, c.begin_date desc
+    </select>
+
+    <select id="checkExistsTaskConf" parameterType="com.zkhf.epmis.platform.ops.domain.OpsTaskConf">
+        select
+            count(1)
+        from t_ops_task_conf
+        where ent_code = #{entCode} and out_put_id = #{outPutId} and template_code = #{templateCode}
+    </select>
+
+    <insert id="insertOpsTaskConf" parameterType="com.zkhf.epmis.platform.ops.domain.OpsTaskConf">
+        insert into t_ops_task_conf
+            (ent_code, out_put_id, template_code, begin_date, enabled, cycle_type, cycle_value, early_days, create_id, create_time)
+        values
+            (#{entCode}, #{outPutId}, #{templateCode}, #{beginDate}, #{enabled}, #{cycleType}, #{cycleValue}, #{earlyDays}, #{createId}, now())
+    </insert>
+
+    <update id="updateOpsTaskConf" parameterType="com.zkhf.epmis.platform.ops.domain.OpsTaskConf">
+        update t_ops_task_conf
+        set
+            begin_date = #{beginDate}, enabled = #{enabled}, cycle_type = #{cycleType}, cycle_value = #{cycleValue}, early_days = #{earlyDays}, update_time = now()
+        where ent_code = #{entCode} and out_put_id = #{outPutId} and template_code = #{templateCode}
+    </update>
+
+    <delete id="deleteOpsTaskConf">
+        delete from t_ops_task_conf where ent_code = #{entCode} and out_put_id = #{outPutId} and template_code = #{templateCode}
+    </delete>
+
+    <select id="selectOpsTaskByTaskId" parameterType="String" resultMap="opsTaskResult">
+        select
+            t.task_id, t.ent_code, t.out_put_id, t.template_code, t.task_type, t.task_status, t.task_desc, t.plan_date, t.early_days,
+            t.operator, t.assign_time, t.remark, t.create_id, t.create_time, t.update_time,
+            e.ent_name, o.out_put_code, o.out_put_name, u.user_name as operator_name, u.nick_name as operator_nick, u1.user_name as create_name, u1.nick_name as create_nick
+        from t_ops_task t
+        left join t_bas_enterprise e on e.ent_code = t.ent_code
+        left join t_ent_out_put_info o on o.out_put_id = t.out_put_id
+        left join sys_user u on u.user_id = t.operator
+        left join sys_user u1 on u1.user_id = t.create_id
+        where t.task_id = #{taskId}
+    </select>
+
+    <select id="selectPersonOpsTaskList" parameterType="com.zkhf.epmis.platform.ops.domain.OpsTaskReq" resultMap="opsTaskResult">
+        select
+            t.task_id, t.ent_code, t.out_put_id, t.template_code, t.task_type, t.task_status, t.task_desc, t.plan_date, t.early_days,
+            t.operator, t.assign_time, t.remark, t.create_id, t.create_time, t.update_time,
+            e.ent_name, o.out_put_code, o.out_put_name, u.user_name as operator_name, u.nick_name as operator_nick, u1.user_name as create_name, u1.nick_name as create_nick
+        from t_ops_task t
+        left join t_bas_enterprise e on e.ent_code = t.ent_code
+        left join t_ent_out_put_info o on o.out_put_id = t.out_put_id
+        left join sys_user u on u.user_id = t.operator
+        left join sys_user u1 on u1.user_id = t.create_id
+        <where>
+            <!-- 运维任务状态：1-草稿、2-已下发、3-已接收、4-已取消 -->
+            t.operator = #{operator} and t.task_status in (2, 3)
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and t.ent_code = #{entCode}
+                </when>
+                <when test="entCodes != null and entCodes.size() > 0">
+                    and t.ent_code in
+                    <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                        #{entCode}
+                    </foreach>
+                </when>
+            </choose>
+            <if test="region != null and region != ''">
+                and (e.region = #{region} or e.region like CONCAT(#{region}, ',%'))
+            </if>
+            <if test="outPutId != null and outPutId != ''">
+                and t.out_put_id = #{outPutId}
+            </if>
+            <if test="templateCode != null and templateCode != ''">
+                and t.template_code = #{templateCode}
+            </if>
+            <if test="taskType != null ">
+                and t.task_type = #{taskType}
+            </if>
+            <if test="taskStart != null and taskEnd != null">
+                and t.plan_date between #{taskStart} and #{taskEnd}
+            </if>
+        </where>
+        order by t.task_id desc
+    </select>
+
+    <select id="selectOpsTaskList" parameterType="com.zkhf.epmis.platform.ops.domain.OpsTaskReq" resultMap="opsTaskResult">
+        select
+            t.task_id, t.ent_code, t.out_put_id, t.template_code, t.task_type, t.task_status, t.task_desc, t.plan_date, t.early_days,
+            t.operator, t.assign_time, t.remark, t.create_id, t.create_time, t.update_time,
+            e.ent_name, o.out_put_code, o.out_put_name, u.user_name as operator_name, u.nick_name as operator_nick, u1.user_name as create_name, u1.nick_name as create_nick
+        from t_ops_task t
+        left join t_bas_enterprise e on e.ent_code = t.ent_code
+        left join t_ent_out_put_info o on o.out_put_id = t.out_put_id
+        left join sys_user u on u.user_id = t.operator
+        left join sys_user u1 on u1.user_id = t.create_id
+        <where>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and t.ent_code = #{entCode}
+                </when>
+                <when test="entCodes != null and entCodes.size() > 0">
+                    and t.ent_code in
+                    <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                        #{entCode}
+                    </foreach>
+                </when>
+            </choose>
+            <if test="region != null and region != ''">
+                and (e.region = #{region} or e.region like CONCAT(#{region}, ',%'))
+            </if>
+            <if test="outPutId != null and outPutId != ''">
+                and t.out_put_id = #{outPutId}
+            </if>
+            <if test="templateCode != null and templateCode != ''">
+                and t.template_code = #{templateCode}
+            </if>
+            <if test="taskType != null ">
+                and t.task_type = #{taskType}
+            </if>
+            <if test="taskStatus != null ">
+                and t.task_status = #{taskStatus}
+            </if>
+            <if test="operator != null">
+                and t.operator = #{operator}
+            </if>
+            <if test="taskStart != null and taskEnd != null">
+                and t.plan_date between #{taskStart} and #{taskEnd}
+            </if>
+        </where>
+        order by t.task_id desc
+    </select>
+
+    <insert id="insertOpsTask" parameterType="com.zkhf.epmis.platform.ops.domain.OpsTask">
+        insert into t_ops_task
+            (task_id, ent_code, out_put_id, template_code, task_type, task_status, plan_date,
+             operator, assign_time, remark, create_id, create_time)
+        values
+            (#{taskId}, #{entCode}, #{outPutId}, #{templateCode}, #{taskType}, #{taskStatus}, #{planDate},
+             #{operator}, #{assignTime}, #{remark}, #{createId}, now())
+    </insert>
+    
+    <update id="updateOpsTask" parameterType="com.zkhf.epmis.platform.ops.domain.OpsTask">
+        <!-- taskType 任务类型（1：自动生成的任务，2：手动生成的任务） -->
+        <!-- 运维任务状态：1-草稿、2-已下发、3-已接收、4-已取消 -->
+        update t_ops_task
+        <set>
+            update_time = now(), task_status = #{taskStatus}
+            <if test="taskStatus != null">
+                <if test="taskStatus == 1"><!-- 草稿、已取消时可填执行人、分配时间、备注，手动任务可填计划日期 -->
+                    <if test="taskType != null and taskType == 2 and planDate != null">
+                        , plan_date = #{planDate}
+                    </if>
+                    <if test="operator != null">
+                        , operator = #{operator}
+                    </if>
+                    <if test="assignTime != null">
+                        , assign_time = #{assignTime}
+                    </if>
+                    <if test="remark != null">
+                        , remark = #{remark}
+                    </if>
+                </if>
+                <if test="taskStatus == 2"><!-- 已下发时必填执行人，分配时间，手动任务可填计划日期 -->
+                    , operator = #{operator}, assign_time = #{assignTime}, remark = #{remark}
+                    <if test="taskType != null and taskType == 2 and planDate != null">
+                        , plan_date = #{planDate}
+                    </if>
+                </if>
+                <if test="taskStatus == 3"><!-- 已接收，修改状态 -->
+                </if>
+                <if test="taskStatus == 4"><!-- 已取消，修改状态，描述 -->
+                    <if test="taskType != null and taskType == 2 and planDate != null">
+                        , plan_date = #{planDate}
+                    </if>
+                    <if test="operator != null">
+                        , operator = #{operator}
+                    </if>
+                    <if test="assignTime != null">
+                        , assign_time = #{assignTime}
+                    </if>
+                    <if test="remark != null">
+                        , remark = #{remark}
+                    </if>
+                </if>
+            </if>
+        </set>
+        where task_id = #{taskId}
+    </update>
+
+    <delete id="deleteOpsTaskById" parameterType="String">
+        delete from t_ops_task where task_id = #{taskId}
+    </delete>
+
+</mapper>

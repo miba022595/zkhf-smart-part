@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.platform.mapper.emergency.EmergencyVehicleMapper">
+
+    <resultMap id="emergencyVehicleResult" type="com.zkhf.epmis.platform.emergency.domain.EmergencyVehicle">
+        <result property="vehicleId" column="vehicle_id"/>
+        <result property="entCode" column="ent_code"/>
+        <result property="entName" column="ent_name"/>
+        <result property="weComMsg" column="we_com_msg"/>
+        <result property="plateNo" column="plate_no"/>
+        <result property="vehicleType" column="vehicle_type"/>
+        <result property="driverName" column="driver_name"/>
+        <result property="driverPhone" column="driver_phone"/>
+        <result property="parkPlace" column="park_place"/>
+        <result property="vehicleStatus" column="vehicle_status"/>
+        <result property="remark" column="remark"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.zkhf.epmis.platform.emergency.domain.EmergencyVehicle">
+        insert into t_emergency_vehicle
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="vehicleId != null and vehicleId != ''">vehicle_id,</if>
+            <if test="entCode != null and entCode != ''">ent_code,</if>
+            <if test="plateNo != null and plateNo != ''">plate_no,</if>
+            <if test="vehicleType != null and vehicleType != ''">vehicle_type,</if>
+            <if test="driverName != null and driverName != ''">driver_name,</if>
+            <if test="driverPhone != null and driverPhone != ''">driver_phone,</if>
+            <if test="parkPlace != null and parkPlace != ''">park_place,</if>
+            <if test="vehicleStatus != null">vehicle_status,</if>
+            <if test="remark != null and remark != ''">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="vehicleId != null and vehicleId != ''">#{vehicleId},</if>
+            <if test="entCode != null and entCode != ''">#{entCode},</if>
+            <if test="plateNo != null and plateNo != ''">#{plateNo},</if>
+            <if test="vehicleType != null and vehicleType != ''">#{vehicleType},</if>
+            <if test="driverName != null and driverName != ''">#{driverName},</if>
+            <if test="driverPhone != null and driverPhone != ''">#{driverPhone},</if>
+            <if test="parkPlace != null and parkPlace != ''">#{parkPlace},</if>
+            <if test="vehicleStatus != null">#{vehicleStatus},</if>
+            <if test="remark != null and remark != ''">#{remark},</if>
+        </trim>
+    </insert>
+
+    <insert id="batchInsert">
+        insert into t_emergency_vehicle
+            (vehicle_id, ent_code, plate_no, vehicle_type, driver_name, driver_phone, park_place, vehicle_status, remark)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.vehicleId}, #{item.entCode}, #{item.plateNo}, #{item.vehicleType}, #{item.driverName}, #{item.driverPhone}, #{item.parkPlace}, #{item.vehicleStatus}, #{item.remark})
+        </foreach>
+    </insert>
+
+    <update id="update" parameterType="com.zkhf.epmis.platform.emergency.domain.EmergencyVehicle">
+        update t_emergency_vehicle
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="plateNo != null and plateNo != ''">plate_no = #{plateNo},</if>
+            <if test="vehicleType != null and vehicleType != ''">vehicle_type = #{vehicleType},</if>
+            <if test="driverName != null and driverName != ''">driver_name = #{driverName},</if>
+            <if test="driverPhone != null and driverPhone != ''">driver_phone = #{driverPhone},</if>
+            <if test="parkPlace != null and parkPlace != ''">park_place = #{parkPlace},</if>
+            <if test="vehicleStatus != null">vehicle_status = #{vehicleStatus},</if>
+            <if test="remark != null and remark != ''">remark = #{remark},</if>
+        </trim>
+        where vehicle_id = #{vehicleId}
+    </update>
+
+    <delete id="deleteById">
+        delete from t_emergency_vehicle where vehicle_id = #{vehicleId}
+    </delete>
+
+    <select id="selectById" resultMap="emergencyVehicleResult">
+        select v.*, e.ent_name, e.we_com_msg from t_emergency_vehicle v
+        left join t_bas_enterprise e on v.ent_code = e.ent_code
+        where v.vehicle_id = #{vehicleId}
+    </select>
+
+    <select id="selectList" resultMap="emergencyVehicleResult">
+        select v.*, e.ent_name, e.we_com_msg from t_emergency_vehicle v
+        left join t_bas_enterprise e on v.ent_code = e.ent_code
+        <where>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and v.ent_code = #{entCode}
+                </when>
+                <otherwise>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        and v.ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="plateNo != null and plateNo != ''">
+                and v.plate_no like concat('%', #{plateNo}, '%')
+            </if>
+            <if test="vehicleStatusInt != null">
+                and v.vehicle_status = #{vehicleStatusInt}
+            </if>
+        </where>
+        order by v.create_time desc
+    </select>
+
+    <select id="selectAll" resultMap="emergencyVehicleResult">
+        select v.*, e.ent_name, e.we_com_msg from t_emergency_vehicle v
+        left join t_bas_enterprise e on v.ent_code = e.ent_code
+        order by v.create_time desc
+    </select>
+</mapper>

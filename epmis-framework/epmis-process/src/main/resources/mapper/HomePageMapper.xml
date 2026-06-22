@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.process.mapper.homePage.HomePageMapper">
+
+    <resultMap id="outEmissionsInfoResult" type="com.zkhf.epmis.process.base.domain.OutEmissionsInfo">
+        <result property="outPutId" column="out_put_id"/>
+        <result property="pollutantCode" column="pollutant_code"/>
+        <result property="standardValue" column="standard_value"/>
+        <result property="avgValue" column="avg_value"/>
+        <result property="surplusValue" column="surplus_value"/>
+    </resultMap>
+
+    <select id="selectOutEmissionsList" resultMap="outEmissionsInfoResult">
+        select a.out_put_id, a.pollutant_code, a.standard_value, a.avg_value, a.surplus_value
+        from t_data_hour_left_emission_info a
+        where
+            a.out_put_id in
+            <foreach item="item" collection="outPutIdList" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+    </select>
+
+    <select id="selectTableName">
+        select table_name from information_schema.tables where table_schema = database() and table_name like #{tableNameLike}
+    </select>
+
+    <select id="selectOutMinuteList" resultType="java.util.Map">
+        <foreach collection="tableNames" item="tableName" open="(" separator=" ) union all ( " close=")">
+            select '${tableName}' as tableName, date_format(monitor_time, '%H:%i') as monitorTime, data_info as dataInfo
+            from ${tableName}
+            where data_type = #{dataType} and monitor_time between #{startTime} and #{endTime}
+            order by monitor_time desc
+            limit #{limit}
+        </foreach>
+    </select>
+
+    <select id="selectOutRealList" resultType="com.zkhf.epmis.process.onlineMonitoring.domain.OutPutOnlineData">
+        select
+            out_id as outId, data_type as dataType, data_alarm as dataAlarm, data_info as dataInfoStr , date_format(monitor_time, '%Y-%m-%d %H:%i:%s') as monitorTime
+        from ${tableName}
+        where data_type = #{dataType} and monitor_time between #{startTime} and #{endTime}
+        order by monitor_time desc
+        limit #{limit}
+    </select>
+
+    <select id="selectOutDataList" resultType="java.util.Map">
+        <foreach collection="tableNames" item="tableName" open="(" separator=" ) union all ( " close=")">
+            select '${tableName}' as tableName, data_info as dataInfo,
+            <choose>
+                <when test="dataType == 1"> <!-- 实时数据：精确到秒 -->
+                    date_format(monitor_time, '%Y-%m-%d %H:%i:%s') as monitorTime
+                </when>
+                <when test="dataType == 2"> <!-- 分钟数据：精确到分钟 -->
+                    date_format(monitor_time, '%Y-%m-%d %H:%i') as monitorTime
+                </when>
+                <when test="dataType == 3"> <!-- 小时数据：精确到小时 -->
+                    date_format(monitor_time, '%Y-%m-%d %H') as monitorTime
+                </when>
+                <when test="dataType == 4"> <!-- 日数据：精确到天 -->
+                    date_format(monitor_time, '%Y-%m-%d') as monitorTime
+                </when>
+                <otherwise>
+                    date_format(monitor_time, '%Y-%m-%d %H:%i:%s') as monitorTime
+                </otherwise>
+            </choose>
+            from ${tableName}
+            where data_type = #{dataType} and monitor_time between #{startTime} and #{endTime}
+            <choose>
+                <when test="null != orderType and orderType == 'asc'">
+                    order by monitor_time asc
+                </when>
+                <otherwise>
+                    order by monitor_time desc
+                </otherwise>
+            </choose>
+            <if test="null != limit">
+                limit #{limit}
+            </if>
+        </foreach>
+    </select>
+
+    <select id="selectOutAlarmCount" resultType="java.util.Map">
+        select alarm_type as alarmType, sum(alarm_count) as alarmCount
+        from (
+             select alarm_type, count(1) as alarm_count
+             from t_data_out_alarm
+             where start_time &lt;= #{endTime} and (end_time is null or end_time &gt;= #{startTime})
+                and out_put_id in
+                <foreach item="outPutId" collection="outPutIds" open="(" separator="," close=")">
+                    #{outPutId}
+                </foreach>
+             group by alarm_type
+             union all
+             select alarm_type, count(1) as alarm_count
+             from t_data_out_warn
+             where start_time between #{startTime} and #{endTime}
+                and out_put_id in
+                <foreach item="outPutId" collection="outPutIds" open="(" separator="," close=")">
+                    #{outPutId}
+                </foreach>
+             group by alarm_type
+        ) t
+        group by alarm_type
+        order by alarmCount desc
+    </select>
+
+    <select id="selectOutDataTimeList" resultType="java.util.Map">
+        <foreach collection="tableNames" item="tableName" separator=" union all ">
+            select '${tableName}' as tableName, date_format(monitor_time, '%Y-%m-%d %H') as monitorTime
+            from ${tableName}
+            where data_type = #{dataType} and monitor_time between #{startTime} and #{endTime}
+        </foreach>
+    </select>
+
+    <select id="selectAlarmList" resultType="com.zkhf.epmis.process.alarm.domain.DurAlarmInfo">
+        select out_put_id as outPutId, alarm_type as alarmType, start_time as startTime, end_time as endTime
+        from t_data_out_alarm
+        where start_time &lt;= #{endTime} and (end_time is null or end_time &gt;= #{startTime}) and data_type = #{dataType}
+            and out_put_id in
+            <foreach item="outPutId" collection="outPutIds" open="(" separator="," close=")">
+                #{outPutId}
+            </foreach>
+    </select>
+
+    <select id="cockpitEmissions" resultType="com.zkhf.epmis.process.statistics.domain.EntEmission">
+        select pollutant_code as pollutantCode, sum(emissions) as emissions
+        from t_ent_annual_emission
+        where ent_code = #{entCode} and emission_year = #{emissionYear}
+        group by pollutant_code
+    </select>
+</mapper>

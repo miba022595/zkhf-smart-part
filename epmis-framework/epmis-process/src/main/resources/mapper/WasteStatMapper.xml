@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.process.mapper.solidWaste.WasteStatMapper">
+
+    <select id="selectCategoryList" resultType="com.zkhf.epmis.process.solidWaste.domain.WasteCategory">
+        select category_id as categoryId, waste_name as wasteName, waste_dict_id as wasteDictId, design_output as designOutput
+        from t_waste_category
+        <where>
+            <if test="entCodes != null and entCodes.size() > 0">
+                and ent_code in
+                <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                    #{entCode}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="selectGenerateSum" resultType="com.zkhf.epmis.process.solidWaste.domain.WasteStatInfo">
+        select category_id as categoryId, COALESCE(SUM(gen_qty), 0) as actualGenerateQty
+        from t_waste_generate
+        <where>
+            <if test="categoryIds != null and categoryIds.size() > 0">
+                category_id in
+                <foreach collection="categoryIds" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+        group by category_id
+    </select>
+
+    <select id="selectReductionSum" resultType="com.zkhf.epmis.process.solidWaste.domain.WasteStatInfo">
+        select category_id as categoryId, COALESCE(SUM(reduction_qty), 0) as reductionQty
+        from t_waste_reduction
+        <where>
+            <if test="categoryIds != null and categoryIds.size() > 0">
+                category_id in
+                <foreach collection="categoryIds" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+        group by category_id
+    </select>
+
+    <select id="selectStorageSum" resultType="com.zkhf.epmis.process.solidWaste.domain.WasteStatInfo">
+        select category_id as categoryId, COALESCE(SUM(storage_qty), 0) as storageQty
+        from t_waste_storage
+        <where>
+            <if test="categoryIds != null and categoryIds.size() > 0">
+                category_id in
+                <foreach collection="categoryIds" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+        group by category_id
+    </select>
+
+    <select id="selectOutboundSum" resultType="com.zkhf.epmis.process.solidWaste.domain.WasteStatInfo">
+        select category_id as categoryId, COALESCE(SUM(out_qty), 0) as outboundQty
+        from t_waste_outbound
+        <where>
+            <if test="categoryIds != null and categoryIds.size() > 0">
+                category_id in
+                <foreach collection="categoryIds" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+        group by category_id
+    </select>
+</mapper>

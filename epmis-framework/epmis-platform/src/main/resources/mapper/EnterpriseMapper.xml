@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.platform.mapper.ent.EnterpriseMapper">
+
+    <resultMap id="enterpriseResult" type="com.zkhf.epmis.platform.ent.domain.Enterprise">
+        <result property="entCode" column="ent_code"/>
+        <result property="parentCode" column="parent_code"/>
+        <result property="entName" column="ent_name"/>
+        <result property="socialCreditCode" column="social_credit_code"/>
+        <result property="shorterName" column="shorter_name"/>
+        <result property="legalPerson" column="legal_person"/>
+        <result property="region" column="region"/>
+        <result property="address" column="address"/>
+        <result property="longitude" column="longitude"/>
+        <result property="latitude" column="latitude"/>
+        <result property="entStatus" column="ent_status"/>
+        <result property="entScale" column="ent_scale"/>
+        <result property="entType" column="ent_type"/>
+        <result property="industryType" column="industry_type"/>
+        <result property="pollutionClass" column="pollution_class"/>
+        <result property="entDirectorName" column="ent_director_name"/>
+        <result property="entDirectorPhone" column="ent_director_phone"/>
+        <result property="entDirectorEmail" column="ent_director_email"/>
+        <result property="envDirectorName" column="env_director_name"/>
+        <result property="envDirectorPhone" column="env_director_phone"/>
+        <result property="envDirectorEmail" column="env_director_email"/>
+        <result property="entIntroduction" column="ent_introduction"/>
+        <result property="weComMsg" column="we_com_msg"/>
+        <result property="envPolicyName" column="env_policy_name"/>
+        <result property="envPolicyDate" column="env_policy_date"/>
+        <result property="envPolicyLevel" column="env_policy_level"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <resultMap id="enterprisePartResult" type="com.zkhf.epmis.platform.ent.domain.EnterprisePart">
+        <result property="entCode" column="ent_code"/>
+        <result property="parentCode" column="parent_code"/>
+        <result property="entName" column="ent_name"/>
+        <result property="socialCreditCode" column="social_credit_code"/>
+        <result property="shorterName" column="shorter_name"/>
+        <result property="longitude" column="longitude"/>
+        <result property="latitude" column="latitude"/>
+        <result property="region" column="region"/>
+        <result property="entDirectorName" column="ent_director_name"/>
+        <result property="entDirectorPhone" column="ent_director_phone"/>
+        <result property="entDirectorEmail" column="ent_director_email"/>
+    </resultMap>
+
+    <resultMap id="entPartTreeResult" type="com.zkhf.epmis.platform.ent.domain.EnterprisePart">
+        <result property="entCode" column="ent_code"/>
+        <result property="parentCode" column="parent_code"/>
+        <result property="entName" column="ent_name"/>
+        <result property="socialCreditCode" column="social_credit_code"/>
+        <result property="shorterName" column="shorter_name"/>
+        <result property="longitude" column="longitude"/>
+        <result property="latitude" column="latitude"/>
+        <result property="region" column="region"/>
+        <!-- 映射排口数组 -->
+        <collection property="outList" ofType="com.zkhf.epmis.platform.ent.domain.EntOutPutPart">
+            <result property="outPutId" column="out_put_id"/>
+            <result property="outPutCode" column="out_put_code"/>
+            <result property="outPutName" column="out_put_name"/>
+            <result property="outPutType" column="out_put_type"/>
+            <result property="longitude" column="longitude"/>
+            <result property="latitude" column="latitude"/>
+            <result property="clockRange" column="clock_range"/>
+        </collection>
+    </resultMap>
+
+    <!-- 企业树 -->
+    <resultMap id="outPutTreeResult" type="java.util.Map">
+        <result property="entCode" column="ent_code"/>
+        <result property="parentCode" column="parent_code"/>
+        <result property="entName" column="ent_name"/>
+        <!-- 映射排口数组 -->
+        <collection property="outPutList" ofType="java.util.Map" javaType="java.util.List">
+            <result property="outPutId" column="out_put_id"/>
+            <result property="outPutCode" column="out_put_code"/>
+            <result property="outPutName" column="out_put_name"/>
+            <result property="outPutType" column="out_put_type"/>
+            <result property="longitude" column="longitude"/>
+            <result property="latitude" column="latitude"/>
+            <result property="clockRange" column="clock_range"/>
+        </collection>
+    </resultMap>
+
+    <select id="listAll" resultMap="enterprisePartResult">
+        select
+            ent_code, parent_code, ent_name, ent_director_name, ent_director_phone, ent_director_email
+        from t_bas_enterprise
+    </select>
+
+    <select id="selectPartListByPollType" resultMap="enterprisePartResult">
+        select
+            e.ent_code, e.parent_code, e.ent_name, e.social_credit_code, e.shorter_name
+        from t_bas_enterprise e
+        <where>
+            <if test="entCodes != null and entCodes.size() > 0">
+                and e.ent_code in
+                <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                    #{entCode}
+                </foreach>
+            </if>
+            <if test="pollType != null and pollType != ''">
+                and exists (select 1 from t_ent_out_put_info where ent_code = e.ent_code and out_put_type = #{pollType})
+            </if>
+        </where>
+        order by e.parent_code desc, e.ent_code desc
+    </select>
+
+    <select id="selectPartListByRegion" resultMap="enterprisePartResult">
+        select
+            e.ent_code, e.parent_code, e.ent_name, e.social_credit_code, e.shorter_name, e.region
+        from t_bas_enterprise e
+        <where>
+            <if test="entCodes != null and entCodes.size() > 0">
+                and e.ent_code in
+                <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                    #{entCode}
+                </foreach>
+            </if>
+            <if test="region != null and region != ''">
+                and (e.region = #{region} or e.region like CONCAT(#{region}, ',%'))
+            </if>
+        </where>
+        order by e.parent_code desc, e.ent_code desc
+    </select>
+
+    <select id="outPutTree" resultMap="outPutTreeResult">
+        select
+            e.ent_code, e.parent_code, e.ent_name, o.out_put_id, o.out_put_code, o.out_put_name, o.out_put_type, o.longitude, o.latitude, o.clock_range
+        from t_bas_enterprise e inner join t_ent_out_put_info o on o.ent_code = e.ent_code
+        <where>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and e.ent_code = #{entCode}
+                </when>
+                <otherwise>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        and e.ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="entName != null and entName != ''">
+                and e.ent_name like concat('%', #{entName}, '%')
+            </if>
+            <if test="outPutId != null and outPutId != ''">
+                and o.out_put_id = #{outPutId}
+            </if>
+            <if test="outPutCode != null and outPutCode != ''">
+                and o.out_put_code like concat('%', #{outPutCode}, '%')
+            </if>
+            <if test="outPutName != null and outPutName != ''">
+                and o.out_put_name like concat('%', #{outPutName}, '%')
+            </if>
+            <if test="outPutType != null">
+                and o.out_put_type = #{outPutType}
+            </if>
+        </where>
+        order by e.parent_code desc, e.ent_code desc, o.out_put_id desc
+    </select>
+
+    <select id="outPutTreeByEnt" resultMap="entPartTreeResult">
+        select
+            e.ent_code, e.parent_code, e.ent_name, e.social_credit_code, e.shorter_name, e.longitude, e.latitude,
+            o.out_put_id, o.out_put_code, o.out_put_name, o.out_put_type, o.longitude, o.latitude, o.clock_range
+        from t_bas_enterprise e inner join t_ent_out_put_info o on o.ent_code = e.ent_code
+        <where>
+            <if test="entCodes != null and entCodes.size() > 0">
+                and e.ent_code in
+                <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                    #{entCode}
+                </foreach>
+            </if>
+            <if test="pollType != null and pollType != ''">
+                and o.out_put_type = #{pollType}
+            </if>
+        </where>
+        order by e.parent_code desc, e.ent_code desc, o.out_put_id desc
+    </select>
+
+    <select id="outPutTreeByRegion" resultMap="entPartTreeResult">
+        select
+            e.ent_code, e.parent_code, e.ent_name, e.social_credit_code, e.shorter_name, e.longitude, e.latitude, e.region,
+            o.out_put_id, o.out_put_code, o.out_put_name, o.out_put_type, o.longitude, o.latitude, o.clock_range
+        from t_bas_enterprise e inner join t_ent_out_put_info o on o.ent_code = e.ent_code
+        <where>
+            <if test="entCodes != null and entCodes.size() > 0">
+                and e.ent_code in
+                <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                    #{entCode}
+                </foreach>
+            </if>
+        </where>
+        order by e.parent_code desc, e.ent_code desc, o.out_put_id desc
+    </select>
+
+    <select id="selectPartListAll" resultMap="enterprisePartResult">
+        select
+            ent_code, parent_code, ent_name, social_credit_code, shorter_name, longitude, latitude
+        from t_bas_enterprise
+        <where>
+            <if test="entCodes != null and entCodes.size() > 0">
+                and ent_code in
+                <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                    #{entCode}
+                </foreach>
+            </if>
+        </where>
+        order by parent_code desc, ent_code desc
+    </select>
+
+    <select id="selectList" parameterType="com.zkhf.epmis.platform.ent.domain.EnterpriseReq"
+            resultMap="enterpriseResult">
+        select
+            ent_code, parent_code, ent_name, social_credit_code, shorter_name, legal_person, region, address, longitude, latitude, ent_status, ent_scale,
+            ent_type, industry_type, pollution_class, ent_director_name, ent_director_phone, ent_director_email, env_director_name, env_director_phone, env_director_email, ent_introduction,
+            we_com_msg, env_policy_name, env_policy_date, env_policy_level, create_time, update_time
+        from t_bas_enterprise
+        <where>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and ent_code = #{entCode}
+                </when>
+                <otherwise>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        AND ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="entName != null and entName != ''">and ent_name like concat('%', #{entName}, '%')</if>
+            <if test="entStatus != null and entStatus != ''">and ent_status = #{entStatus}</if>
+        </where>
+        order by parent_code desc, ent_code desc
+    </select>
+
+    <insert id="insertEnterprise" parameterType="com.zkhf.epmis.platform.ent.domain.Enterprise">
+        insert into t_bas_enterprise
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="entCode != null">ent_code,</if>
+            <if test="parentCode != null">parent_code,</if>
+            <if test="entName != null">ent_name,</if>
+            <if test="socialCreditCode != null">social_credit_code,</if>
+            <if test="shorterName != null">shorter_name,</if>
+            <if test="legalPerson != null">legal_person,</if>
+            <if test="region != null">region,</if>
+            <if test="address != null">address,</if>
+            <if test="longitude != null">longitude,</if>
+            <if test="latitude != null">latitude,</if>
+            <if test="entStatus != null">ent_status,</if>
+            <if test="entScale != null">ent_scale,</if>
+            <if test="entType != null">ent_type,</if>
+            <if test="industryType != null">industry_type,</if>
+            <if test="pollutionClass != null">pollution_class,</if>
+            <if test="entDirectorName != null">ent_director_name,</if>
+            <if test="entDirectorPhone != null">ent_director_phone,</if>
+            <if test="entDirectorEmail != null">ent_director_emain,</if>
+            <if test="envDirectorName != null">env_director_name,</if>
+            <if test="envDirectorPhone != null">env_director_phone,</if>
+            <if test="envDirectorEmail != null">env_director_email,</if>
+            <if test="entIntroduction != null">ent_introduction,</if>
+            <if test="weComMsg != null">we_com_msg,</if>
+            <if test="envPolicyName != null">env_policy_name,</if>
+            <if test="envPolicyDate != null">env_policy_date,</if>
+            <if test="envPolicyLevel != null">env_policy_level,</if>
+            <if test="createTime != null">create_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="entCode != null">#{entCode},</if>
+            <if test="parentCode != null">#{parentCode},</if>
+            <if test="entName != null">#{entName},</if>
+            <if test="socialCreditCode != null">#{socialCreditCode},</if>
+            <if test="shorterName != null">#{shorterName},</if>
+            <if test="legalPerson != null">#{legalPerson},</if>
+            <if test="region != null">#{region},</if>
+            <if test="address != null">#{address},</if>
+            <if test="longitude != null">#{longitude},</if>
+            <if test="latitude != null">#{latitude},</if>
+            <if test="entStatus != null">#{entStatus},</if>
+            <if test="entScale != null">#{entScale},</if>
+            <if test="entType != null">#{entType},</if>
+            <if test="industryType != null">#{industryType},</if>
+            <if test="pollutionClass != null">#{pollutionClass},</if>
+            <if test="entDirectorName != null">#{entDirectorName},</if>
+            <if test="entDirectorPhone != null">#{entDirectorPhone},</if>
+            <if test="entDirectorEmail != null">#{entDirectorEmail},</if>
+            <if test="envDirectorName != null">#{envDirectorName},</if>
+            <if test="envDirectorPhone != null">#{envDirectorPhone},</if>
+            <if test="envDirectorEmail != null">#{envDirectorEmail},</if>
+            <if test="entIntroduction != null">#{entIntroduction},</if>
+            <if test="weComMsg != null">#{weComMsg},</if>
+            <if test="envPolicyName != null">#{envPolicyName},</if>
+            <if test="envPolicyDate != null">#{envPolicyDate},</if>
+            <if test="envPolicyLevel != null">#{envPolicyLevel},</if>
+            <if test="createTime != null">#{createTime},</if>
+        </trim>
+    </insert>
+
+    <update id="updateEnterprise" parameterType="com.zkhf.epmis.platform.ent.domain.Enterprise">
+        update t_bas_enterprise
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="entName != null">ent_name = #{entName},</if>
+            <if test="socialCreditCode != null">social_credit_code = #{socialCreditCode},</if>
+            <if test="shorterName != null">shorter_name = #{shorterName},</if>
+            <if test="legalPerson != null">legal_person = #{legalPerson},</if>
+            <if test="region != null">region = #{region},</if>
+            <if test="address != null">address = #{address},</if>
+            <if test="longitude != null">longitude = #{longitude},</if>
+            <if test="latitude != null">latitude = #{latitude},</if>
+            <if test="entStatus != null">ent_status = #{entStatus},</if>
+            <if test="entScale != null">ent_scale = #{entScale},</if>
+            <if test="entType != null">ent_type = #{entType},</if>
+            <if test="industryType != null">industry_type = #{industryType},</if>
+            <if test="pollutionClass != null">pollution_class = #{pollutionClass},</if>
+            <if test="entDirectorName != null">ent_director_name = #{entDirectorName},</if>
+            <if test="entDirectorPhone != null">ent_director_phone = #{entDirectorPhone},</if>
+            <if test="entDirectorEmail != null">ent_director_email = #{entDirectorEmail},</if>
+            <if test="envDirectorName != null">env_director_name = #{envDirectorName},</if>
+            <if test="envDirectorPhone != null">env_director_phone = #{envDirectorPhone},</if>
+            <if test="envDirectorEmail != null">env_director_email = #{envDirectorEmail},</if>
+            <if test="entIntroduction != null">ent_introduction = #{entIntroduction},</if>
+            <if test="weComMsg != null">we_com_msg = #{weComMsg},</if>
+            <if test="envPolicyName != null">env_policy_name = #{envPolicyName},</if>
+            <if test="envPolicyDate != null">env_policy_date = #{envPolicyDate},</if>
+            <if test="envPolicyLevel != null">env_policy_level = #{envPolicyLevel},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where ent_code = #{entCode}
+    </update>
+
+    <select id="selectListByParentCode">
+        select
+            ent_code, parent_code, ent_name, social_credit_code, shorter_name, legal_person, region, address, longitude, latitude, ent_status, ent_scale,
+            ent_type, industry_type, pollution_class, ent_director_name, ent_director_phone, ent_director_email, env_director_name, env_director_phone, env_director_email, ent_introduction,
+            we_com_msg, env_policy_name, env_policy_date, env_policy_level, create_time, update_time
+        from t_bas_enterprise
+        where parent_code = #{parentCode}
+        order by ent_code desc
+    </select>
+
+    <delete id="deleteEnterpriseById">
+        delete from t_bas_enterprise where ent_code = #{entCode}
+    </delete>
+
+    <delete id="deleteEntOutputAtt">
+        delete u from t_bas_user_put_info u
+        left join t_ent_out_put_info e on u.out_put_id = e.out_put_id
+        where e.ent_code = #{entCode}
+    </delete>
+
+    <delete id="deleteEntOutputPoll">
+        delete u from t_ent_output_pollutant u
+        left join t_ent_out_put_info e on u.out_put_id = e.out_put_id
+        where e.ent_code = #{entCode}
+    </delete>
+
+    <delete id="deleteEntOutput">
+        delete from t_ent_out_put_info where ent_code = #{entCode}
+    </delete>
+
+    <delete id="deleteUserEnt">
+        delete from sys_user_ent where ent_code = #{entCode}
+    </delete>
+</mapper>

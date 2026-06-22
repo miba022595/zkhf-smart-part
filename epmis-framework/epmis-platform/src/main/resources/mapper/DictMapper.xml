@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.platform.mapper.base.DictMapper">
+
+    <resultMap id="typeResult" type="com.zkhf.epmis.platform.base.domain.DictType">
+        <id property="dictId" column="dict_id"/>
+        <result property="dictName" column="dict_name"/>
+        <result property="dictType" column="dict_type"/>
+        <result property="status" column="status"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+    <resultMap id="dataResult" type="com.zkhf.epmis.platform.base.domain.DictData">
+        <id property="dictCode" column="dict_code"/>
+        <result property="dictSort" column="dict_sort"/>
+        <result property="dictLabel" column="dict_label"/>
+        <result property="dictValue" column="dict_value"/>
+        <result property="dictType" column="dict_type"/>
+        <result property="cssClass" column="css_class"/>
+        <result property="listClass" column="list_class"/>
+        <result property="isDefault" column="is_default"/>
+        <result property="status" column="status"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <sql id="typeAllField">
+        dict_id, dict_name, dict_type, status, create_by, create_time, update_by, update_time, remark
+    </sql>
+    <sql id="dataAllField">
+        dict_code, dict_sort, dict_label, dict_value, dict_type, css_class, list_class, is_default, status, create_by, create_time, update_by, update_time, remark
+    </sql>
+
+    <select id="getDataListByTypes" resultMap="dataResult">
+        select <include refid="dataAllField"/>
+        from sys_dict_data
+        where status = '0' and dict_type in
+        <foreach item="dictType" collection="dictTypes" open="(" separator="," close=")">
+            #{dictType}
+        </foreach>
+    </select>
+
+    <select id="selectTypeAll" resultType="com.zkhf.epmis.platform.base.domain.DictTypeSimple">
+        select dict_name as dictName, dict_type as dictType
+        from sys_dict_type
+        where status = '0'
+        order by dict_id asc
+    </select>
+
+    <select id="selectTypeList" parameterType="com.zkhf.epmis.platform.base.domain.DictTypeReq"
+            resultMap="typeResult">
+        select <include refid="typeAllField"/>
+        from sys_dict_type
+        <where>
+            <if test="dictName != null and dictName != ''">
+                AND dict_name like concat('%', #{dictName}, '%')
+            </if>
+            <if test="dictType != null and dictType != ''">
+                AND dict_type like concat('%', #{dictType}, '%')
+            </if>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+            <choose>
+                <when test="createTimeStart != null">
+                    <choose>
+                        <when test="createTimeEnd != null">
+                            and create_time between #{createTimeStart} and #{createTimeEnd}
+                        </when>
+                        <otherwise>
+                            and create_time &gt;= #{createTimeStart}
+                        </otherwise>
+                    </choose>
+                </when>
+                <otherwise>
+                    <if test="createTimeEnd != null">
+                        and create_time &lt;= #{createTimeEnd}
+                    </if>
+                </otherwise>
+            </choose>
+        </where>
+        order by dict_id asc
+    </select>
+
+    <select id="selectDataList" parameterType="com.zkhf.epmis.platform.base.domain.DictData"
+            resultMap="dataResult">
+        select <include refid="dataAllField"/>
+        from sys_dict_data
+        <where>
+            <if test="dictType != null and dictType != ''">
+                AND dict_type = #{dictType}
+            </if>
+            <if test="dictLabel != null and dictLabel != ''">
+                AND dict_label like concat('%', #{dictLabel}, '%')
+            </if>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+        </where>
+        order by dict_sort asc
+    </select>
+
+    <select id="selectTypeById" parameterType="Long" resultMap="typeResult">
+        select <include refid="typeAllField"/>
+        from sys_dict_type
+        where dict_id = #{dictId}
+    </select>
+
+    <select id="selectDataById" parameterType="Long" resultMap="dataResult">
+        select <include refid="dataAllField"/>
+        from sys_dict_data
+        where dict_code = #{dictCode}
+    </select>
+
+    <select id="selectDataByType" parameterType="string" resultMap="dataResult">
+        select <include refid="dataAllField"/>
+        from sys_dict_data
+        where status = '0' and dict_type = #{dictType}
+        order by dict_sort asc
+    </select>
+
+    <insert id="insertType" parameterType="com.zkhf.epmis.platform.base.domain.DictType">
+        insert into sys_dict_type
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="dictName != null">dict_name,</if>
+            <if test="dictType != null">dict_type,</if>
+            <if test="status != null">status,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="remark != null">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="dictName != null">#{dictName},</if>
+            <if test="dictType != null">#{dictType},</if>
+            <if test="status != null">#{status},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="remark != null">#{remark},</if>
+        </trim>
+    </insert>
+
+    <select id="checkTypeUnique" parameterType="String" resultMap="typeResult">
+        select <include refid="typeAllField"/>
+        from sys_dict_type
+        where dict_type = #{dictType} limit 1
+    </select>
+
+    <insert id="insertData" parameterType="com.zkhf.epmis.platform.base.domain.DictData">
+        insert into sys_dict_data
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="dictSort != null">dict_sort,</if>
+            <if test="dictLabel != null">dict_label,</if>
+            <if test="dictValue != null">dict_value,</if>
+            <if test="dictType != null">dict_type,</if>
+            <if test="cssClass != null">css_class,</if>
+            <if test="listClass != null">list_class,</if>
+            <if test="isDefault != null">is_default,</if>
+            <if test="status != null">status,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="remark != null">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="dictSort != null">#{dictSort},</if>
+            <if test="dictLabel != null">#{dictLabel},</if>
+            <if test="dictValue != null">#{dictValue},</if>
+            <if test="dictType != null">#{dictType},</if>
+            <if test="cssClass != null">#{cssClass},</if>
+            <if test="listClass != null">#{listClass},</if>
+            <if test="isDefault != null">#{isDefault},</if>
+            <if test="status != null">#{status},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="remark != null">#{remark},</if>
+        </trim>
+    </insert>
+
+    <update id="updateType" parameterType="com.zkhf.epmis.platform.base.domain.DictType">
+        update sys_dict_type
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="dictName != null">dict_name = #{dictName},</if>
+            <if test="dictType != null">dict_type = #{dictType},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where dict_id = #{dictId}
+    </update>
+
+    <update id="updateDataType">
+        update sys_dict_data
+        set dict_type = #{newType}
+        where dict_type = #{oldType}
+    </update>
+
+    <update id="updateData" parameterType="com.zkhf.epmis.platform.base.domain.DictData">
+        update sys_dict_data
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="dictSort != null">dict_sort = #{dictSort},</if>
+            <if test="dictLabel != null">dict_label = #{dictLabel},</if>
+            <if test="dictValue != null">dict_value = #{dictValue},</if>
+            <if test="dictType != null">dict_type = #{dictType},</if>
+            <if test="cssClass != null">css_class = #{cssClass},</if>
+            <if test="listClass != null">list_class = #{listClass},</if>
+            <if test="isDefault != null">is_default = #{isDefault},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where dict_code = #{dictCode}
+    </update>
+
+    <select id="countDataByType">
+        select count(1)
+        from sys_dict_data
+        where dict_type = #{dictType}
+    </select>
+
+    <delete id="deleteTypeById">
+        delete
+        from sys_dict_type
+        where dict_id = #{dictId}
+    </delete>
+
+    <delete id="deleteDataById">
+        delete
+        from sys_dict_data
+        where dict_code = #{dictCode}
+    </delete>
+
+    <select id="selectCustomDataByType" resultMap="dataResult">
+        select <include refid="dataAllField"/>
+        from sys_dict_custom_data
+        where status = '0' and dict_type = #{dictType} and user_id = #{userId}
+        order by dict_sort asc
+    </select>
+
+    <insert id="insertCustomData">
+        insert into sys_dict_custom_data
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">user_id,</if>
+            <if test="dictData.dictSort != null">dict_sort,</if>
+            <if test="dictData.dictLabel != null">dict_label,</if>
+            <if test="dictData.dictValue != null">dict_value,</if>
+            <if test="dictData.dictType != null">dict_type,</if>
+            <if test="dictData.cssClass != null">css_class,</if>
+            <if test="dictData.listClass != null">list_class,</if>
+            <if test="dictData.isDefault != null">is_default,</if>
+            <if test="dictData.status != null">status,</if>
+            <if test="dictData.createBy != null">create_by,</if>
+            <if test="dictData.createTime != null">create_time,</if>
+            <if test="dictData.remark != null">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userId != null">#{userId},</if>
+            <if test="dictData.dictSort != null">#{dictData.dictSort},</if>
+            <if test="dictData.dictLabel != null">#{dictData.dictLabel},</if>
+            <if test="dictData.dictValue != null">#{dictData.dictValue},</if>
+            <if test="dictData.dictType != null">#{dictData.dictType},</if>
+            <if test="dictData.cssClass != null">#{dictData.cssClass},</if>
+            <if test="dictData.listClass != null">#{dictData.listClass},</if>
+            <if test="dictData.isDefault != null">#{dictData.isDefault},</if>
+            <if test="dictData.status != null">#{dictData.status},</if>
+            <if test="dictData.createBy != null">#{dictData.createBy},</if>
+            <if test="dictData.createTime != null">#{dictData.createTime},</if>
+            <if test="dictData.remark != null">#{dictData.remark},</if>
+        </trim>
+    </insert>
+
+    <select id="selectCustomDataById" resultMap="dataResult">
+        select <include refid="dataAllField"/>
+        from sys_dict_custom_data
+        where dict_code = #{dictCode} and user_id = #{userId}
+    </select>
+
+    <delete id="deleteCustomDataByCode">
+        delete
+        from sys_dict_custom_data
+        where dict_code = #{dictCode} and user_id = #{userId}
+    </delete>
+
+</mapper> 

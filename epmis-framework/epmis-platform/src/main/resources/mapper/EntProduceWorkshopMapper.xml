@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.platform.mapper.ent.EntProduceWorkshopMapper">
+
+    <resultMap id="produceWorkshopResult" type="com.zkhf.epmis.platform.ent.domain.EntProduceWorkshop">
+        <result property="workshopId" column="workshop_id"/>
+        <result property="entCode" column="ent_code"/>
+        <result property="entName" column="ent_name"/>
+        <result property="workshopName" column="workshop_name"/>
+        <result property="workshopCode" column="workshop_code"/>
+        <result property="perId" column="per_id"/>
+        <result property="perName" column="perName" />
+        <result property="perPhone" column="perPhone" />
+        <result property="perEmail" column="perEmail" />
+        <result property="remark" column="remark" />
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="longitude" column="longitude"/>
+        <result property="latitude" column="latitude"/>
+    </resultMap>
+
+    <select id="selectEntProduceWorkshopList" parameterType="com.zkhf.epmis.platform.ent.domain.EntProduceWorkshopReq"
+            resultMap="produceWorkshopResult">
+        select
+            w.workshop_id, w.ent_code, e.ent_name, w.workshop_name, w.workshop_code, w.per_id, w.longitude, w.latitude,
+            u.user_name as perName, u.phonenumber as perPhone, u.email as perEmail, u.nick_name as perNickName, w.remark, w.create_time, w.update_time
+        from t_ent_produce_workshop w
+        left join t_bas_enterprise e on e.ent_code = w.ent_code
+        left join sys_user u on u.user_id = w.per_id
+        <where>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and w.ent_code = #{entCode}
+                </when>
+                <otherwise>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        and w.ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="workshopName != null and workshopName != ''">
+                and w.workshop_name like concat('%', #{workshopName}, '%')
+            </if>
+            <if test="workshopCode != null and workshopCode != ''">
+                and w.workshop_code like concat('%', #{workshopCode}, '%')
+            </if>
+        </where>
+        order by w.workshop_id desc
+    </select>
+
+    <select id="selectEntProduceWorkshopRelateList" resultType="java.util.Map">
+        select sfr.other_id as workshopId, 'produceFacility' as facilityType, sf.facility_id as facilityId, sf.facility_name as facilityName
+        from t_ent_produce_facility_relate sfr, t_ent_produce_facility sf
+        <where>
+            sfr.other_type = #{otherType} and sf.facility_id = sfr.facility_id
+            <if test="entCodes != null and entCodes.size() > 0">
+                and sf.ent_code in
+                <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                    #{entCode}
+                </foreach>
+            </if>
+            <if test="workshopIds != null and workshopIds.size() > 0 ">
+                and sfr.other_id in
+                <foreach item="workshopId" collection="workshopIds" open="(" separator="," close=")">
+                    #{workshopId}
+                </foreach>
+            </if>
+        </where>
+        union all
+        select zfr.other_id as workshopId, 'pollControlFacility' as facilityType, zf.facility_id as facilityId, zf.facility_name as facilityName
+        from t_ent_poll_control_facility_relate zfr, t_ent_poll_control_facility zf
+        <where>
+            zfr.other_type = #{otherType} and zf.facility_id = zfr.facility_id
+            <if test="entCodes != null and entCodes.size() > 0">
+                and zf.ent_code in
+                <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                    #{entCode}
+                </foreach>
+            </if>
+            <if test="workshopIds != null and workshopIds.size() > 0 ">
+                and zfr.other_id in
+                <foreach item="workshopId" collection="workshopIds" open="(" separator="," close=")">
+                    #{workshopId}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <insert id="insertEntProduceWorkshop" parameterType="com.zkhf.epmis.platform.ent.domain.EntProduceWorkshop">
+        insert into t_ent_produce_workshop
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="workshopId != null">workshop_id,</if>
+            <if test="entCode != null">ent_code,</if>
+            <if test="workshopName != null">workshop_name,</if>
+            <if test="workshopCode != null">workshop_code,</if>
+            <if test="perId != null">per_id,</if>
+            <if test="remark != null">remark,</if>
+            <if test="longitude != null">longitude,</if>
+            <if test="latitude != null">latitude,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="workshopId != null">#{workshopId},</if>
+            <if test="entCode != null">#{entCode},</if>
+            <if test="workshopName != null">#{workshopName},</if>
+            <if test="workshopCode != null">#{workshopCode},</if>
+            <if test="perId != null">#{perId},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="longitude != null">#{longitude},</if>
+            <if test="latitude != null">#{latitude},</if>
+        </trim>
+    </insert>
+
+    <update id="updateEntProduceWorkshop" parameterType="com.zkhf.epmis.platform.ent.domain.EntProduceWorkshop">
+        update t_ent_produce_workshop
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="workshopName != null">workshop_name = #{workshopName},</if>
+            <if test="workshopCode != null">workshop_code = #{workshopCode},</if>
+            <if test="perId != null">per_id = #{perId},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="longitude != null">longitude = #{longitude},</if>
+            <if test="latitude != null">latitude = #{latitude},</if>
+        </trim>
+        where workshop_id = #{workshopId}
+    </update>
+
+    <delete id="deleteEntProduceWorkshopById" parameterType="String">
+        delete from t_ent_produce_workshop where workshop_id = #{workshopId}
+    </delete>
+
+    <delete id="deleteRelateProduceFacilityById" parameterType="String">
+        delete from t_ent_produce_facility_relate where other_type = #{otherType} and other_id = #{otherId}
+    </delete>
+
+    <delete id="deleteRelatePollControlFacilityById" parameterType="String">
+        delete from t_ent_poll_control_facility_relate where other_type = #{otherType} and other_id = #{otherId}
+    </delete>
+
+    <insert id="insertRelateProduceFacility">
+        insert into t_ent_produce_facility_relate
+            (facility_id, other_type, other_id)
+        values
+        <foreach item="facilityId" collection="facilityIds" separator=",">
+            (#{facilityId}, #{otherType}, #{otherId})
+        </foreach>
+    </insert>
+
+    <insert id="insertRelatePollControlFacility">
+        insert into t_ent_poll_control_facility_relate
+            (facility_id, other_type, other_id)
+        values
+        <foreach item="facilityId" collection="facilityIds" separator=",">
+            (#{facilityId}, #{otherType}, #{otherId})
+        </foreach>
+    </insert>
+
+</mapper>

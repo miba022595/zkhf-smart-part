@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.platform.mapper.ops.OpsAttRecordMapper">
+
+    <resultMap id="opsAttRecordResult" type="com.zkhf.epmis.platform.ops.domain.OpsAttRecord">
+        <result property="recordId" column="record_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="userName" column="user_name"/>
+        <result property="nickName" column="nick_name"/>
+        <result property="opsUnitId" column="ops_unit_id"/>
+        <result property="opsUnitName" column="ops_unit_name"/>
+        <result property="entCode" column="ent_code"/>
+        <result property="entName" column="ent_name"/>
+        <result property="outPutId" column="out_put_id"/>
+        <result property="outPutCode" column="out_put_code"/>
+        <result property="outPutName" column="out_put_name"/>
+        <result property="punchTimeIn" column="punch_time_in"/>
+        <result property="punchLocationIn" column="punch_location_in"/>
+        <result property="punchTimeOut" column="punch_time_out"/>
+        <result property="punchLocationOut" column="punch_location_out"/>
+        <result property="punchDuration" column="punch_duration"/>
+        <result property="assistant" column="assistant"/>
+        <result property="assistantName" column="assistant_name"/>
+        <result property="assistantNick" column="assistant_nick"/>
+        <result property="assistantRemark" column="assistant_remark"/>
+    </resultMap>
+
+    <select id="selectOpsAttRecordById" parameterType="String" resultMap="opsAttRecordResult">
+        select
+            r.record_id, r.user_id, r.ops_unit_id, r.ent_code, r.out_put_id, r.punch_time_in, r.punch_location_in, r.punch_time_out, r.punch_location_out,
+            r.punch_duration, r.assistant, r.assistant_remark, u1.user_name, u1.nick_name, ext.unit_name as ops_unit_name, e.ent_name, o.out_put_code, o.out_put_name,
+            u2.user_name as assistant_name, u2.nick_name as assistant_nick
+        from t_ops_att_record r
+        left join t_bas_enterprise e on e.ent_code = r.ent_code
+        left join t_ent_out_put_info o on o.out_put_id = r.out_put_id
+        left join sys_user u1 on u1.user_id = r.user_id
+        left join sys_user u2 on u2.user_id = r.assistant
+        left join t_ext_unit_lib ext on ext.unit_code = r.ops_unit_id
+        where record_id = #{recordId}
+    </select>
+
+    <select id="selectOpsAttRecordList" parameterType="com.zkhf.epmis.platform.ops.domain.OpsAttRecordReq"
+            resultMap="opsAttRecordResult">
+        select
+            r.record_id, r.user_id, r.ops_unit_id, r.ent_code, r.out_put_id, r.punch_time_in, r.punch_location_in, r.punch_time_out, r.punch_location_out,
+            r.punch_duration, r.assistant, r.assistant_remark, u1.user_name, u1.nick_name, ext.unit_name as ops_unit_name, e.ent_name, o.out_put_code, o.out_put_name,
+            u2.user_name as assistant_name, u2.nick_name as assistant_nick
+        from t_ops_att_record r
+        left join t_bas_enterprise e on e.ent_code = r.ent_code
+        left join t_ent_out_put_info o on o.out_put_id = r.out_put_id
+        left join sys_user u1 on u1.user_id = r.user_id
+        left join sys_user u2 on u2.user_id = r.assistant
+        left join t_ext_unit_lib ext on ext.unit_code = r.ops_unit_id
+        <where>
+            <if test="userId != null and userId != ''">
+                and r.user_id = #{userId}
+            </if>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and r.ent_code = #{entCode}
+                </when>
+                <when test="entCodes != null and entCodes.size() > 0">
+                    and r.ent_code in
+                    <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                        #{entCode}
+                    </foreach>
+                </when>
+            </choose>
+            <if test="region != null and region != ''">
+                and (e.region = #{region} or e.region like CONCAT(#{region}, ',%'))
+            </if>
+            <if test="outPutId != null and outPutId != ''">
+                and r.out_put_id = #{outPutId}
+            </if>
+            <if test="opsUnitId != null and opsUnitId != ''">
+                and r.ops_unit_id = #{opsUnitId}
+            </if>
+            <if test="punchTimeStart != null and punchTimeEnd != null">
+                and r.punch_time_in between #{punchTimeStart} and #{punchTimeEnd}
+            </if>
+        </where>
+        order by r.record_id desc
+    </select>
+
+    <select id="selectNewestOpsAttRecord" parameterType="com.zkhf.epmis.platform.ops.domain.OpsAttRecordReq"
+            resultMap="opsAttRecordResult">
+        select
+            record_id, punch_time_in, punch_time_out
+        from t_ops_att_record
+        where user_id = #{userId} and ent_code = #{entCode} and out_put_id = #{outPutId} and ops_unit_id = #{opsUnitId}
+        order by record_id desc
+        limit 1
+    </select>
+
+    <insert id="opsAttPunchIn" parameterType="com.zkhf.epmis.platform.ops.domain.OpsClock">
+        insert into t_ops_att_record
+            (record_id, user_id, ops_unit_id, ent_code, out_put_id, punch_time_in, punch_location_in)
+        values
+            (#{recordId}, #{userId}, #{opsUnitId}, #{entCode}, #{outPutId}, #{punchTime}, #{punchLocation})
+    </insert>
+
+    <update id="opsAttPunchOut" parameterType="com.zkhf.epmis.platform.ops.domain.OpsClock">
+        update t_ops_att_record
+        set
+            punch_time_out = #{punchTime},
+            punch_location_out = #{punchLocation},
+            punch_duration =
+                CASE
+                    WHEN punch_time_in IS NOT NULL AND #{punchTime} IS NOT NULL
+                        THEN TIMESTAMPDIFF(MINUTE, punch_time_in, #{punchTime})
+                    ELSE NULL
+                END
+        where record_id = #{recordId}
+    </update>
+
+    <update id="calibrateOpsAttRecord" parameterType="com.zkhf.epmis.platform.ops.domain.OpsAttRecord">
+        update t_ops_att_record
+        set
+            assistant = #{assistant},
+            assistant_remark = #{assistantRemark},
+            punch_time_out = #{punchTimeOut},
+            punch_duration =
+                CASE
+                    WHEN punch_time_in IS NOT NULL AND #{punchTimeOut} IS NOT NULL
+                        THEN TIMESTAMPDIFF(MINUTE, punch_time_in, #{punchTimeOut})
+                    ELSE NULL
+                    END
+        where record_id = #{recordId}
+    </update>
+
+    <delete id="deleteOpsAttRecordById" parameterType="String">
+        delete from t_ops_att_record where record_id = #{recordId}
+    </delete>
+
+</mapper>

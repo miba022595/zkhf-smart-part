@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.platform.mapper.envProtect.EnvMangeCheckMapper">
+
+    <resultMap id="envMangeCheckResult" type="com.zkhf.epmis.platform.envProtect.domain.EnvMangeCheck">
+        <result property="checkId" column="check_id"/>
+        <result property="entCode" column="ent_code"/>
+        <result property="entName" column="ent_name"/>
+        <result property="checkName" column="check_name"/>
+        <result property="checkReply" column="check_reply"/>
+        <result property="approvalDepart" column="approval_depart"/>
+        <result property="replyNo" column="reply_no"/>
+        <result property="checkAgency" column="check_agency"/>
+        <result property="checkBeginTime" column="check_begin_time"/>
+        <result property="checkEndTime" column="check_end_time"/>
+        <result property="reviewTime" column="review_time"/>
+        <result property="reviewIssue" column="review_issue"/>
+        <result property="recordAddress" column="record_address"/>
+        <result property="checkRecordBeginTime" column="check_record_begin_time"/>
+        <result property="checkRecordEndTime" column="check_record_end_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <select id="selectMangeCheckList" resultMap="envMangeCheckResult">
+        select
+            c.check_id, c.ent_code, e.ent_name, c.check_name, c.check_reply, c.approval_depart, c.reply_no, c.check_agency, c.check_begin_time,
+            c.check_end_time, c.review_time, c.review_issue, c.record_address, c.check_record_begin_time, c.check_record_end_time, c.remark
+        from
+            t_env_mange_check c
+        left join
+            t_bas_enterprise e on e.ent_code = c.ent_code
+        <where>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and c.ent_code = #{entCode}
+                </when>
+                <otherwise>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        and c.ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="entName != null and entName != ''">
+                and e.ent_name like concat('%', #{entName}, '%')
+            </if>
+            <if test="key != null and key != ''">
+                and c.check_name like concat('%', #{key}, '%')
+            </if>
+        </where>
+        order by c.check_id desc
+    </select>
+
+    <insert id="insertMangeCheck" parameterType="com.zkhf.epmis.platform.envProtect.domain.EnvMangeCheck">
+        insert into t_env_mange_check
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="checkId != null">check_id,</if>
+            <if test="entCode != null and entCode != ''">ent_code,</if>
+            <if test="checkName != null and checkName != ''">check_name,</if>
+            <if test="checkReply != null">check_reply,</if>
+            <if test="approvalDepart != null">approval_depart,</if>
+            <if test="replyNo != null">reply_no,</if>
+            <if test="checkAgency != null">check_agency,</if>
+            <if test="checkBeginTime != null">check_begin_time,</if>
+            <if test="checkEndTime != null">check_end_time,</if>
+            <if test="reviewTime != null">review_time,</if>
+            <if test="reviewIssue != null">review_issue,</if>
+            <if test="recordAddress != null">record_address,</if>
+            <if test="checkRecordBeginTime != null">check_record_begin_time,</if>
+            <if test="checkRecordEndTime != null">check_record_end_time,</if>
+            <if test="remark != null">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="checkId != null">#{checkId},</if>
+            <if test="entCode != null and entCode != ''">#{entCode},</if>
+            <if test="checkName != null and checkName != ''">#{checkName},</if>
+            <if test="checkReply != null">#{checkReply},</if>
+            <if test="approvalDepart != null">#{approvalDepart},</if>
+            <if test="replyNo != null">#{replyNo},</if>
+            <if test="checkAgency != null">#{checkAgency},</if>
+            <if test="checkBeginTime != null">#{checkBeginTime},</if>
+            <if test="checkEndTime != null">#{checkEndTime},</if>
+            <if test="reviewTime != null">#{reviewTime},</if>
+            <if test="reviewIssue != null">#{reviewIssue},</if>
+            <if test="recordAddress != null">#{recordAddress},</if>
+            <if test="checkRecordBeginTime != null">#{checkRecordBeginTime},</if>
+            <if test="checkRecordEndTime != null">#{checkRecordEndTime},</if>
+            <if test="remark != null">#{remark},</if>
+        </trim>
+    </insert>
+
+    <update id="updateMangeCheck" parameterType="com.zkhf.epmis.platform.envProtect.domain.EnvMangeCheck">
+        update t_env_mange_check
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="checkName != null and checkName != ''">check_name = #{checkName},</if>
+            <if test="checkReply != null">check_reply = #{checkReply},</if>
+            <if test="approvalDepart != null">approval_depart = #{approvalDepart},</if>
+            <if test="replyNo != null">reply_no = #{replyNo},</if>
+            <if test="checkAgency != null">check_agency = #{checkAgency},</if>
+            <if test="checkBeginTime != null">check_begin_time = #{checkBeginTime},</if>
+            <if test="checkEndTime != null">check_end_time = #{checkEndTime},</if>
+            <if test="reviewTime != null">review_time = #{reviewTime},</if>
+            <if test="reviewIssue != null">review_issue = #{reviewIssue},</if>
+            <if test="recordAddress != null">record_address = #{recordAddress},</if>
+            <if test="checkRecordBeginTime != null">check_record_begin_time = #{checkRecordBeginTime},</if>
+            <if test="checkRecordEndTime != null">check_record_end_time = #{checkRecordEndTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where check_id = #{checkId}
+    </update>
+
+    <delete id="deleteMangeCheckById">
+        delete from t_env_mange_check where check_id = #{checkId}
+    </delete>
+</mapper>

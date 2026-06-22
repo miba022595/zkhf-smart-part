@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.platform.mapper.base.ValidPeriodConfMapper">
+
+    <resultMap id="confResult" type="com.zkhf.epmis.platform.base.domain.ValidPeriodConf">
+        <result property="entCode" column="ent_code"/>
+        <result property="entName" column="ent_name"/>
+        <result property="confType" column="conf_type"/>
+        <result property="yellowThreshold" column="yellow_threshold"/>
+        <result property="yellowNotifyFreq" column="yellow_notify_freq"/>
+        <result property="orangeThreshold" column="orange_threshold"/>
+        <result property="orangeNotifyFreq" column="orange_notify_freq"/>
+        <result property="redThreshold" column="red_threshold"/>
+        <result property="redNotifyFreq" column="red_notify_freq"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <select id="selectValidPeriodConfList" resultMap="confResult">
+        select
+            c.ent_code, e.ent_name, c.conf_type, c.yellow_threshold, c.yellow_notify_freq,
+            c.orange_threshold, c.orange_notify_freq, c.red_threshold, c.red_notify_freq, c.update_time
+        from t_valid_period_conf c
+        left join t_bas_enterprise e on e.ent_code = c.ent_code
+        <where>
+            <if test="entCodes != null and entCodes.size() > 0">
+                and c.ent_code in
+                <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                    #{entCode}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <insert id="insertOrUpdateValidPeriodConf" parameterType="com.zkhf.epmis.platform.base.domain.ValidPeriodConf">
+        INSERT INTO t_valid_period_conf
+            (ent_code, conf_type, yellow_threshold, yellow_notify_freq, orange_threshold, orange_notify_freq, red_threshold, red_notify_freq)
+        VALUES
+            (#{entCode}, #{confType}, #{yellowThreshold}, #{yellowNotifyFreq}, #{orangeThreshold}, #{orangeNotifyFreq}, #{redThreshold}, #{redNotifyFreq})
+        ON DUPLICATE KEY UPDATE
+            yellow_threshold = VALUES(yellow_threshold), yellow_notify_freq = VALUES(yellow_notify_freq),
+            orange_threshold = VALUES(orange_threshold), orange_notify_freq = VALUES(orange_notify_freq),
+            red_threshold = VALUES(red_threshold), red_notify_freq = VALUES(red_notify_freq)
+    </insert>
+
+    <resultMap id="infoResult" type="com.zkhf.epmis.platform.base.domain.ValidPeriodInfo">
+        <result property="entCode" column="ent_code"/>
+        <result property="entName" column="ent_name"/>
+        <result property="weComMsg" column="we_com_msg"/>
+        <result property="confType" column="conf_type"/>
+        <result property="itemId" column="item_id"/>
+        <result property="itemName" column="item_name"/>
+        <result property="yellowThreshold" column="yellow_threshold"/>
+        <result property="yellowNotifyFreq" column="yellow_notify_freq"/>
+        <result property="orangeThreshold" column="orange_threshold"/>
+        <result property="orangeNotifyFreq" column="orange_notify_freq"/>
+        <result property="redThreshold" column="red_threshold"/>
+        <result property="redNotifyFreq" column="red_notify_freq"/>
+        <result property="beginDate" column="begin_date"/>
+        <result property="endDate" column="end_date"/>
+        <result property="unitType" column="unit_type"/>
+        <result property="outPutName" column="out_put_name"/>
+        <result property="pollutantNameCn" column="pollutant_name_cn"/>
+        <result property="checkFrequency" column="check_frequency"/>
+    </resultMap>
+
+    <select id="allValidPeriodInfoList" resultMap="infoResult">
+        select
+            c.ent_code, e.ent_name, e.we_com_msg, c.conf_type, c.yellow_threshold, c.yellow_notify_freq,
+            c.orange_threshold, c.orange_notify_freq, c.red_threshold, c.red_notify_freq
+        from t_valid_period_conf c
+        left join t_bas_enterprise e on e.ent_code = c.ent_code
+    </select>
+
+    <select id="selectOutPollutantPermitList" resultMap="infoResult">
+        select ent_code, begin_date, end_date from t_ent_out_pollutant_permit
+    </select>
+
+    <select id="selectOtherCertificateList" resultMap="infoResult">
+        select ent_code, other_id as item_id, cert_name as item_name, begin_date, end_date
+        from t_other_certificate
+    </select>
+
+    <select id="selectManualCheckTaskList" resultMap="infoResult">
+        select op.ent_code, t.task_id as item_id, op.out_put_name, pc.pollutant_name_cn, t.check_frequency, t.task_date as end_date
+        from t_env_manual_check_task t
+        left join t_ent_output_pollutant poll on poll.out_put_poll_id = t.out_put_poll_id
+        left join t_bas_pollutant_code pc on pc.pollutant_code = poll.pollutant_code
+        left join t_ent_out_put_info op on op.out_put_id = poll.out_put_id
+        where t.status = 2
+    </select>
+
+    <select id="selectEmergencyMaterialList" resultMap="infoResult">
+        select ent_code, material_id as item_id, material_name as item_name, 
+               case when expire_date is null then recheck_date
+                    when recheck_date is null then expire_date
+                    when expire_date &lt; recheck_date then expire_date
+                    else recheck_date end as end_date
+        from t_emergency_material
+    </select>
+</mapper>

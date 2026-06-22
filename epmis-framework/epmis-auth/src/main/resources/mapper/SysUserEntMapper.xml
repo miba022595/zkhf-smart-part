@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.auth.mapper.system.SysUserEntMapper">
+
+    <resultMap type="com.zkhf.epmis.auth.core.domain.entity.SysEnt" id="sysEntDBResult">
+        <result property="userId" column="user_id"/>
+        <result property="entCode" column="ent_code"/>
+        <result property="parentCode" column="parent_code"/>
+        <result property="entName" column="ent_name"/>
+        <result property="socialCreditCode" column="social_credit_code"/>
+    </resultMap>
+
+    <select id="selectEntList" resultMap="sysEntDBResult">
+        <choose>
+            <when test="loginUserId == null">
+                select null as user_id, ent_code, parent_code, ent_name, social_credit_code
+                from t_bas_enterprise
+            </when>
+            <otherwise>
+                select ${loginUserId} as user_id, ue.ent_code, e.parent_code, e.ent_name, e.social_credit_code
+                from sys_user u
+                left join sys_user_ent ue on ue.user_id = u.user_id
+                left join t_bas_enterprise e on e.ent_code = ue.ent_code
+                where u.del_flag = '0' and u.user_id = #{loginUserId}
+            </otherwise>
+        </choose>
+        <if test="queryUserId != null">
+            union all
+            select ${queryUserId} as user_id, ue.ent_code, e.parent_code, e.ent_name, e.social_credit_code
+            from sys_user u
+            left join sys_user_ent ue on ue.user_id = u.user_id
+            left join t_bas_enterprise e on e.ent_code = ue.ent_code
+            where u.del_flag = '0' and u.user_id = #{queryUserId}
+        </if>
+    </select>
+
+    <delete id="deleteUserEntByUserId">
+        delete from sys_user_ent where user_id = #{userId}
+    </delete>
+
+    <insert id="batchInsertUserEnt">
+        insert into sys_user_ent
+            (user_id, ent_code)
+        values
+        <foreach item="item" collection="entCodeList" separator=",">
+            (#{userId}, #{item.entCode})
+        </foreach>
+    </insert>
+</mapper> 

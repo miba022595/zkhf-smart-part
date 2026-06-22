@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.platform.mapper.emergency.EmergencyDrillMapper">
+
+    <resultMap id="emergencyDrillResult" type="com.zkhf.epmis.platform.emergency.domain.EmergencyDrill">
+        <result property="drillId" column="drill_id"/>
+        <result property="entCode" column="ent_code"/>
+        <result property="entName" column="ent_name"/>
+        <result property="weComMsg" column="we_com_msg"/>
+        <result property="drillName" column="drill_name"/>
+        <result property="drillType" column="drill_type"/>
+        <result property="drillDate" column="drill_date"/>
+        <result property="relatedPlan" column="related_plan"/>
+        <result property="drillContent" column="drill_content"/>
+        <result property="drillSummary" column="drill_summary"/>
+        <result property="drillStatus" column="drill_status"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.zkhf.epmis.platform.emergency.domain.EmergencyDrill">
+        insert into t_emergency_drill
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="drillId != null and drillId != ''">drill_id,</if>
+            <if test="entCode != null and entCode != ''">ent_code,</if>
+            <if test="drillName != null and drillName != ''">drill_name,</if>
+            <if test="drillType != null and drillType != ''">drill_type,</if>
+            <if test="drillDate != null">drill_date,</if>
+            <if test="relatedPlan != null and relatedPlan != ''">related_plan,</if>
+            <if test="drillContent != null and drillContent != ''">drill_content,</if>
+            <if test="drillSummary != null and drillSummary != ''">drill_summary,</if>
+            <if test="drillStatus != null">drill_status,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="drillId != null and drillId != ''">#{drillId},</if>
+            <if test="entCode != null and entCode != ''">#{entCode},</if>
+            <if test="drillName != null and drillName != ''">#{drillName},</if>
+            <if test="drillType != null and drillType != ''">#{drillType},</if>
+            <if test="drillDate != null">#{drillDate},</if>
+            <if test="relatedPlan != null and relatedPlan != ''">#{relatedPlan},</if>
+            <if test="drillContent != null and drillContent != ''">#{drillContent},</if>
+            <if test="drillSummary != null and drillSummary != ''">#{drillSummary},</if>
+            <if test="drillStatus != null">#{drillStatus},</if>
+        </trim>
+    </insert>
+
+    <insert id="batchInsert">
+        insert into t_emergency_drill
+            (drill_id, ent_code, drill_name, drill_type, drill_date, related_plan, drill_content, drill_summary, drill_status)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.drillId}, #{item.entCode}, #{item.drillName}, #{item.drillType}, #{item.drillDate}, #{item.relatedPlan}, #{item.drillContent}, #{item.drillSummary}, #{item.drillStatus})
+        </foreach>
+    </insert>
+
+    <update id="update" parameterType="com.zkhf.epmis.platform.emergency.domain.EmergencyDrill">
+        update t_emergency_drill
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="drillName != null and drillName != ''">drill_name = #{drillName},</if>
+            <if test="drillType != null and drillType != ''">drill_type = #{drillType},</if>
+            <if test="drillDate != null">drill_date = #{drillDate},</if>
+            <if test="relatedPlan != null and relatedPlan != ''">related_plan = #{relatedPlan},</if>
+            <if test="drillContent != null and drillContent != ''">drill_content = #{drillContent},</if>
+            <if test="drillSummary != null and drillSummary != ''">drill_summary = #{drillSummary},</if>
+            <if test="drillStatus != null">drill_status = #{drillStatus},</if>
+        </trim>
+        where drill_id = #{drillId}
+    </update>
+
+    <delete id="deleteById">
+        delete from t_emergency_drill where drill_id = #{drillId}
+    </delete>
+
+    <select id="selectById" resultMap="emergencyDrillResult">
+        select d.*, e.ent_name, e.we_com_msg from t_emergency_drill d
+        left join t_bas_enterprise e on d.ent_code = e.ent_code
+        where d.drill_id = #{drillId}
+    </select>
+
+    <select id="selectList" resultMap="emergencyDrillResult">
+        select d.*, e.ent_name, e.we_com_msg from t_emergency_drill d
+        left join t_bas_enterprise e on d.ent_code = e.ent_code
+        <where>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and d.ent_code = #{entCode}
+                </when>
+                <otherwise>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        and d.ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="drillId != null and drillId != ''">
+                and d.drill_id = #{drillId}
+            </if>
+            <if test="drillName != null and drillName != ''">
+                and d.drill_name like concat('%', #{drillName}, '%')
+            </if>
+            <if test="drillType != null and drillType != ''">
+                and d.drill_type like concat('%', #{drillType}, '%')
+            </if>
+            <if test="drillDate != null and drillDate != ''">
+                and d.drill_date = #{drillDate}
+            </if>
+            <if test="relatedPlan != null and relatedPlan != ''">
+                and d.related_plan = #{relatedPlan}
+            </if>
+            <if test="drillContent != null and drillContent != ''">
+                and d.drill_content like concat('%', #{drillContent}, '%')
+            </if>
+            <if test="drillSummary != null and drillSummary != ''">
+                and d.drill_summary like concat('%', #{drillSummary}, '%')
+            </if>
+            <if test="drillStatus != null">
+                and d.drill_status = #{drillStatus}
+            </if>
+        </where>
+        order by d.create_time desc
+    </select>
+
+    <select id="selectAll" resultMap="emergencyDrillResult">
+        select d.*, e.ent_name, e.we_com_msg from t_emergency_drill d
+        left join t_bas_enterprise e on d.ent_code = e.ent_code
+        order by d.create_time desc
+    </select>
+</mapper>

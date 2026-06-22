@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.platform.mapper.emergency.EmergencyMaterialMapper">
+
+    <resultMap id="emergencyMaterialResult" type="com.zkhf.epmis.platform.emergency.domain.EmergencyMaterial">
+        <result property="materialId" column="material_id"/>
+        <result property="entCode" column="ent_code"/>
+        <result property="entName" column="ent_name"/>
+        <result property="weComMsg" column="we_com_msg"/>
+        <result property="materialName" column="material_name"/>
+        <result property="modelSpec" column="model_spec"/>
+        <result property="storePlace" column="store_place"/>
+        <result property="quantity" column="quantity"/>
+        <result property="unit" column="unit"/>
+        <result property="expireDate" column="expire_date"/>
+        <result property="recheckDate" column="recheck_date"/>
+        <result property="manufacturerName" column="manufacturer_name"/>
+        <result property="manufacturerContact" column="manufacturer_contact"/>
+        <result property="manufacturerPhone" column="manufacturer_phone"/>
+        <result property="managerName" column="manager_name"/>
+        <result property="managerPhone" column="manager_phone"/>
+        <result property="remark" column="remark"/>
+        <result property="warnStatus" column="warn_status"/>
+        <result property="warnDays" column="warn_days"/>
+        <result property="warnType" column="warn_type"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.zkhf.epmis.platform.emergency.domain.EmergencyMaterial">
+        insert into t_emergency_material
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="materialId != null and materialId != ''">material_id,</if>
+            <if test="entCode != null and entCode != ''">ent_code,</if>
+            <if test="materialName != null and materialName != ''">material_name,</if>
+            <if test="modelSpec != null and modelSpec != ''">model_spec,</if>
+            <if test="storePlace != null and storePlace != ''">store_place,</if>
+            <if test="quantity != null">quantity,</if>
+            <if test="unit != null and unit != ''">unit,</if>
+            <if test="expireDate != null">expire_date,</if>
+            <if test="recheckDate != null">recheck_date,</if>
+            <if test="manufacturerName != null and manufacturerName != ''">manufacturer_name,</if>
+            <if test="manufacturerContact != null and manufacturerContact != ''">manufacturer_contact,</if>
+            <if test="manufacturerPhone != null and manufacturerPhone != ''">manufacturer_phone,</if>
+            <if test="managerName != null and managerName != ''">manager_name,</if>
+            <if test="managerPhone != null and managerPhone != ''">manager_phone,</if>
+            <if test="remark != null and remark != ''">remark,</if>
+            <if test="warnStatus != null">warn_status,</if>
+            <if test="warnDays != null">warn_days,</if>
+            <if test="warnType != null and warnType != ''">warn_type,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="materialId != null and materialId != ''">#{materialId},</if>
+            <if test="entCode != null and entCode != ''">#{entCode},</if>
+            <if test="materialName != null and materialName != ''">#{materialName},</if>
+            <if test="modelSpec != null and modelSpec != ''">#{modelSpec},</if>
+            <if test="storePlace != null and storePlace != ''">#{storePlace},</if>
+            <if test="quantity != null">#{quantity},</if>
+            <if test="unit != null and unit != ''">#{unit},</if>
+            <if test="expireDate != null">#{expireDate},</if>
+            <if test="recheckDate != null">#{recheckDate},</if>
+            <if test="manufacturerName != null and manufacturerName != ''">#{manufacturerName},</if>
+            <if test="manufacturerContact != null and manufacturerContact != ''">#{manufacturerContact},</if>
+            <if test="manufacturerPhone != null and manufacturerPhone != ''">#{manufacturerPhone},</if>
+            <if test="managerName != null and managerName != ''">#{managerName},</if>
+            <if test="managerPhone != null and managerPhone != ''">#{managerPhone},</if>
+            <if test="remark != null and remark != ''">#{remark},</if>
+            <if test="warnStatus != null">#{warnStatus},</if>
+            <if test="warnDays != null">#{warnDays},</if>
+            <if test="warnType != null and warnType != ''">#{warnType},</if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.zkhf.epmis.platform.emergency.domain.EmergencyMaterial">
+        update t_emergency_material
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="materialName != null and materialName != ''">material_name = #{materialName},</if>
+            <if test="modelSpec != null and modelSpec != ''">model_spec = #{modelSpec},</if>
+            <if test="storePlace != null and storePlace != ''">store_place = #{storePlace},</if>
+            <if test="quantity != null">quantity = #{quantity},</if>
+            <if test="unit != null and unit != ''">unit = #{unit},</if>
+            <if test="expireDate != null">expire_date = #{expireDate},</if>
+            <if test="recheckDate != null">recheck_date = #{recheckDate},</if>
+            <if test="manufacturerName != null and manufacturerName != ''">manufacturer_name = #{manufacturerName},</if>
+            <if test="manufacturerContact != null and manufacturerContact != ''">manufacturer_contact = #{manufacturerContact},</if>
+            <if test="manufacturerPhone != null and manufacturerPhone != ''">manufacturer_phone = #{manufacturerPhone},</if>
+            <if test="managerName != null and managerName != ''">manager_name = #{managerName},</if>
+            <if test="managerPhone != null and managerPhone != ''">manager_phone = #{managerPhone},</if>
+            <if test="remark != null and remark != ''">remark = #{remark},</if>
+            <if test="warnStatus != null">warn_status = #{warnStatus},</if>
+            <if test="warnDays != null">warn_days = #{warnDays},</if>
+            <if test="warnType != null and warnType != ''">warn_type = #{warnType},</if>
+        </trim>
+        where material_id = #{materialId}
+    </update>
+
+    <delete id="deleteById">
+        delete from t_emergency_material where material_id = #{materialId}
+    </delete>
+
+    <select id="selectById" resultMap="emergencyMaterialResult">
+        select m.*, e.ent_name, e.we_com_msg from t_emergency_material m
+        left join t_bas_enterprise e on m.ent_code = e.ent_code
+        where m.material_id = #{materialId}
+    </select>
+
+    <select id="selectList" resultMap="emergencyMaterialResult">
+        select m.*, e.ent_name, e.we_com_msg from t_emergency_material m
+        left join t_bas_enterprise e on m.ent_code = e.ent_code
+        <where>
+            <choose>
+                <when test="entCode != null and entCode != ''">
+                    and m.ent_code = #{entCode}
+                </when>
+                <otherwise>
+                    <if test="entCodes != null and entCodes.size() > 0">
+                        and m.ent_code in
+                        <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                            #{entCode}
+                        </foreach>
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="materialName != null and materialName != ''">
+                and m.material_name like concat('%', #{materialName}, '%')
+            </if>
+            <if test="storePlace != null and storePlace != ''">
+                and m.store_place like concat('%', #{storePlace}, '%')
+            </if>
+            <if test="warnStatus != null">
+                and m.warn_status = #{warnStatus}
+            </if>
+        </where>
+        order by m.create_time desc
+    </select>
+
+    <select id="selectWarnList" resultMap="emergencyMaterialResult">
+        select m.*, e.ent_name, e.we_com_msg from t_emergency_material m
+        left join t_bas_enterprise e on m.ent_code = e.ent_code
+        <where>
+            and m.warn_status > 0
+            <if test="entCodes != null and entCodes.size() > 0">
+                and m.ent_code in
+                <foreach collection="entCodes" item="entCode" open="(" separator="," close=")">
+                    #{entCode}
+                </foreach>
+            </if>
+        </where>
+        order by m.warn_status desc, m.create_time desc
+    </select>
+
+    <select id="selectAll" resultMap="emergencyMaterialResult">
+        select m.*, e.ent_name, e.we_com_msg from t_emergency_material m
+        left join t_bas_enterprise e on m.ent_code = e.ent_code
+        order by m.create_time desc
+    </select>
+</mapper>

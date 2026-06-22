@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zkhf.epmis.platform.mapper.annex.AnnexMapper">
+
+    <resultMap id="annexInfo" type="com.zkhf.epmis.core.domain.AnnexInfo">
+        <result property="annexId" column="annex_id"/>
+        <result property="sourceId" column="source_id"/>
+        <result property="sourceType" column="source_type"/>
+        <result property="fileType" column="file_type"/>
+        <result property="fileName" column="file_name"/>
+        <result property="filePath" column="file_path"/>
+        <result property="fileSize" column="file_size"/>
+        <result property="fileDesc" column="file_desc"/>
+        <result property="createUser" column="create_user"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <select id="selectAnnexList" resultMap="annexInfo">
+        select
+        annex_id, source_id, source_type, file_type, file_name, file_path, file_size, file_desc,
+        create_user, create_time
+        from t_data_annex
+        <where>
+            <if test="annexId != null and annexId != ''">
+                and annex_id = #{annexId}
+            </if>
+            <if test="sourceType != null and sourceType != ''">
+                and source_type = #{sourceType}
+            </if>
+            <if test="sourceIds != null and sourceIds.size() > 0">
+                and source_id in
+                <foreach item="sourceId" collection="sourceIds" open="(" separator="," close=")">
+                    #{sourceId}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="selectAnnexListBySource" resultMap="annexInfo">
+        select
+            annex_id, source_id, source_type, file_type, file_name, file_path, file_size, file_desc,
+            create_user, create_time
+        from t_data_annex
+        where source_type = #{sourceType} and source_id = #{sourceId}
+    </select>
+
+    <select id="selectAnnexListByIds" resultMap="annexInfo">
+        select
+            annex_id, source_id, source_type, file_type, file_name, file_path, file_size, file_desc,
+            create_user, create_time
+        from t_data_annex
+        <where>
+            <if test="ids != null and ids.size() > 0">
+                and annex_id in
+                <foreach item="id" collection="ids" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <insert id="insertAnnex">
+        insert into t_data_annex
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="annexId != null">annex_id,</if>
+            <if test="sourceId != null">source_id,</if>
+            <if test="sourceType != null">source_type,</if>
+            <if test="fileType != null">file_type,</if>
+            <if test="fileName != null">file_name,</if>
+            <if test="filePath != null">file_path,</if>
+            <if test="fileSize != null">file_size,</if>
+            <if test="fileDesc != null">file_desc,</if>
+            <if test="createUser != null">create_user,</if>
+            <if test="createTime != null">create_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="annexId != null">#{annexId},</if>
+            <if test="sourceId != null">#{sourceId},</if>
+            <if test="sourceType != null">#{sourceType},</if>
+            <if test="fileType != null">#{fileType},</if>
+            <if test="fileName != null">#{fileName},</if>
+            <if test="filePath != null">#{filePath},</if>
+            <if test="fileSize != null">#{fileSize},</if>
+            <if test="fileDesc != null">#{fileDesc},</if>
+            <if test="createUser != null">#{createUser},</if>
+            <if test="createTime != null">#{createTime},</if>
+        </trim>
+    </insert>
+
+    <update id="updateAnnex">
+        update t_data_annex
+        set source_id = #{sourceId}
+        where source_type = #{sourceType} and annex_id in
+        <foreach item="id" collection="annexIds" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <delete id="deleteAnnexByIds">
+        delete from t_data_annex where annex_id in
+        <foreach item="id" collection="ids" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>
